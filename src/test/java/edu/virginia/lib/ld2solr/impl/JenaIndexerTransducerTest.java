@@ -6,8 +6,6 @@ import static org.junit.Assert.fail;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -18,9 +16,9 @@ public class JenaIndexerTransducerTest {
 
 	private JenaIndexingTransducer testIndexerHead;
 
-	private final Reader mockReader = new StringReader("");
+	private final String mockTransform = "";
 
-	private final Reader mockBadReader = new StringReader("THIS IS NOT A LEGITIMATE LDPATH PROGRAM!");
+	private final String mockBadTransform = "THIS IS NOT A LEGITIMATE LDPATH PROGRAM!";
 
 	private JenaBackend mockLDPersistentBackend;
 
@@ -30,7 +28,7 @@ public class JenaIndexerTransducerTest {
 	public void setUp() throws IOException {
 		initMocks(this);
 		mockLDPersistentBackend = new JenaBackend(createDefaultModel());
-		testIndexerHead = new JenaIndexingTransducer(mockLDPersistentBackend, mockReader);
+		testIndexerHead = new JenaIndexingTransducer(mockLDPersistentBackend, mockTransform);
 	}
 
 	@Test
@@ -41,7 +39,7 @@ public class JenaIndexerTransducerTest {
 
 	@Test(expected = RuntimeException.class)
 	public void testBadTransform() {
-		testIndexerHead = new JenaIndexingTransducer(mockLDPersistentBackend, mockBadReader);
+		testIndexerHead = new JenaIndexingTransducer(mockLDPersistentBackend, mockBadTransform);
 		testIndexerHead.apply(mockURI);
 		fail("Should not have been able to operate with ill-formed transform!");
 	}

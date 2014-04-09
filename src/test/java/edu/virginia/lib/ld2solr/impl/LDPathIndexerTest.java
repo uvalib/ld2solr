@@ -3,8 +3,6 @@ package edu.virginia.lib.ld2solr.impl;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.Reader;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -17,7 +15,7 @@ public class LDPathIndexerTest {
 	private JenaBackend mockLDPersistentBackend;
 
 	@Mock
-	private Reader mockTransform;
+	private String mockTransform;
 
 	@Before
 	public void setUp() {

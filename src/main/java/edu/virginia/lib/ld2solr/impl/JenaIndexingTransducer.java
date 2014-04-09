@@ -4,12 +4,16 @@
 package edu.virginia.lib.ld2solr.impl;
 
 import static com.google.common.base.Throwables.propagate;
+import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 
 import org.apache.marmotta.ldpath.LDPath;
 import org.apache.marmotta.ldpath.backend.jena.GenericJenaBackend;
 import org.apache.marmotta.ldpath.exception.LDPathParseException;
+import org.slf4j.Logger;
 
 import com.hp.hpl.jena.rdf.model.Resource;
 
@@ -22,9 +26,20 @@ import edu.virginia.lib.ld2solr.spi.IndexingTransducer;
  */
 public class JenaIndexingTransducer implements IndexingTransducer {
 
-	private final Reader transformation;
+	private final String transformation;
 
 	private final JenaBackend cache;
+
+	private static final Logger log = getLogger(JenaIndexingTransducer.class);
+
+	/**
+	 * @param linkedDataCache
+	 * @param transformationSource
+	 */
+	public JenaIndexingTransducer(final JenaBackend linkedDataCache, final String transformationSource) {
+		this.transformation = transformationSource;
+		this.cache = linkedDataCache;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -32,23 +47,19 @@ public class JenaIndexingTransducer implements IndexingTransducer {
 	 * @see com.google.common.base.Function#apply(java.lang.Object)
 	 */
 	@Override
-	public NamedFields apply(final Resource input) {
-		try {
-			return new NamedFields(new LDPath<>(cache).programQuery(input, transformation));
-		} catch (final LDPathParseException e) {
+	public NamedFields apply(final Resource uri) {
+		log.debug("Indexing: {}", uri);
+		try (Reader transformationReader = new StringReader(transformation);) {
+			return new NamedFields(new LDPath<>(cache).programQuery(uri, transformationReader));
+		} catch (final LDPathParseException | IOException e) {
 			throw propagate(e);
 		}
-	}
-
-	public JenaIndexingTransducer(final JenaBackend linkedDataCache, final Reader transformationSource) {
-		this.transformation = transformationSource;
-		this.cache = linkedDataCache;
 	}
 
 	/**
 	 * @return the transformation
 	 */
-	public Reader transformation() {
+	public String transformation() {
 		return transformation;
 	}
 

@@ -7,8 +7,6 @@ import static org.junit.Assert.assertTrue;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -36,7 +34,7 @@ public class IndexRunTest {
 
 	private static final Set<Resource> uris = ImmutableSet.of(ResourceFactory.createResource(uri));
 
-	private static final Reader mockTransform = new StringReader("title = dc:title :: xsd:string;");
+	private static final String mockTransform = "title = dc:title :: xsd:string;";
 
 	private static final Logger log = getLogger(IndexRunTest.class);
 

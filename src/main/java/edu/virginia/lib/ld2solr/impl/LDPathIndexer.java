@@ -3,8 +3,6 @@
  */
 package edu.virginia.lib.ld2solr.impl;
 
-import java.io.Reader;
-
 import edu.virginia.lib.ld2solr.spi.Indexer;
 
 /**
@@ -21,7 +19,7 @@ public class LDPathIndexer implements Indexer<JenaIndexingTransducer> {
 	 * @see com.google.common.base.Function#apply(java.lang.Object)
 	 */
 	@Override
-	public JenaIndexingTransducer apply(final Reader transform) {
+	public JenaIndexingTransducer apply(final String transform) {
 		return new JenaIndexingTransducer(cache, transform);
 	}
 

@@ -3,8 +3,6 @@
  */
 package edu.virginia.lib.ld2solr.spi;
 
-import java.io.Reader;
-
 import com.google.common.base.Function;
 
 /**
@@ -14,6 +12,6 @@ import com.google.common.base.Function;
  * @author ajs6f
  * 
  */
-public interface Indexer<T extends IndexingTransducer> extends Function<Reader, T> {
+public interface Indexer<T extends IndexingTransducer> extends Function<String, T> {
 
 }
