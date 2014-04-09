@@ -11,7 +11,6 @@ import java.io.Reader;
 import java.io.StringReader;
 
 import org.apache.marmotta.ldpath.LDPath;
-import org.apache.marmotta.ldpath.backend.jena.GenericJenaBackend;
 import org.apache.marmotta.ldpath.exception.LDPathParseException;
 import org.slf4j.Logger;
 
@@ -66,7 +65,7 @@ public class JenaIndexingTransducer implements IndexingTransducer {
 	/**
 	 * @return the cache
 	 */
-	public GenericJenaBackend cache() {
+	public JenaBackend cache() {
 		return cache;
 	}
 

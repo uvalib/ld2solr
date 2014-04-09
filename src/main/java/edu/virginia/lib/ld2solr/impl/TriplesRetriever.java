@@ -51,13 +51,15 @@ public class TriplesRetriever {
 	 * @param uri
 	 * @throws ExtractionException
 	 * @throws IOException
+	 * @throws TripleHandlerException
 	 */
-	public Resource load(final Resource uri) throws IOException, ExtractionException {
+	public Resource load(final Resource uri) throws IOException, ExtractionException, TripleHandlerException {
 		log.debug("Retrieving from URI: {}", uri);
 		model.enterCriticalSection(WRITE);
 		try {
-			extractor.extract(uri.getURI(), triplesIntoModel);
-			// model.read(uri.getURI());
+			final TriplesIntoModel tripleRecorder = new TriplesIntoModel(model);
+			extractor.extract(uri.getURI(), tripleRecorder);
+			tripleRecorder.close();
 		} finally {
 			model.leaveCriticalSection();
 		}

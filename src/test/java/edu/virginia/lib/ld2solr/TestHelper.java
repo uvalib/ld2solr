@@ -25,7 +25,9 @@ import org.slf4j.Logger;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.base.Function;
+import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 
@@ -83,8 +85,21 @@ public abstract class TestHelper {
 
 		@Override
 		public String apply(final Statement stmnt) {
-			return "<p> There exists a thing named <span about=" + stmnt.getSubject() + "><cite property=\""
-					+ stmnt.getPredicate() + "\">" + stmnt.getObject() + "</cite></span>";
+			final RDFNode object = stmnt.getObject();
+			if (object.isResource()) {
+				return "<p> There exists a thing named <span about=" + stmnt.getSubject() + "><a property=\""
+						+ stmnt.getPredicate() + "\" " + (object.isResource() ? "href=\"" + object + "\"" : "") + ">"
+						+ stmnt.getObject() + "</a></span>";
+			} else {
+				final Literal literal = object.asLiteral();
+				if (literal.getDatatype() != null) {
+					return "<p> There exists a thing named <span about=" + stmnt.getSubject() + "><a property=\""
+							+ stmnt.getPredicate() + "\" datatype=\"" + literal.getDatatypeURI() + "\">"
+							+ stmnt.getObject() + "</a></span>";
+				}
+			}
+			return "<p> There exists a thing named <span about=" + stmnt.getSubject() + "><a property=\""
+					+ stmnt.getPredicate() + "\">" + stmnt.getObject() + "</a></span>";
 		}
 	};
 

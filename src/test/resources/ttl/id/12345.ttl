@@ -1,2 +1,4 @@
 @prefix dc: <http://purl.org/dc/elements/1.1/>.
-<id/12345> dc:title "A Book About RDF" .
+
+<id/12345> dc:title "A Book About RDF"^^<http://www.w3.org/2001/XMLSchema#string> ;
+	       dc:subject <http://id.loc.gov/authorities/subjects/lcsh:sh2003010124> .

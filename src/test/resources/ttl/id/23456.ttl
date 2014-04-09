@@ -1,2 +1,3 @@
 @prefix dc: <http://purl.org/dc/elements/1.1/>.
-<id/23456> dc:title "Another Book About RDF" .
+<id/23456> dc:title "Another Book About RDF" ;
+	       dc:title "Subtitled: RDF IS AWESOME!".

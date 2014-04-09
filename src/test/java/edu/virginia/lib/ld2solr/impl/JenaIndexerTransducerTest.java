@@ -44,4 +44,11 @@ public class JenaIndexerTransducerTest {
 		fail("Should not have been able to operate with ill-formed transform!");
 	}
 
+	@Test
+	public void testCanRetrieveUnderlyingTransformAndCache() {
+		testIndexerHead = new JenaIndexingTransducer(mockLDPersistentBackend, mockTransform);
+		assertEquals("Could not retrieve underlying cache!", mockLDPersistentBackend, testIndexerHead.cache());
+		assertEquals("Could not retrieve underlying transform!", mockTransform, testIndexerHead.transformation());
+	}
+
 }

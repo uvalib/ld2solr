@@ -14,7 +14,6 @@ public class LDPathIndexerTest {
 	@Mock
 	private JenaBackend mockLDPersistentBackend;
 
-	@Mock
 	private String mockTransform;
 
 	@Before

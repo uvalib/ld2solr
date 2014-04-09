@@ -7,6 +7,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.io.IOException;
 
 import org.apache.any23.extractor.ExtractionException;
+import org.apache.any23.writer.TripleHandlerException;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -31,7 +32,7 @@ public class TriplesRetrieverTest extends TestHelper {
 	}
 
 	@Test
-	public void testRetrieval() throws IOException, ExtractionException {
+	public void testRetrieval() throws IOException, ExtractionException, TripleHandlerException {
 		for (final Resource uri : uris) {
 			testRetriever.load(uri);
 		}
