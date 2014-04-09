@@ -5,17 +5,15 @@ package edu.virginia.lib.ld2solr.impl;
 
 import java.io.Reader;
 
-import org.apache.marmotta.ldpath.backend.jena.GenericJenaBackend;
-
 import edu.virginia.lib.ld2solr.spi.Indexer;
 
 /**
  * @author ajs6f
  * 
  */
-public class LDPathIndexer implements Indexer<LDPathIndexerHead> {
+public class LDPathIndexer implements Indexer<JenaIndexingTransducer> {
 
-	private final GenericJenaBackend cache;
+	private final JenaBackend cache;
 
 	/*
 	 * (non-Javadoc)
@@ -23,15 +21,15 @@ public class LDPathIndexer implements Indexer<LDPathIndexerHead> {
 	 * @see com.google.common.base.Function#apply(java.lang.Object)
 	 */
 	@Override
-	public LDPathIndexerHead apply(final Reader transform) {
-		return new LDPathIndexerHead(cache, transform);
+	public JenaIndexingTransducer apply(final Reader transform) {
+		return new JenaIndexingTransducer(cache, transform);
 	}
 
 	/**
 	 * @param linkedDataCache
 	 *            the cache in which to store Linked Data to index
 	 */
-	public LDPathIndexer(final GenericJenaBackend linkedDataCache) {
+	public LDPathIndexer(final JenaBackend linkedDataCache) {
 		this.cache = linkedDataCache;
 	}
 

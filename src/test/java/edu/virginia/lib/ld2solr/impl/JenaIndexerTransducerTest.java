@@ -9,28 +9,28 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
-import org.apache.marmotta.ldpath.backend.jena.GenericJenaBackend;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.hp.hpl.jena.rdf.model.Resource;
 
-public class LDPathIndexerHeadTest {
+public class JenaIndexerTransducerTest {
 
-	private LDPathIndexerHead testIndexerHead;
+	private JenaIndexingTransducer testIndexerHead;
 
 	private final Reader mockReader = new StringReader("");
+
 	private final Reader mockBadReader = new StringReader("THIS IS NOT A LEGITIMATE LDPATH PROGRAM!");
 
-	private GenericJenaBackend mockLDPersistentBackend;
+	private JenaBackend mockLDPersistentBackend;
 
 	private Resource mockURI;
 
 	@Before
 	public void setUp() throws IOException {
 		initMocks(this);
-		mockLDPersistentBackend = new GenericJenaBackend(createDefaultModel());
-		testIndexerHead = new LDPathIndexerHead(mockLDPersistentBackend, mockReader);
+		mockLDPersistentBackend = new JenaBackend(createDefaultModel());
+		testIndexerHead = new JenaIndexingTransducer(mockLDPersistentBackend, mockReader);
 	}
 
 	@Test
@@ -41,7 +41,7 @@ public class LDPathIndexerHeadTest {
 
 	@Test(expected = RuntimeException.class)
 	public void testBadTransform() {
-		testIndexerHead = new LDPathIndexerHead(mockLDPersistentBackend, mockBadReader);
+		testIndexerHead = new JenaIndexingTransducer(mockLDPersistentBackend, mockBadReader);
 		testIndexerHead.apply(mockURI);
 		fail("Should not have been able to operate with ill-formed transform!");
 	}

@@ -14,16 +14,17 @@ import org.apache.marmotta.ldpath.exception.LDPathParseException;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
-import edu.virginia.lib.ld2solr.spi.IndexerHead;
+import edu.virginia.lib.ld2solr.spi.IndexingTransducer;
 
 /**
  * @author ajs6f
  * 
  */
-public class LDPathIndexerHead implements IndexerHead {
+public class JenaIndexingTransducer implements IndexingTransducer {
 
 	private final Reader transformation;
-	private final GenericJenaBackend cache;
+
+	private final JenaBackend cache;
 
 	/*
 	 * (non-Javadoc)
@@ -39,7 +40,7 @@ public class LDPathIndexerHead implements IndexerHead {
 		}
 	}
 
-	public LDPathIndexerHead(final GenericJenaBackend linkedDataCache, final Reader transformationSource) {
+	public JenaIndexingTransducer(final JenaBackend linkedDataCache, final Reader transformationSource) {
 		this.transformation = transformationSource;
 		this.cache = linkedDataCache;
 	}

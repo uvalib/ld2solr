@@ -18,7 +18,7 @@ import com.google.common.collect.Maps.EntryTransformer;
  */
 public class NamedFields implements Map<String, Collection<String>> {
 
-	Map<String, Collection<?>> fields;
+	private final Map<String, Collection<?>> fields;
 
 	public NamedFields(final Map<String, Collection<?>> wrappedFields) {
 		this.fields = wrappedFields;
@@ -110,5 +110,10 @@ public class NamedFields implements Map<String, Collection<String>> {
 			return asCollectionOfStrings.apply(value);
 		}
 	};
+
+	@Override
+	public String toString() {
+		return fields.toString();
+	}
 
 }

@@ -4,15 +4,19 @@
 package edu.virginia.lib.ld2solr;
 
 import static org.junit.Assert.assertTrue;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -34,16 +38,19 @@ public class IndexRunTest {
 
 	private static final Reader mockTransform = new StringReader("title = dc:title :: xsd:string;");
 
+	private static final Logger log = getLogger(IndexRunTest.class);
+
 	@Before
 	public void setUp() throws IOException {
 		testIndexRun = new IndexRun(mockTransform, uris);
 	}
 
 	@Test
-	public void testRun() {
-		final Iterator<NamedFields> results = testIndexRun.get();
+	public void testRun() throws InterruptedException, ExecutionException {
+		final Iterator<Future<NamedFields>> results = testIndexRun.get();
 		assertTrue("Failed to retrieve any results!", results.hasNext());
-		final NamedFields firstResult = testIndexRun.get().next();
-		assertTrue(firstResult.containsKey("title"));
+		final NamedFields firstResult = testIndexRun.get().next().get();
+		log.info("Created index record: {}", firstResult);
+		assertTrue("Failed to create title in test index record!", firstResult.containsKey("title"));
 	}
 }

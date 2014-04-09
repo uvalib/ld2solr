@@ -14,6 +14,6 @@ import com.google.common.base.Function;
  * @author ajs6f
  * 
  */
-public interface Indexer<T extends IndexerHead> extends Function<Reader, T> {
+public interface Indexer<T extends IndexingTransducer> extends Function<Reader, T> {
 
 }

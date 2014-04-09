@@ -5,7 +5,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.Reader;
 
-import org.apache.marmotta.ldpath.backend.jena.GenericJenaBackend;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -15,7 +14,7 @@ public class LDPathIndexerTest {
 	private LDPathIndexer testIndexer;
 
 	@Mock
-	private GenericJenaBackend mockLDPersistentBackend;
+	private JenaBackend mockLDPersistentBackend;
 
 	@Mock
 	private Reader mockTransform;
@@ -28,10 +27,10 @@ public class LDPathIndexerTest {
 
 	@Test
 	public void testApply() {
-		assertEquals("Produced IndexerHead with incorrect transformation configured!", mockTransform, testIndexer
-				.apply(mockTransform).transformation());
-		assertEquals("Produced IndexerHead with incorrect cache configured!", mockLDPersistentBackend, testIndexer
-				.apply(mockTransform).cache());
+		assertEquals("Produced IndexingTransducer with incorrect transformation configured!", mockTransform,
+				testIndexer.apply(mockTransform).transformation());
+		assertEquals("Produced IndexingTransducer with incorrect cache configured!", mockLDPersistentBackend,
+				testIndexer.apply(mockTransform).cache());
 	}
 
 }
