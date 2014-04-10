@@ -5,8 +5,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.IOException;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,7 +23,7 @@ public class JenaIndexerTransducerTest {
 	private Resource mockURI;
 
 	@Before
-	public void setUp() throws IOException {
+	public void setUp() {
 		initMocks(this);
 		mockLDPersistentBackend = new JenaBackend(createDefaultModel());
 		testIndexerHead = new JenaIndexingTransducer(mockLDPersistentBackend, mockTransform);

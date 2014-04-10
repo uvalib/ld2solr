@@ -6,7 +6,6 @@ package edu.virginia.lib.ld2solr;
 import static org.junit.Assert.assertTrue;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -39,7 +38,7 @@ public class IndexRunTest {
 	private static final Logger log = getLogger(IndexRunTest.class);
 
 	@Before
-	public void setUp() throws IOException {
+	public void setUp() {
 		testIndexRun = new IndexRun(mockTransform, uris);
 	}
 
@@ -50,5 +49,10 @@ public class IndexRunTest {
 		final NamedFields firstResult = testIndexRun.get().next().get();
 		log.info("Created index record: {}", firstResult);
 		assertTrue("Failed to create title in test index record!", firstResult.containsKey("title"));
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void testBadOperation() {
+		testIndexRun.get().remove();
 	}
 }

@@ -3,13 +3,13 @@ package edu.virginia.lib.ld2solr.impl;
 import static com.hp.hpl.jena.shared.Lock.WRITE;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 import org.apache.any23.Any23;
 import org.apache.any23.extractor.ExtractionContext;
 import org.apache.any23.extractor.ExtractionException;
 import org.apache.any23.writer.TripleHandler;
-import org.apache.any23.writer.TripleHandlerException;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.slf4j.Logger;
@@ -29,8 +29,6 @@ public class TriplesRetriever {
 
 	private final Model model;
 
-	private final TripleHandler triplesIntoModel;
-
 	private static final Any23 extractor = new Any23();
 
 	private static final Logger log = getLogger(TriplesRetriever.class);
@@ -44,22 +42,19 @@ public class TriplesRetriever {
 	 */
 	public TriplesRetriever(final Model m) {
 		this.model = m;
-		this.triplesIntoModel = new TriplesIntoModel(m);
 	}
 
 	/**
 	 * @param uri
 	 * @throws ExtractionException
 	 * @throws IOException
-	 * @throws TripleHandlerException
 	 */
-	public Resource load(final Resource uri) throws IOException, ExtractionException, TripleHandlerException {
+	public Resource load(final Resource uri) throws IOException, ExtractionException {
 		log.debug("Retrieving from URI: {}", uri);
+		// the following call on the Jena model prevents thread collisions
 		model.enterCriticalSection(WRITE);
-		try {
-			final TriplesIntoModel tripleRecorder = new TriplesIntoModel(model);
+		try (final TriplesIntoModel tripleRecorder = new TriplesIntoModel(model);) {
 			extractor.extract(uri.getURI(), tripleRecorder);
-			tripleRecorder.close();
 		} finally {
 			model.leaveCriticalSection();
 		}
@@ -72,7 +67,7 @@ public class TriplesRetriever {
 	 * @author ajs6f
 	 * 
 	 */
-	private static class TriplesIntoModel implements TripleHandler {
+	private static class TriplesIntoModel implements CloseableTripleHandler {
 
 		private final Model model;
 
@@ -81,16 +76,16 @@ public class TriplesRetriever {
 		}
 
 		@Override
-		public void startDocument(final URI documentURI) throws TripleHandlerException {
+		public void startDocument(final URI documentURI) {
 		}
 
 		@Override
-		public void openContext(final ExtractionContext context) throws TripleHandlerException {
+		public void openContext(final ExtractionContext context) {
 		}
 
 		@Override
 		public void receiveTriple(final org.openrdf.model.Resource s, final URI p, final Value o, final URI g,
-				final ExtractionContext context) throws TripleHandlerException {
+				final ExtractionContext context) {
 			final Property property = model.createProperty(p.stringValue());
 			final Resource subject = model.createResource(s.stringValue());
 			if (o instanceof org.openrdf.model.Literal) {
@@ -107,17 +102,16 @@ public class TriplesRetriever {
 		}
 
 		@Override
-		public void receiveNamespace(final String prefix, final String uri, final ExtractionContext context)
-				throws TripleHandlerException {
+		public void receiveNamespace(final String prefix, final String uri, final ExtractionContext context) {
 			model.setNsPrefix(prefix, uri);
 		}
 
 		@Override
-		public void closeContext(final ExtractionContext context) throws TripleHandlerException {
+		public void closeContext(final ExtractionContext context) {
 		}
 
 		@Override
-		public void endDocument(final URI documentURI) throws TripleHandlerException {
+		public void endDocument(final URI documentURI) {
 		}
 
 		@Override
@@ -125,9 +119,12 @@ public class TriplesRetriever {
 		}
 
 		@Override
-		public void close() throws TripleHandlerException {
+		public void close() {
 		}
 
+	}
+
+	private static interface CloseableTripleHandler extends TripleHandler, Closeable {
 	}
 
 }

@@ -17,7 +17,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import org.apache.any23.extractor.ExtractionException;
-import org.apache.any23.writer.TripleHandlerException;
 import org.slf4j.Logger;
 
 import com.google.common.base.Function;
@@ -90,7 +89,7 @@ public class CacheAssembler implements Callable<Set<Resource>> {
 			return new Callable<Resource>() {
 
 				@Override
-				public Resource call() throws IOException, ExtractionException, TripleHandlerException {
+				public Resource call() throws IOException, ExtractionException {
 					return new TriplesRetriever(model).load(uri);
 				}
 			};

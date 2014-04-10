@@ -11,7 +11,6 @@ import static java.lang.System.getProperty;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -55,10 +54,8 @@ public class IndexRun implements Supplier<Iterator<Future<NamedFields>>> {
 	 * @param transformationSource
 	 * @param uris
 	 * @param cache
-	 * @throws IOException
 	 */
-	public IndexRun(final String transformationSource, final Set<Resource> uris, final JenaBackend... caches)
-			throws IOException {
+	public IndexRun(final String transformationSource, final Set<Resource> uris, final JenaBackend... caches) {
 		this.transformation = transformationSource;
 		this.uris = uris;
 		if (caches.length > 0)
@@ -88,7 +85,7 @@ public class IndexRun implements Supplier<Iterator<Future<NamedFields>>> {
 				final ListenableFuture<NamedFields> result = threadpool.submit(new Callable<NamedFields>() {
 
 					@Override
-					public NamedFields call() throws Exception {
+					public NamedFields call() {
 						return indexer.apply(transformation).apply(uri);
 					}
 				});

@@ -1,0 +1,1 @@
+Files in this folder will be installed as test Linked Data resources under their filenames (without extension) in the RDFa form.

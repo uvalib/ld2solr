@@ -7,7 +7,6 @@ import static com.google.common.collect.Sets.difference;
 import static com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -34,7 +33,7 @@ public class Main {
 	private static final Logger log = getLogger(Main.class);
 
 	public void fullRun(final String transformation, final Set<Resource> uris) throws InterruptedException,
-			IOException, ExecutionException {
+			ExecutionException {
 		final Set<Resource> successfullyRetrieved = new CacheAssembler(model, uris).call();
 		final Set<Resource> failures = difference(uris, successfullyRetrieved);
 		if (failures.size() > 0) {
