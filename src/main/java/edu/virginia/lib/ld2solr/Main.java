@@ -32,9 +32,9 @@ public class Main {
 
 	private static final Logger log = getLogger(Main.class);
 
-	public void fullRun(final String transformation, final Set<Resource> uris) throws InterruptedException,
-			ExecutionException {
-		final Set<Resource> successfullyRetrieved = new CacheAssembler(model, uris).call();
+	public void fullRun(final String transformation, final Set<Resource> uris, final Set<Resource> successfullyRetrieved)
+			throws InterruptedException, ExecutionException {
+		successfullyRetrieved.addAll(new CacheAssembler(model, uris).call());
 		final Set<Resource> failures = difference(uris, successfullyRetrieved);
 		if (failures.size() > 0) {
 			log.warn("Failed to retrieve some resources!");

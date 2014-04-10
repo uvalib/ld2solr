@@ -1,0 +1,1 @@
+Files under this folder will be installed as test Linked Data resources under their filenames (without extension) in the form specified by the name of the subfolder in which you find them (e.g. RDFa form, Turtle form, etc.).
