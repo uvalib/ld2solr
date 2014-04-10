@@ -9,15 +9,15 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Iterator;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
+import edu.virginia.lib.ld2solr.api.OutputRecord;
 import edu.virginia.lib.ld2solr.impl.JenaBackend;
 
 /**
@@ -33,7 +33,7 @@ public class Main {
 	private static final Logger log = getLogger(Main.class);
 
 	public void fullRun(final String transformation, final Set<Resource> uris, final Set<Resource> successfullyRetrieved)
-			throws InterruptedException, ExecutionException {
+			throws InterruptedException {
 		successfullyRetrieved.addAll(new CacheAssembler(model, uris).call());
 		final Set<Resource> failures = difference(uris, successfullyRetrieved);
 		if (failures.size() > 0) {
@@ -43,10 +43,16 @@ public class Main {
 			}
 		}
 		log.debug("Operating with RDF cache: {}", model.getGraph());
-		final Iterator<Future<NamedFields>> records = new IndexRun(transformation, successfullyRetrieved, cache).get();
-		while (records.hasNext()) {
-			log.info("Retrieved index record:\n{}", records.next().get());
+		final Iterator<ListenableFuture<NamedFields>> records = new IndexRun(transformation, successfullyRetrieved,
+				cache).get();
+
+		final Iterator<OutputRecord> writeableRecords = new SolrLDOutputStage(records);
+
+		while (writeableRecords.hasNext()) {
+			final OutputRecord writeableRecord = writeableRecords.next();
+			log.info("Record {} is\n{}", writeableRecord.id(), new String(writeableRecord.record()));
 		}
+
 	}
 
 	/**

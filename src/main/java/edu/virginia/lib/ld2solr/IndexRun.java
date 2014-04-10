@@ -14,7 +14,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 
@@ -32,7 +31,7 @@ import edu.virginia.lib.ld2solr.impl.LDPathIndexer;
  * @author ajs6f
  * 
  */
-public class IndexRun implements Supplier<Iterator<Future<NamedFields>>> {
+public class IndexRun implements Supplier<Iterator<ListenableFuture<NamedFields>>> {
 
 	private JenaBackend cache;
 
@@ -68,8 +67,8 @@ public class IndexRun implements Supplier<Iterator<Future<NamedFields>>> {
 	}
 
 	@Override
-	public Iterator<Future<NamedFields>> get() {
-		return new Iterator<Future<NamedFields>>() {
+	public Iterator<ListenableFuture<NamedFields>> get() {
+		return new Iterator<ListenableFuture<NamedFields>>() {
 
 			private final Iterator<Resource> records = uris.iterator();
 
@@ -79,7 +78,7 @@ public class IndexRun implements Supplier<Iterator<Future<NamedFields>>> {
 			}
 
 			@Override
-			public Future<NamedFields> next() {
+			public ListenableFuture<NamedFields> next() {
 				final Resource uri = records.next();
 				log.info("Indexing {}...", uri);
 				final ListenableFuture<NamedFields> result = threadpool.submit(new Callable<NamedFields>() {

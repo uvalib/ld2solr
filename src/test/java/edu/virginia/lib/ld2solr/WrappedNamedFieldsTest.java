@@ -16,7 +16,7 @@ import edu.virginia.lib.ld2solr.api.NamedFields;
 
 public class WrappedNamedFieldsTest {
 
-	private WrappedNamedFields testWrappedNamedFields;
+	private SolrWrappedNamedFields testWrappedNamedFields;
 
 	private static final String testFieldName = "testFieldName";
 
@@ -29,7 +29,7 @@ public class WrappedNamedFieldsTest {
 
 	@Before
 	public void setUp() {
-		testWrappedNamedFields = new WrappedNamedFields(mockNamedFields);
+		testWrappedNamedFields = new SolrWrappedNamedFields(mockNamedFields);
 	}
 
 	@Test

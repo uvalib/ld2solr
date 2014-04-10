@@ -7,7 +7,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +17,7 @@ public class MainTest extends TestHelper {
 
 	private Main testMain;
 
-	private static final String transformation = "title = dc:title :: xsd:string;";
+	private static final String transformation = "title = dc:title :: xsd:string; id = dc:identifier :: xsd:string;";
 
 	@Before
 	public void setUp() {
@@ -26,12 +25,12 @@ public class MainTest extends TestHelper {
 	}
 
 	@Test
-	public void testFullRun() throws InterruptedException, ExecutionException {
+	public void testFullRun() throws InterruptedException {
 		testMain.fullRun(transformation, uris, new HashSet<Resource>());
 	}
 
 	@Test
-	public void testRunWithBadResources() throws InterruptedException, ExecutionException {
+	public void testRunWithBadResources() throws InterruptedException {
 		final Set<Resource> urisWithExtra = new HashSet<>(uris);
 		final Set<Resource> badUris = singleton(createResource());
 		urisWithExtra.addAll(badUris);

@@ -13,6 +13,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
 import org.slf4j.Logger;
 
+import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Maps.EntryTransformer;
 
@@ -24,14 +25,14 @@ import edu.virginia.lib.ld2solr.api.NamedFields;
  * @author ajs6f
  * 
  */
-public class WrappedNamedFields implements Supplier<SolrInputDocument> {
+public class SolrWrappedNamedFields implements Supplier<SolrInputDocument> {
 
 	private final NamedFields fields;
 
 	// TODO make index-time boost somehow adjustable, or something
 	public static final Long INDEX_TIME_BOOST = 1L;
 
-	private static final Logger log = getLogger(WrappedNamedFields.class);
+	private static final Logger log = getLogger(SolrWrappedNamedFields.class);
 
 	@Override
 	public SolrInputDocument get() {
@@ -43,7 +44,7 @@ public class WrappedNamedFields implements Supplier<SolrInputDocument> {
 	 * @param namedFields
 	 *            the fields to wrap for export
 	 */
-	public WrappedNamedFields(final NamedFields namedFields) {
+	public SolrWrappedNamedFields(final NamedFields namedFields) {
 		this.fields = namedFields;
 	}
 
@@ -62,5 +63,12 @@ public class WrappedNamedFields implements Supplier<SolrInputDocument> {
 			return field;
 		}
 	};
+	
+	public static Function<NamedFields,SolrInputDocument> wrap = new Function<NamedFields,SolrInputDocument>() {
+
+		@Override
+		public SolrInputDocument apply(NamedFields fields) {
+			return new SolrWrappedNamedFields(fields).get();
+		}};
 
 }

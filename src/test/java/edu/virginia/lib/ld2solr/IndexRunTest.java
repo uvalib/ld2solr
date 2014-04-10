@@ -9,13 +9,13 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 
@@ -44,7 +44,7 @@ public class IndexRunTest {
 
 	@Test
 	public void testRun() throws InterruptedException, ExecutionException {
-		final Iterator<Future<NamedFields>> results = testIndexRun.get();
+		final Iterator<ListenableFuture<NamedFields>> results = testIndexRun.get();
 		assertTrue("Failed to retrieve any results!", results.hasNext());
 		final NamedFields firstResult = testIndexRun.get().next().get();
 		log.info("Created index record: {}", firstResult);
