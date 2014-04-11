@@ -7,17 +7,20 @@ import static com.google.common.collect.Sets.difference;
 import static com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 
 import org.slf4j.Logger;
 
+import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
 import edu.virginia.lib.ld2solr.api.OutputRecord;
+import edu.virginia.lib.ld2solr.impl.FilesystemPersister;
 import edu.virginia.lib.ld2solr.impl.JenaBackend;
 
 /**
@@ -48,9 +51,18 @@ public class Main {
 
 		final Iterator<OutputRecord> writeableRecords = new SolrLDOutputStage(records);
 
+		final FilesystemPersister r = new FilesystemPersister(Files.createTempDir());
+		log.info("Writing to: {}", r.directory());
 		while (writeableRecords.hasNext()) {
 			final OutputRecord writeableRecord = writeableRecords.next();
 			log.info("Record {} is\n{}", writeableRecord.id(), new String(writeableRecord.record()));
+			try {
+				r.accept(writeableRecord);
+
+			} catch (final IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 	}

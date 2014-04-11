@@ -91,7 +91,7 @@ public class TriplesRetriever {
 			if (o instanceof org.openrdf.model.Literal) {
 				final org.openrdf.model.Literal literal = (org.openrdf.model.Literal) o;
 				final URI datatype = literal.getDatatype();
-				final Literal typedLiteral = model.createTypedLiteral(literal.getLabel(), datatype == null ? null
+				final Literal typedLiteral = model.createTypedLiteral(literal.stringValue(), datatype == null ? null
 						: datatype.stringValue());
 				model.add(subject, property, typedLiteral);
 			} else {
