@@ -139,7 +139,7 @@ public abstract class TestHelper {
 					if (literal.getDatatype() != null) {
 						return "<p> There exists a thing named <span about=" + stmnt.getSubject() + "><a property=\""
 								+ stmnt.getPredicate() + "\" datatype=\"" + literal.getDatatypeURI() + "\">"
-								+ stmnt.getObject() + "</a></span>";
+								+ stmnt.getObject().asLiteral().getLexicalForm() + "</a></span>";
 					}
 					return "<p> There exists a thing named <span about=" + stmnt.getSubject() + "><a property=\""
 							+ stmnt.getPredicate() + "\">" + stmnt.getObject() + "</a></span>";

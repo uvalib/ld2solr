@@ -89,13 +89,17 @@ public class TriplesRetriever {
 			final Property property = model.createProperty(p.stringValue());
 			final Resource subject = model.createResource(s.stringValue());
 			if (o instanceof org.openrdf.model.Literal) {
-				final org.openrdf.model.Literal literal = (org.openrdf.model.Literal) o;
-				final URI datatype = literal.getDatatype();
-				final Literal typedLiteral = model.createTypedLiteral(literal.stringValue(), datatype == null ? null
-						: datatype.stringValue());
-				model.add(subject, property, typedLiteral);
+				final org.openrdf.model.Literal rawLiteral = (org.openrdf.model.Literal) o;
+				final URI datatype = rawLiteral.getDatatype();
+				final Literal literal;
+				if (datatype != null) {
+					literal = model.createTypedLiteral(rawLiteral.getLabel(), datatype.toString());
+				} else {
+					literal = model.createLiteral(rawLiteral.getLabel());
+				}
+				model.add(subject, property, literal);
 			} else {
-				final Resource resource = model.createResource(o.stringValue());
+				final Resource resource = model.createResource(o.toString());
 				model.add(subject, property, resource);
 			}
 
