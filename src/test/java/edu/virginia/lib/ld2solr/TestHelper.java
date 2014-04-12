@@ -53,7 +53,7 @@ public abstract class TestHelper {
 
 	private static final File SAMPLE_RDF_FOR_RDFA = new File("target/test-classes/rdf/rdfa/");
 
-	private static final Integer HTTP_PORT = 8089;
+	private static final Integer HTTP_PORT = Integer.getInteger("test.port", 8089);
 
 	/**
 	 * Establishes a webserver able to support our test LD resources.
