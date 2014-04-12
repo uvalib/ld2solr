@@ -49,9 +49,9 @@ import com.hp.hpl.jena.rdf.model.Statement;
  */
 public abstract class TestHelper {
 
-	private static final File SAMPLE_RDF_FOR_TURTLE = new File("target/test-classes/ttl/");
+	private static final File SAMPLE_RDF_FOR_TURTLE = new File("target/test-classes/rdf/ttl/");
 
-	private static final File SAMPLE_RDF_FOR_RDFA = new File("target/test-classes/rdfa/");
+	private static final File SAMPLE_RDF_FOR_RDFA = new File("target/test-classes/rdf/rdfa/");
 
 	private static final Integer HTTP_PORT = 8089;
 
