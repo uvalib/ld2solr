@@ -9,11 +9,15 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.marmotta.ldpath.LDPath;
 import org.apache.marmotta.ldpath.exception.LDPathParseException;
+import org.apache.marmotta.ldpath.parser.DefaultConfiguration;
 import org.slf4j.Logger;
 
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
@@ -47,9 +51,20 @@ public class JenaIndexingTransducer implements IndexingTransducer {
 	 */
 	@Override
 	public NamedFields apply(final Resource uri) {
-		log.debug("Indexing: {}", uri);
+		log.debug("Indexing resource: {}", uri);
 		try (Reader transformationReader = new StringReader(transformation);) {
-			return new NamedFields(new LDPath<>(cache).programQuery(uri, transformationReader));
+			final NamedFields fields = new NamedFields(new LDPath<>(cache, new DefaultConfiguration<RDFNode>() {
+				@Override
+				public Map<String, String> getNamespaces() {
+					final Map<String, String> namespaces = new HashMap<>(super.getNamespaces());
+					namespaces.putAll(cache.model().getNsPrefixMap());
+					return namespaces;
+				}
+			}).programQuery(uri, transformationReader));
+			// the identifier of the record is the URI of the resource indexed
+			fields.id(uri.getURI());
+			log.trace("Created index fields: {}", fields);
+			return fields;
 		} catch (final LDPathParseException | IOException e) {
 			throw propagate(e);
 		}

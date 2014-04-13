@@ -3,9 +3,9 @@
  */
 package edu.virginia.lib.ld2solr.spi;
 
-import java.util.Iterator;
-
+import edu.virginia.lib.ld2solr.api.NamedFields;
 import edu.virginia.lib.ld2solr.api.OutputRecord;
+import edu.virginia.lib.ld2solr.spi.Stage.Acceptor;
 
 /**
  * Generates {@link OutputRecord}s.
@@ -13,8 +13,7 @@ import edu.virginia.lib.ld2solr.api.OutputRecord;
  * @author ajs6f
  * 
  * @param <OutputType>
- * @param <IdentifierType>
  */
-public interface OutputStage extends Iterator<OutputRecord> {
+public interface OutputStage<T extends OutputStage<T>> extends Acceptor<NamedFields, OutputRecord> {
 
 }

@@ -19,21 +19,11 @@ import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
  * @author ajs6f
  * 
  */
-public class FilesystemPersister implements RecordPersister {
+public class FilesystemPersister implements RecordPersister<FilesystemPersister> {
 
 	File directory;
 
 	private static final Logger log = getLogger(FilesystemPersister.class);
-
-	/**
-	 * @param directory
-	 */
-	public FilesystemPersister(final File d) {
-		if (!d.isDirectory()) {
-			throw new IllegalArgumentException("Filesystem location must be a directory!");
-		}
-		this.directory = d;
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -43,17 +33,43 @@ public class FilesystemPersister implements RecordPersister {
 	 * .api.OutputRecord)
 	 */
 	@Override
-	public void accept(final OutputRecord record) throws IOException {
+	public void accept(final OutputRecord record) {
 		final File file = new File(directory, record.id());
 		log.debug("Persisting to: {}", file.toString());
-		Files.asByteSink(file).write(record.record());
+		try {
+			Files.asByteSink(file).write(record.record());
+		} catch (final IOException e) {
+			log.error("Error persisting: {}!", record.id());
+			log.error("Exception: ", e);
+		}
 	}
 
-	/**
-	 * @return the directory to which we are writing
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister#location(java
+	 * .lang.String)
 	 */
-	public File directory() {
-		return directory;
+	@Override
+	public FilesystemPersister location(final String location) {
+		directory = new File(location);
+		return this;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister#location()
+	 */
+	@Override
+	public String location() {
+		return directory.getAbsolutePath();
+	}
+
+	@Override
+	public void andThen(final Acceptor<OutputRecord, ?> a) {
+		throw new UnsupportedOperationException();
 	}
 
 }

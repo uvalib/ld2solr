@@ -10,6 +10,8 @@
 	<properties>
 		<marmotta.version>3.1.0-incubating</marmotta.version>
 		<jena.version>2.11.1</jena.version>
+		<jena.tdb.version>1.0.1</jena.tdb.version>
+		<any23.version>0.9.0</any23.version>
 		<solr.version>4.7.1</solr.version>
 	</properties>
 
@@ -51,6 +53,22 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-tdb</artifactId>
+			<version>${jena.tdb.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-log4j12</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.any23</groupId>
+			<artifactId>apache-any23-core</artifactId>
+			<version>${any23.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.solr</groupId>
 			<artifactId>solr-core</artifactId>
 			<version>${solr.version}</version>
@@ -60,6 +78,7 @@
 			<artifactId>logback-classic</artifactId>
 			<version>1.1.2</version>
 		</dependency>
+
 		<!-- Test libraries -->
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -72,11 +91,6 @@
 			<artifactId>junit</artifactId>
 			<version>4.11</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.any23</groupId>
-			<artifactId>apache-any23-core</artifactId>
-			<version>0.9.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.tomakehurst</groupId>
@@ -144,18 +158,18 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
 				<version>1.8</version>
-				<!-- reserve a port under the property ${test.port} for tests -->
-				<configuration>
-					<portNames>
-						<portName>test.port</portName>
-					</portNames>
-				</configuration>
 				<executions>
 					<execution>
 						<id>reserve-port</id>
 						<goals>
 							<goal>reserve-network-port</goal>
 						</goals>
+						<!-- reserve a port under the property ${test.port} for tests -->
+						<configuration>
+							<portNames>
+								<portName>test.port</portName>
+							</portNames>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

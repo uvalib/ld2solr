@@ -3,21 +3,17 @@
  */
 package edu.virginia.lib.ld2solr;
 
+import static java.lang.System.currentTimeMillis;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.util.Iterator;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
+import org.apache.marmotta.ldpath.LDPath;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableSet;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
 
@@ -25,34 +21,48 @@ import edu.virginia.lib.ld2solr.api.NamedFields;
  * @author ajs6f
  * 
  */
-public class IndexRunTest {
+public class IndexRunTest extends TestHelper {
 
 	private IndexRun testIndexRun;
 
-	private static final String uri = "https://www.flickr.com/photos/mhausenblas/1059656723/";
-
-	private static final Set<Resource> uris = ImmutableSet.of(ResourceFactory.createResource(uri));
+	private TestAcceptor<NamedFields, ?> acceptor;
 
 	private static final String mockTransform = "title = dc:title :: xsd:string;";
 
 	private static final Logger log = getLogger(IndexRunTest.class);
 
+	private static final long TIMEOUT = 10000;
+
+	private static final long TIMESTEP = 1000;
+
 	@Before
 	public void setUp() {
+		/*
+		 * because JUnit uses reflection to set up the classpath for a test and
+		 * LDPath uses java.util.ServiceLoader to search the context classpath,
+		 * we need to explicitly call out LDPath here to make sure it gets
+		 * initialized properly
+		 */
+		new LDPath<String>(null);
 		testIndexRun = new IndexRun(mockTransform, uris);
+		acceptor = new TestAcceptor<NamedFields, Void>();
+		testIndexRun.andThen(acceptor);
 	}
 
 	@Test
-	public void testRun() throws InterruptedException, ExecutionException {
-		final Iterator<ListenableFuture<NamedFields>> results = testIndexRun.get();
-		assertTrue("Failed to retrieve any results!", results.hasNext());
-		final NamedFields firstResult = testIndexRun.get().next().get();
-		log.info("Created index record: {}", firstResult);
-		assertTrue("Failed to create title in test index record!", firstResult.containsKey("title"));
-	}
-
-	@Test(expected = UnsupportedOperationException.class)
-	public void testBadOperation() {
-		testIndexRun.get().remove();
+	public void testRun() throws InterruptedException {
+		testIndexRun.run();
+		final long startTime = currentTimeMillis();
+		synchronized (acceptor) {
+			while (acceptor.accepted().size() < uris.size() && currentTimeMillis() < (startTime + TIMEOUT)) {
+				acceptor.wait(TIMESTEP);
+			}
+		}
+		final Set<NamedFields> results = acceptor.accepted();
+		assertEquals("Didn't receive as many index records as input resources!", uris.size(), results.size());
+		for (final NamedFields result : results) {
+			log.info("Created index record: {}", result);
+			assertTrue("Failed to create title in each test index record!", result.containsKey("title"));
+		}
 	}
 }

@@ -20,8 +20,28 @@ public class NamedFields extends HashMap<String, Collection<String>> {
 
 	private static final long serialVersionUID = 1L;
 
+	public static final String ID_FIELD = "id";
+
+	private String id;
+
 	public NamedFields(final Map<String, Collection<?>> wrappedFields) {
 		this.putAll(Maps.transformEntries(wrappedFields, asEntryOfStringToCollectionOfStrings));
+	}
+
+	/**
+	 * @return a identifer for this record
+	 */
+	public String id() {
+		return id != null ? id : get(ID_FIELD).iterator().next();
+	}
+
+	/**
+	 * @param id
+	 * @return this {@link NamedFields} for continued operation
+	 */
+	public NamedFields id(final String id) {
+		this.id = id;
+		return this;
 	}
 
 	private static final Function<Collection<?>, Collection<String>> asCollectionOfStrings = new Function<Collection<?>, Collection<String>>() {

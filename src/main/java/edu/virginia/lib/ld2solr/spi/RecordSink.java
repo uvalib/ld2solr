@@ -3,9 +3,8 @@
  */
 package edu.virginia.lib.ld2solr.spi;
 
-import java.io.IOException;
-
 import edu.virginia.lib.ld2solr.api.OutputRecord;
+import edu.virginia.lib.ld2solr.spi.Stage.Acceptor;
 
 /**
  * Accepts {@link OutputRecord}s and does something useful with them.
@@ -13,15 +12,7 @@ import edu.virginia.lib.ld2solr.api.OutputRecord;
  * @author ajs6f
  * 
  */
-public interface RecordSink {
-
-	/**
-	 * Do something interesting with this {@link OutputRecord}.
-	 * 
-	 * @param record
-	 * @throws IOException
-	 */
-	public void accept(final OutputRecord record) throws IOException;
+public interface RecordSink extends Acceptor<OutputRecord, OutputRecord> {
 
 	/**
 	 * A {@link RecordSink} that persists its inputs.
@@ -29,7 +20,19 @@ public interface RecordSink {
 	 * @author ajs6f
 	 * 
 	 */
-	public static interface RecordPersister extends RecordSink {
+	public static interface RecordPersister<T extends RecordPersister<T>> extends RecordSink {
+
+		/**
+		 * @param location
+		 *            the location of the persisted records
+		 * @return the {@link RecordPersister} for continued operation
+		 */
+		public T location(String location);
+
+		/**
+		 * @return the location of the persisted records
+		 */
+		public String location();
 	}
 
 }

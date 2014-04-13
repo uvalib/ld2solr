@@ -11,13 +11,11 @@ import static java.lang.System.getProperty;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 
-import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -26,12 +24,13 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import edu.virginia.lib.ld2solr.api.NamedFields;
 import edu.virginia.lib.ld2solr.impl.JenaBackend;
 import edu.virginia.lib.ld2solr.impl.LDPathIndexer;
+import edu.virginia.lib.ld2solr.spi.Stage;
 
 /**
  * @author ajs6f
  * 
  */
-public class IndexRun implements Supplier<Iterator<ListenableFuture<NamedFields>>> {
+public class IndexRun implements Runnable, Stage<NamedFields> {
 
 	private JenaBackend cache;
 
@@ -46,6 +45,8 @@ public class IndexRun implements Supplier<Iterator<ListenableFuture<NamedFields>
 	private static final byte defaultNumIndexerHeads = 10;
 
 	private final ListeningExecutorService threadpool;
+
+	private Acceptor<NamedFields, ?> nextStage;
 
 	private static final Logger log = getLogger(IndexRun.class);
 
@@ -67,56 +68,37 @@ public class IndexRun implements Supplier<Iterator<ListenableFuture<NamedFields>
 	}
 
 	@Override
-	public Iterator<ListenableFuture<NamedFields>> get() {
-		return new Iterator<ListenableFuture<NamedFields>>() {
+	public void run() {
+		for (final Resource uri : uris) {
+			log.info("Indexing {}...", uri);
+			final ListenableFuture<NamedFields> result = threadpool.submit(new Callable<NamedFields>() {
 
-			private final Iterator<Resource> records = uris.iterator();
+				@Override
+				public NamedFields call() {
+					return indexer.apply(transformation).apply(uri);
+				}
+			});
+			addCallback(result, new FutureCallback<NamedFields>() {
 
-			@Override
-			public boolean hasNext() {
-				return records.hasNext();
-			}
+				@Override
+				public void onSuccess(final NamedFields fields) {
+					log.info("Finished indexing: {}", uri);
+					log.debug("With result: {}", fields);
+					nextStage.accept(fields);
+				}
 
-			@Override
-			public ListenableFuture<NamedFields> next() {
-				final Resource uri = records.next();
-				log.info("Indexing {}...", uri);
-				final ListenableFuture<NamedFields> result = threadpool.submit(new Callable<NamedFields>() {
-
-					@Override
-					public NamedFields call() {
-						return indexer.apply(transformation).apply(uri);
-					}
-				});
-				addCallback(result, new SuccessReporter(uri));
-				return result;
-			}
-
-			@Override
-			public void remove() {
-				throw new UnsupportedOperationException();
-			}
-		};
-	}
-
-	private static class SuccessReporter implements FutureCallback<NamedFields> {
-
-		private final Resource uri;
-
-		public SuccessReporter(final Resource u) {
-			this.uri = u;
-		}
-
-		@Override
-		public void onSuccess(final NamedFields result) {
-			log.debug("Finished indexing: {}", uri);
-			log.debug("With result: {}", result);
-		}
-
-		@Override
-		public void onFailure(final Throwable t) {
-			log.error("Failed to index: {}!", uri);
-			log.error("With exception: ", t);
+				@Override
+				public void onFailure(final Throwable t) {
+					log.error("Failed to index: {}!", uri);
+					log.error("With exception: ", t);
+				}
+			});
 		}
 	}
+
+	@Override
+	public void andThen(final Acceptor<NamedFields, ?> s) {
+		this.nextStage = s;
+	}
+
 }
