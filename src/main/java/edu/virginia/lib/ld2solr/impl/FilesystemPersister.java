@@ -7,6 +7,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 import org.slf4j.Logger;
 
@@ -34,7 +36,13 @@ public class FilesystemPersister implements RecordPersister<FilesystemPersister>
 	 */
 	@Override
 	public void accept(final OutputRecord record) {
-		final File file = new File(directory, record.id());
+		final String fileName;
+		try {
+			fileName = URLEncoder.encode(record.id(), "UTF-8");
+		} catch (final UnsupportedEncodingException e) {
+			throw new AssertionError();
+		}
+		final File file = new File(directory, fileName);
 		log.debug("Persisting to: {}", file.toString());
 		try {
 			Files.asByteSink(file).write(record.record());

@@ -8,6 +8,7 @@ import static com.google.common.collect.Collections2.transform;
 import static com.google.common.collect.Sets.difference;
 import static com.google.common.io.Files.createTempDir;
 import static com.hp.hpl.jena.query.ReadWrite.READ;
+import static com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel;
 import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
 import static com.hp.hpl.jena.tdb.TDBFactory.createDataset;
 import static java.lang.System.err;
@@ -114,22 +115,33 @@ public class Main {
 	 */
 	public static void main(final String[] args) throws ParseException, IOException, InterruptedException {
 		final CommandLine cmd = new BasicParser().parse(getOptions(), args);
-		if (cmd.hasOption("help")) {
-			new HelpFormatter().printHelp("ld2solr: an indexing utility for Linked Data", getOptions());
-		}
-		if (!cmd.hasOption("uris") || !cmd.hasOption("transform")) {
-			err.println("This utility requires a list of URIs to index and a transform to use for indexing!\n"
-					+ "(Use -h or --help for help.)");
+		if (cmd.hasOption('h')) {
+			new HelpFormatter().printHelp("ld2solr -t transform-file -o output-dir -u input-uris", getOptions());
 		} else {
-			final Set<Resource> uris = new HashSet<>(transform(
-					asList(Files.toString(new File(cmd.getOptionValue("uris")), UTF_8).split("\n")), string2uri));
-			final String transform = Files.toString(new File(cmd.getOptionValue("transform")), UTF_8);
+			if (!cmd.hasOption('u') || !cmd.hasOption('t') || !cmd.hasOption('o')) {
+				err.println("This utility requires a list of URIs to index, a transform to use for indexing and a place to put the index records!\n");
+				new HelpFormatter().printHelp("ld2solr -t transform-file -o output-dir -u input-uris", getOptions());
+				throw new IllegalArgumentException(
+						"This utility requires a list of URIs to index, a transform to use for indexing and a place to put the index records!\n");
+			}
+			final String separator = cmd.hasOption('s') ? cmd.getOptionValue('s') : "\n";
+			final File uriFile = new File(cmd.getOptionValue('u'));
+			log.info("Using URI file: {}", uriFile.getAbsolutePath());
+			final Set<Resource> uris = new HashSet<>(transform(asList(Files.toString(uriFile, UTF_8).split(separator)),
+					string2uri));
+			final File transformFile = new File(cmd.getOptionValue("transform"));
+			log.info("Using transform file: {}", transformFile.getAbsolutePath());
+			final String transform = Files.toString(transformFile, UTF_8);
 			final Main main = new Main();
-			if (cmd.hasOption("cache")) {
-				final Dataset dataset = createDataset(cmd.getOptionValue("cache"));
+			if (cmd.hasOption('c')) {
+				final String cacheFile = cmd.getOptionValue('c');
+				log.info("Using cache location: {}", cacheFile);
+				final Dataset dataset = createDataset(cacheFile);
 				dataset.begin(READ);
 				main.model = dataset.getDefaultModel();
 				dataset.end();
+			} else {
+				main.model = createDefaultModel();
 			}
 			final Set<Resource> successfullyRetrieved = new HashSet<>(uris.size());
 			main.outputStage(new SolrLDOutputStage());
@@ -141,11 +153,13 @@ public class Main {
 	private static Options getOptions() {
 		return new Options()
 				.addOption("u", "uris", true, "(Required) A file or pipe with a list of URIs to index.")
-				.addOption("h", "help", false, "Print this help message.")
+				.addOption("o", "output-dir", true, "(Required) Location into which to place output files.")
 				.addOption("t", "transform", true,
 						"(Required) Location of LDPath transform with which to create index records. ")
-				.addOption("c", "cache", false,
-						"Location of persistent triple cache. (Defaults to in-memory only operation.)");
+				.addOption("c", "cache", true,
+						"Location of persistent triple cache. (Defaults to in-memory only operation.)")
+				.addOption("s", "separator", true, "Separator between input URIs. (Defaults to \\n.)")
+				.addOption("h", "help", false, "Print this help message.");
 
 	}
 

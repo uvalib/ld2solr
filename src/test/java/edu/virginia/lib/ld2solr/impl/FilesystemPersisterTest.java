@@ -8,6 +8,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -39,12 +41,12 @@ public class FilesystemPersisterTest {
 	}
 
 	@Test
-	public void testAccept() {
+	public void testAccept() throws UnsupportedEncodingException {
 		final String location = createTempDir().getAbsolutePath();
 		testPersister.location(location);
 		assertEquals("Stored wrong location for persistence!", location, testPersister.location());
 		testPersister.accept(outputRecord);
-		final File expectedFile = new File(location + separator + TEST_ID);
+		final File expectedFile = new File(location + separator + URLDecoder.decode(TEST_ID, "UTF-8"));
 		assertTrue("Didn't find persisted record!", asList(new File(location).listFiles()).contains(expectedFile));
 	}
 
