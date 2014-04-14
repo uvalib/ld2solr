@@ -1,0 +1,26 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+Linked Data to Solr,edu.virginia.lib.ld2solr,SolrWrappedNamedFields.new Maps.EntryTransformer() {...},0,32,0,2,0,7,0,3,0,2
+Linked Data to Solr,edu.virginia.lib.ld2solr,SolrWrappedNamedFields.new Function() {...},0,9,0,0,0,2,0,2,0,2
+Linked Data to Solr,edu.virginia.lib.ld2solr,Main.new Function() {...},0,6,0,0,0,2,0,2,0,2
+Linked Data to Solr,edu.virginia.lib.ld2solr,IndexRun,0,85,0,4,0,19,0,6,0,4
+Linked Data to Solr,edu.virginia.lib.ld2solr,SolrLDOutputStage,0,22,0,0,0,6,0,3,0,3
+Linked Data to Solr,edu.virginia.lib.ld2solr,IndexRun.new Callable() {...},0,20,0,0,0,2,0,2,0,2
+Linked Data to Solr,edu.virginia.lib.ld2solr,IndexRun.new FutureCallback() {...},10,24,0,0,3,5,1,2,1,2
+Linked Data to Solr,edu.virginia.lib.ld2solr,SolrLDOutputStage.new OutputRecord() {...},34,42,6,2,1,6,4,3,0,3
+Linked Data to Solr,edu.virginia.lib.ld2solr,CacheAssembler.2.new Callable() {...},0,20,0,0,0,2,0,2,0,2
+Linked Data to Solr,edu.virginia.lib.ld2solr,Main,0,293,0,16,0,54,0,16,0,8
+Linked Data to Solr,edu.virginia.lib.ld2solr,CacheAssembler,0,73,0,4,0,15,0,5,0,3
+Linked Data to Solr,edu.virginia.lib.ld2solr,CacheAssembler.new Function() {...},0,12,0,0,0,2,0,2,0,2
+Linked Data to Solr,edu.virginia.lib.ld2solr,CacheAssembler.new FutureCallback() {...},0,18,0,0,0,5,0,3,0,3
+Linked Data to Solr,edu.virginia.lib.ld2solr,SolrWrappedNamedFields,0,32,0,0,0,9,0,3,0,3
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,TriplesRetriever,15,73,4,4,0,15,4,3,0,3
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,TriplesRetriever.TriplesIntoModel,1,78,0,4,1,23,1,10,1,8
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,JenaIndexingTransducer,19,81,4,4,1,14,4,5,0,5
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,LDPathIndexer,0,13,0,0,0,4,0,2,0,2
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,FilesystemPersister,15,50,0,0,5,13,0,6,0,6
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,JenaBackend,0,10,0,0,0,4,0,2,0,2
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,JenaIndexingTransducer.new DefaultConfiguration() {...},0,21,0,0,0,4,0,2,0,2
+Linked Data to Solr,edu.virginia.lib.ld2solr.api,NamedFields.new Function() {...},0,7,0,0,0,2,0,2,0,2
+Linked Data to Solr,edu.virginia.lib.ld2solr.api,NamedFields,0,40,0,2,0,9,0,5,0,4
+Linked Data to Solr,edu.virginia.lib.ld2solr.api,NamedFields.new Maps.EntryTransformer() {...},0,8,0,0,0,2,0,2,0,2
+Linked Data to Solr,edu.virginia.lib.ld2solr.api,NamedFields.new Function() {...},0,6,0,0,0,2,0,2,0,2

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>JenaIndexingTransducer.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Linked Data to Solr</a> &gt; <a href="index.source.html" class="el_package">edu.virginia.lib.ld2solr.impl</a> &gt; <span class="el_source">JenaIndexingTransducer.java</span></div><h1>JenaIndexingTransducer.java</h1><pre class="source lang-java linenums">/**
+ * 
+ */
+package edu.virginia.lib.ld2solr.impl;
+
+import static com.google.common.base.Throwables.propagate;
+import static org.slf4j.LoggerFactory.getLogger;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.marmotta.ldpath.LDPath;
+import org.apache.marmotta.ldpath.exception.LDPathParseException;
+import org.apache.marmotta.ldpath.parser.DefaultConfiguration;
+import org.slf4j.Logger;
+
+import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.Resource;
+
+import edu.virginia.lib.ld2solr.api.NamedFields;
+import edu.virginia.lib.ld2solr.spi.IndexingTransducer;
+
+/**
+ * @author ajs6f
+ * 
+ */
+public class JenaIndexingTransducer implements IndexingTransducer {
+
+	private final String transformation;
+
+	private final JenaBackend cache;
+
+<span class="fc" id="L36">	private static final Logger log = getLogger(JenaIndexingTransducer.class);</span>
+
+	/**
+	 * @param linkedDataCache
+	 * @param transformationSource
+	 */
+<span class="fc" id="L42">	public JenaIndexingTransducer(final JenaBackend linkedDataCache, final String transformationSource) {</span>
+<span class="fc" id="L43">		this.transformation = transformationSource;</span>
+<span class="fc" id="L44">		this.cache = linkedDataCache;</span>
+<span class="fc" id="L45">	}</span>
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.google.common.base.Function#apply(java.lang.Object)
+	 */
+	@Override
+	public NamedFields apply(final Resource uri) {
+<span class="fc" id="L54">		log.debug(&quot;Indexing resource: {}&quot;, uri);</span>
+<span class="fc" id="L55">		try (Reader transformationReader = new StringReader(transformation);) {</span>
+<span class="fc" id="L56">			final NamedFields fields = new NamedFields(new LDPath&lt;&gt;(cache, new DefaultConfiguration&lt;RDFNode&gt;() {</span>
+				@Override
+				public Map&lt;String, String&gt; getNamespaces() {
+<span class="fc" id="L59">					final Map&lt;String, String&gt; namespaces = new HashMap&lt;&gt;(super.getNamespaces());</span>
+<span class="fc" id="L60">					namespaces.putAll(cache.model().getNsPrefixMap());</span>
+<span class="fc" id="L61">					return namespaces;</span>
+				}
+			}).programQuery(uri, transformationReader));
+			// the identifier of the record is the URI of the resource indexed
+<span class="fc" id="L65">			fields.id(uri.getURI());</span>
+<span class="fc" id="L66">			log.trace(&quot;Created index fields: {}&quot;, fields);</span>
+<span class="fc" id="L67">			return fields;</span>
+<span class="pc bpc" id="L68" title="4 of 8 branches missed.">		} catch (final LDPathParseException | IOException e) {</span>
+<span class="nc" id="L69">			throw propagate(e);</span>
+		}
+	}
+
+	/**
+	 * @return the transformation
+	 */
+	public String transformation() {
+<span class="fc" id="L77">		return transformation;</span>
+	}
+
+	/**
+	 * @return the cache
+	 */
+	public JenaBackend cache() {
+<span class="fc" id="L84">		return cache;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.0.201403182114</span></div></body></html>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>SolrWrappedNamedFields.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Linked Data to Solr</a> &gt; <a href="index.source.html" class="el_package">edu.virginia.lib.ld2solr</a> &gt; <span class="el_source">SolrWrappedNamedFields.java</span></div><h1>SolrWrappedNamedFields.java</h1><pre class="source lang-java linenums">/**
+ * 
+ */
+package edu.virginia.lib.ld2solr;
+
+import static com.google.common.collect.Maps.transformEntries;
+import static org.slf4j.LoggerFactory.getLogger;
+
+import java.util.Collection;
+
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.SolrInputField;
+import org.slf4j.Logger;
+
+import com.google.common.base.Function;
+import com.google.common.base.Supplier;
+import com.google.common.collect.Maps.EntryTransformer;
+
+import edu.virginia.lib.ld2solr.api.NamedFields;
+
+/**
+ * Exports a {@link NamedFields} instance as a {@link SolrDocument}.
+ * 
+ * @author ajs6f
+ * 
+ */
+public class SolrWrappedNamedFields implements Supplier&lt;SolrInputDocument&gt; {
+
+	private final NamedFields fields;
+
+	// TODO make index-time boost somehow adjustable, or something
+<span class="fc" id="L33">	public static final Long INDEX_TIME_BOOST = 1L;</span>
+
+<span class="fc" id="L35">	private static final Logger log = getLogger(SolrWrappedNamedFields.class);</span>
+
+	@Override
+	public SolrInputDocument get() {
+<span class="fc" id="L39">		log.trace(&quot;Constructing new SolrInputDocument...&quot;);</span>
+<span class="fc" id="L40">		return new SolrInputDocument(transformEntries(fields, collection2solrInputField));</span>
+	}
+
+	/**
+	 * @param namedFields
+	 *            the fields to wrap for export
+	 */
+<span class="fc" id="L47">	public SolrWrappedNamedFields(final NamedFields namedFields) {</span>
+<span class="fc" id="L48">		this.fields = namedFields;</span>
+<span class="fc" id="L49">	}</span>
+
+	/**
+	 * Creates a {@link SolrInputField} from a single named field.
+	 */
+<span class="fc" id="L54">	private static EntryTransformer&lt;String, Collection&lt;String&gt;, SolrInputField&gt; collection2solrInputField = new EntryTransformer&lt;String, Collection&lt;String&gt;, SolrInputField&gt;() {</span>
+
+		@Override
+		public SolrInputField transformEntry(final String key, final Collection&lt;String&gt; input) {
+<span class="fc" id="L58">			final SolrInputField field = new SolrInputField(key);</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">			for (final String value : input) {</span>
+<span class="fc" id="L60">				log.trace(&quot;Adding value: {} to field: {}&quot;, value, key);</span>
+<span class="fc" id="L61">				field.addValue(value, INDEX_TIME_BOOST);</span>
+<span class="fc" id="L62">			}</span>
+<span class="fc" id="L63">			return field;</span>
+		}
+	};
+	
+<span class="fc" id="L67">	public static Function&lt;NamedFields,SolrInputDocument&gt; wrap = new Function&lt;NamedFields,SolrInputDocument&gt;() {</span>
+
+		@Override
+		public SolrInputDocument apply(NamedFields fields) {
+<span class="fc" id="L71">			return new SolrWrappedNamedFields(fields).get();</span>
+		}};
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.0.201403182114</span></div></body></html>
