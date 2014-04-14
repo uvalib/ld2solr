@@ -6,7 +6,6 @@ package edu.virginia.lib.ld2solr;
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.collect.Collections2.transform;
 import static com.google.common.collect.Sets.difference;
-import static com.google.common.io.Files.createTempDir;
 import static com.hp.hpl.jena.query.ReadWrite.READ;
 import static com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel;
 import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
@@ -134,6 +133,8 @@ public class Main {
 			final File transformFile = new File(cmd.getOptionValue("transform"));
 			log.info("Using transform file: {}", transformFile.getAbsolutePath());
 			final String transform = Files.toString(transformFile, UTF_8);
+			final String outputDirectory = cmd.getOptionValue('o');
+			log.info("Using output directory: {}", outputDirectory);
 			final Main main = new Main();
 			if (cmd.hasOption('c')) {
 				final String cacheFile = cmd.getOptionValue('c');
@@ -147,8 +148,9 @@ public class Main {
 			}
 			final Set<Resource> successfullyRetrieved = new HashSet<>(uris.size());
 			main.outputStage(new SolrLDOutputStage());
-			main.persister(new FilesystemPersister().location(createTempDir().getAbsolutePath()));
+			main.persister(new FilesystemPersister().location(outputDirectory));
 			main.fullRun(transform, uris, successfullyRetrieved);
+			log.debug("Successfully retrieved URIs: {}", successfullyRetrieved);
 		}
 	}
 
