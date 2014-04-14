@@ -31,8 +31,10 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import edu.virginia.lib.ld2solr.TestAcceptor.TestSink;
 import edu.virginia.lib.ld2solr.api.OutputRecord;
+import edu.virginia.lib.ld2solr.impl.TestHelper;
+import edu.virginia.lib.ld2solr.impl.TestOutputStage;
+import edu.virginia.lib.ld2solr.impl.TestAcceptor.TestSink;
 import edu.virginia.lib.ld2solr.spi.OutputStage;
 
 /**

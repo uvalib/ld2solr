@@ -1,4 +1,4 @@
-package edu.virginia.lib.ld2solr;
+package edu.virginia.lib.ld2solr.impl;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;

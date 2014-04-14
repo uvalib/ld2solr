@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.virginia.lib.ld2solr;
+package edu.virginia.lib.ld2solr.impl;
 
 import static java.lang.System.currentTimeMillis;
 import static org.junit.Assert.assertEquals;

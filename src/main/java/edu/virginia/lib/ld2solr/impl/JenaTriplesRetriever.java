@@ -1,6 +1,6 @@
 package edu.virginia.lib.ld2solr.impl;
 
-import static com.hp.hpl.jena.shared.Lock.READ;
+import static com.hp.hpl.jena.shared.Lock.WRITE;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.Closeable;
@@ -34,18 +34,15 @@ public class JenaTriplesRetriever implements TriplesRetriever {
 
 	private final Model model;
 
-	private static final Any23 extractor = new Any23();
+	private final Any23 extractor = new Any23();
 
 	private static final Logger log = getLogger(JenaTriplesRetriever.class);
-
-	static {
-		extractor.setHTTPUserAgent(DEFAULT_USER_AGENT);
-	}
 
 	/**
 	 * @param m
 	 */
 	public JenaTriplesRetriever(final Model m) {
+		this.extractor.setHTTPUserAgent(DEFAULT_USER_AGENT);
 		this.model = m;
 	}
 
@@ -59,13 +56,12 @@ public class JenaTriplesRetriever implements TriplesRetriever {
 	@Override
 	public Resource load(final Resource uri) throws IOException, ExtractionException {
 		log.debug("Retrieving from URI: {}", uri);
-		// the following two calls on the Jena model prevent thread collisions
-		model.enterCriticalSection(READ);
+		// this call on the Jena model _should_ prevent thread collisions
+		model.enterCriticalSection(WRITE);
 		try (final TriplesIntoModel tripleRecorder = new TriplesIntoModel(model);) {
 			extractor.extract(uri.getURI(), tripleRecorder);
-		} finally {
-			model.leaveCriticalSection();
 		}
+		model.leaveCriticalSection();
 		return uri;
 	}
 

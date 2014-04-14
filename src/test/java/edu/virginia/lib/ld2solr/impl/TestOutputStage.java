@@ -1,4 +1,4 @@
-package edu.virginia.lib.ld2solr;
+package edu.virginia.lib.ld2solr.impl;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
 import edu.virginia.lib.ld2solr.api.OutputRecord;

@@ -34,7 +34,7 @@ import edu.virginia.lib.ld2solr.impl.JenaTriplesRetriever;
  */
 public class CacheAssembler implements Callable<Set<Resource>> {
 
-	private Integer numReaderThreads = 10;
+	private Integer numReaderThreads = 5;
 
 	private final ListeningExecutorService threadpool;
 

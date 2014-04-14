@@ -18,6 +18,8 @@ import org.slf4j.Logger;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+import edu.virginia.lib.ld2solr.impl.TestHelper;
+
 public class CacheAssemblerTest extends TestHelper {
 
 	private CacheAssembler testAssembler;

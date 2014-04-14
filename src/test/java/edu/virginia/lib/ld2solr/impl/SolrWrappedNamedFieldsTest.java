@@ -1,4 +1,4 @@
-package edu.virginia.lib.ld2solr;
+package edu.virginia.lib.ld2solr.impl;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertTrue;

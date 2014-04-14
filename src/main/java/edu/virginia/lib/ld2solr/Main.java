@@ -22,6 +22,7 @@ import java.util.Set;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
@@ -163,6 +164,12 @@ public class Main {
 				.addOption("c", "cache", true,
 						"Location of persistent triple cache. (Defaults to in-memory only operation.)")
 				.addOption("s", "separator", true, "Separator between input URIs. (Defaults to \\n.)")
+				.addOption(
+						new Option(null, "assembler-threads", true,
+								"The number of threads to use for RDF cache accumulation. (Defaults to 5.)"))
+				.addOption(
+						new Option(null, "indexing-threads", true,
+								"The number of threads to use for indexing operation. (Defaults to 10.)"))
 				.addOption("h", "help", false, "Print this help message.");
 
 	}

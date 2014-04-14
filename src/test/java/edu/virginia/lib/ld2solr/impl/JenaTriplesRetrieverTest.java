@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import edu.virginia.lib.ld2solr.TestHelper;
 import edu.virginia.lib.ld2solr.spi.TriplesRetriever;
 
 public class JenaTriplesRetrieverTest extends TestHelper {
