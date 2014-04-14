@@ -3,9 +3,20 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>edu.virginia.lib</groupId>
 	<artifactId>ld2solr</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0-SNAPSHOT</version>
 	<name>Linked Data to Solr</name>
 	<description>Translation utility for moving from Linked Data to Solr records, using SPARQL and LDPath as transformation languages.</description>
+	<url>http://uvalib.github.io/ld2solr</url>
+
+	<organization>
+		<name>The University of Virginia Library</name>
+		<url>http://www.library.virginia.edu</url>
+	</organization>
+	
+	<scm>
+		<connection>git@github.com:uvalib/ld2solr.git</connection>
+		<url>https://github.com/uvalib/ld2solr</url>
+	</scm>
 
 	<properties>
 		<marmotta.version>3.1.0-incubating</marmotta.version>
@@ -221,6 +232,25 @@
 							</transformers>
 							<minimizeJar>true</minimizeJar>
 						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.github.github</groupId>
+				<artifactId>site-maven-plugin</artifactId>
+				<version>0.8</version>
+				<configuration>
+					<message>Creating site for ${project.version}</message>
+					<repositoryOwner>uvalib</repositoryOwner>
+					<repositoryName>ld2solr</repositoryName>
+					<server>githubpersonal</server>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>site</goal>
+						</goals>
+						<phase>site</phase>
 					</execution>
 				</executions>
 			</plugin>
