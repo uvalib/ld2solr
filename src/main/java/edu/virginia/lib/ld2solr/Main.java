@@ -34,7 +34,9 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.impl.FilesystemPersister;
+import edu.virginia.lib.ld2solr.impl.IndexRun;
 import edu.virginia.lib.ld2solr.impl.JenaBackend;
+import edu.virginia.lib.ld2solr.impl.SolrLDOutputStage;
 import edu.virginia.lib.ld2solr.spi.OutputStage;
 import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
 

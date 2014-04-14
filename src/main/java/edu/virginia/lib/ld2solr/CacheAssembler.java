@@ -26,7 +26,7 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import edu.virginia.lib.ld2solr.impl.TriplesRetriever;
+import edu.virginia.lib.ld2solr.impl.JenaTriplesRetriever;
 
 /**
  * @author ajs6f
@@ -90,7 +90,7 @@ public class CacheAssembler implements Callable<Set<Resource>> {
 
 				@Override
 				public Resource call() throws IOException, ExtractionException {
-					return new TriplesRetriever(model).load(uri);
+					return new JenaTriplesRetriever(model).load(uri);
 				}
 			};
 		}

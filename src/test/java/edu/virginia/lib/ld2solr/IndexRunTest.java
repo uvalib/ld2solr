@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
+import edu.virginia.lib.ld2solr.impl.IndexRun;
 
 /**
  * @author ajs6f

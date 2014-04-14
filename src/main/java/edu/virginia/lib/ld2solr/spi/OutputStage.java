@@ -8,7 +8,7 @@ import edu.virginia.lib.ld2solr.api.OutputRecord;
 import edu.virginia.lib.ld2solr.spi.Stage.Acceptor;
 
 /**
- * Generates {@link OutputRecord}s.
+ * A {@link Stage} of workflow that generates {@link OutputRecord}s.
  * 
  * @author ajs6f
  * 

@@ -12,7 +12,7 @@ import edu.virginia.lib.ld2solr.api.NamedFields;
  * An {@link IndexingTransducer} is moved in a path across an LDPath backend and
  * executes a single indexing tranformation, producing a {@link NamedFields} as
  * the result of each execution. The path of the head is normally a collection
- * of {@link Resource}s.
+ * or stream of {@link Resource}s.
  * 
  * @author ajs6f
  * 

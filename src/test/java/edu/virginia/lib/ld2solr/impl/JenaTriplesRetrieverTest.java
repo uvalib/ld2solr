@@ -15,19 +15,20 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.TestHelper;
+import edu.virginia.lib.ld2solr.spi.TriplesRetriever;
 
-public class TriplesRetrieverTest extends TestHelper {
+public class JenaTriplesRetrieverTest extends TestHelper {
 
 	private TriplesRetriever testRetriever;
 
 	private Model model;
 
-	private static final Logger log = getLogger(TriplesRetrieverTest.class);
+	private static final Logger log = getLogger(JenaTriplesRetrieverTest.class);
 
 	@Before
 	public void setUp() {
 		model = createDefaultModel();
-		testRetriever = new TriplesRetriever(model);
+		testRetriever = new JenaTriplesRetriever(model);
 	}
 
 	@Test

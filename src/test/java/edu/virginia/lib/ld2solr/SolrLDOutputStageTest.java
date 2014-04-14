@@ -18,6 +18,7 @@ import com.google.common.collect.Iterables;
 import edu.virginia.lib.ld2solr.TestAcceptor.TestSink;
 import edu.virginia.lib.ld2solr.api.NamedFields;
 import edu.virginia.lib.ld2solr.api.OutputRecord;
+import edu.virginia.lib.ld2solr.impl.SolrLDOutputStage;
 
 public class SolrLDOutputStageTest {
 

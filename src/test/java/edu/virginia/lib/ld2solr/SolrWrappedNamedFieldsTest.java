@@ -13,8 +13,9 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableMap;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
+import edu.virginia.lib.ld2solr.impl.SolrLDOutputStage.SolrWrappedNamedFields;
 
-public class WrappedNamedFieldsTest {
+public class SolrWrappedNamedFieldsTest {
 
 	private SolrWrappedNamedFields testWrappedNamedFields;
 

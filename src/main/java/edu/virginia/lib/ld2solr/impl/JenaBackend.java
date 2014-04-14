@@ -8,6 +8,9 @@ import org.apache.marmotta.ldpath.backend.jena.GenericJenaBackend;
 import com.hp.hpl.jena.rdf.model.Model;
 
 /**
+ * We subclass {@link GenericJenaBackend} in order to expose the Jena
+ * {@link Model} inside it, because we wish to manipulate that model directly.
+ * 
  * @author ajs6f
  * 
  */

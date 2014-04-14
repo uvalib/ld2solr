@@ -19,11 +19,16 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+import edu.virginia.lib.ld2solr.spi.TriplesRetriever;
+
 /**
+ * A {@link TriplesRetriever} that puts its retrieved triples into a Jena
+ * {@link Model}.
+ * 
  * @author ajs6f
  * 
  */
-public class TriplesRetriever {
+public class JenaTriplesRetriever implements TriplesRetriever {
 
 	private static final String DEFAULT_USER_AGENT = "UVa Library Linked Data indexing engine";
 
@@ -31,7 +36,7 @@ public class TriplesRetriever {
 
 	private static final Any23 extractor = new Any23();
 
-	private static final Logger log = getLogger(TriplesRetriever.class);
+	private static final Logger log = getLogger(JenaTriplesRetriever.class);
 
 	static {
 		extractor.setHTTPUserAgent(DEFAULT_USER_AGENT);
@@ -40,15 +45,18 @@ public class TriplesRetriever {
 	/**
 	 * @param m
 	 */
-	public TriplesRetriever(final Model m) {
+	public JenaTriplesRetriever(final Model m) {
 		this.model = m;
 	}
 
-	/**
-	 * @param uri
-	 * @throws ExtractionException
-	 * @throws IOException
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * edu.virginia.lib.ld2solr.impl.TriplesRetriever#load(com.hp.hpl.jena.rdf
+	 * .model.Resource)
 	 */
+	@Override
 	public Resource load(final Resource uri) throws IOException, ExtractionException {
 		log.debug("Retrieving from URI: {}", uri);
 		// the following call on the Jena model prevents thread collisions

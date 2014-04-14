@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.virginia.lib.ld2solr;
+package edu.virginia.lib.ld2solr.impl;
 
 import static com.google.common.util.concurrent.Futures.addCallback;
 import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
@@ -22,8 +22,6 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
-import edu.virginia.lib.ld2solr.impl.JenaBackend;
-import edu.virginia.lib.ld2solr.impl.LDPathIndexer;
 import edu.virginia.lib.ld2solr.spi.Stage;
 
 /**
