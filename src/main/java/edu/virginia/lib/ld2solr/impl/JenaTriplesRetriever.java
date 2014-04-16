@@ -56,9 +56,12 @@ public class JenaTriplesRetriever implements TriplesRetriever {
 	@Override
 	public Resource load(final Resource uri) throws IOException, ExtractionException {
 		log.debug("Retrieving from URI: {}", uri);
+		// this call on the Jena model _should_ prevent thread collisions
+		model.enterCriticalSection(WRITE);
 		try (final TriplesIntoModel tripleRecorder = new TriplesIntoModel(model);) {
 			extractor.extract(uri.getURI(), tripleRecorder);
 		}
+		model.leaveCriticalSection();
 		return uri;
 	}
 
