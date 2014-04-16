@@ -7,6 +7,8 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 
+import com.google.common.util.concurrent.ListeningExecutorService;
+
 import edu.virginia.lib.ld2solr.api.OutputRecord;
 import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
 import edu.virginia.lib.ld2solr.spi.Stage.Acceptor;
@@ -51,7 +53,6 @@ public class TestAcceptor<Accepts, Produces> implements Acceptor<Accepts, Produc
 		@Override
 		public void andThen(final Acceptor<OutputRecord, ?> a) {
 			// NOOP
-
 		}
 
 		@Override
@@ -67,6 +68,16 @@ public class TestAcceptor<Accepts, Produces> implements Acceptor<Accepts, Produc
 		public Set<OutputRecord> accepted() {
 			return accepted;
 		}
+
+		@Override
+		public ListeningExecutorService threadpool() {
+			// TODO Auto-generated method stub
+			return null;
+		}
 	}
 
+	@Override
+	public ListeningExecutorService threadpool() {
+		throw new UnsupportedOperationException();
+	}
 }

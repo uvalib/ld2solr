@@ -18,17 +18,16 @@ import org.slf4j.Logger;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
-import edu.virginia.lib.ld2solr.spi.Stage;
+import edu.virginia.lib.ld2solr.spi.AbstractStage;
 
 /**
  * @author ajs6f
  * 
  */
-public class IndexRun implements Runnable, Stage<NamedFields> {
+public class IndexRun extends AbstractStage<NamedFields> implements Runnable {
 
 	private JenaBackend cache;
 
@@ -41,10 +40,6 @@ public class IndexRun implements Runnable, Stage<NamedFields> {
 	private final byte numIndexerHeads;
 
 	private static final byte defaultNumIndexerHeads = 10;
-
-	private final ListeningExecutorService threadpool;
-
-	private Acceptor<NamedFields, ?> nextStage;
 
 	private static final Logger log = getLogger(IndexRun.class);
 
@@ -69,7 +64,7 @@ public class IndexRun implements Runnable, Stage<NamedFields> {
 	public void run() {
 		for (final Resource uri : uris) {
 			log.info("Indexing {}...", uri);
-			final ListenableFuture<NamedFields> result = threadpool.submit(new Callable<NamedFields>() {
+			final ListenableFuture<NamedFields> result = threadpool().submit(new Callable<NamedFields>() {
 
 				@Override
 				public NamedFields call() {
@@ -92,11 +87,6 @@ public class IndexRun implements Runnable, Stage<NamedFields> {
 				}
 			});
 		}
-	}
-
-	@Override
-	public void andThen(final Acceptor<NamedFields, ?> s) {
-		this.nextStage = s;
 	}
 
 }

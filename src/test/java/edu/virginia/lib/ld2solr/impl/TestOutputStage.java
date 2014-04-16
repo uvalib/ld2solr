@@ -1,5 +1,7 @@
 package edu.virginia.lib.ld2solr.impl;
 
+import com.google.common.util.concurrent.ListeningExecutorService;
+
 import edu.virginia.lib.ld2solr.api.NamedFields;
 import edu.virginia.lib.ld2solr.api.OutputRecord;
 import edu.virginia.lib.ld2solr.spi.OutputStage;
@@ -36,6 +38,11 @@ public class TestOutputStage implements OutputStage<TestOutputStage> {
 	public void andThen(final Acceptor<OutputRecord, ?> a) {
 		this.nextStage = a;
 
+	}
+
+	@Override
+	public ListeningExecutorService threadpool() {
+		throw new UnsupportedOperationException();
 	}
 
 }

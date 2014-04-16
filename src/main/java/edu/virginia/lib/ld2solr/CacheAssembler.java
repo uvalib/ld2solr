@@ -22,21 +22,19 @@ import org.slf4j.Logger;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.impl.JenaTriplesRetriever;
+import edu.virginia.lib.ld2solr.spi.AbstractStage;
 
 /**
  * @author ajs6f
  * 
  */
-public class CacheAssembler implements Callable<Set<Resource>> {
+public class CacheAssembler extends AbstractStage<Void> implements Callable<Set<Resource>> {
 
 	private Integer numReaderThreads = 1;
-
-	private final ListeningExecutorService threadpool;
 
 	private final Model model;
 
@@ -62,7 +60,7 @@ public class CacheAssembler implements Callable<Set<Resource>> {
 	 */
 	@Override
 	public Set<Resource> call() throws InterruptedException {
-		final List<Future<Resource>> results = threadpool.invokeAll(transform(uris, createLoadingTask));
+		final List<Future<Resource>> results = threadpool().invokeAll(transform(uris, createLoadingTask));
 		// because invokeAll() above blocks until completion, the following
 		// callbacks will execute immediately. see Futures.addCallback()
 		// documentation
@@ -95,5 +93,10 @@ public class CacheAssembler implements Callable<Set<Resource>> {
 			};
 		}
 	};
+
+	@Override
+	public void andThen(final Acceptor<Void, ?> a) {
+		throw new UnsupportedOperationException();
+	}
 
 }

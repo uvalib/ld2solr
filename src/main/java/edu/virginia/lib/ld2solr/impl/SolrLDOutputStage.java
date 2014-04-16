@@ -23,20 +23,14 @@ import com.google.common.collect.Maps.EntryTransformer;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
 import edu.virginia.lib.ld2solr.api.OutputRecord;
+import edu.virginia.lib.ld2solr.spi.AbstractStage;
 import edu.virginia.lib.ld2solr.spi.OutputStage;
 
 /**
  * @author ajs6f
  * 
  */
-public class SolrLDOutputStage implements OutputStage<SolrLDOutputStage> {
-
-	private Acceptor<OutputRecord, ?> nextStage;
-
-	@Override
-	public void andThen(final Acceptor<OutputRecord, ?> s) {
-		this.nextStage = s;
-	}
+public class SolrLDOutputStage extends AbstractStage<OutputRecord> implements OutputStage<SolrLDOutputStage> {
 
 	@Override
 	public void accept(final NamedFields fields) {
