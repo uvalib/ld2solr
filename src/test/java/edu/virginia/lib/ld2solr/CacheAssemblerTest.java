@@ -31,7 +31,7 @@ public class CacheAssemblerTest extends TestHelper {
 	@Before
 	public void setUp() {
 		inMemoryModel = createDefaultModel();
-		testAssembler = new CacheAssembler(inMemoryModel, uris, 2);
+		testAssembler = new CacheAssembler(inMemoryModel, uris, 1);
 	}
 
 	@Test
