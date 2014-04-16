@@ -6,6 +6,7 @@ package edu.virginia.lib.ld2solr;
 import static com.google.common.util.concurrent.Futures.addCallback;
 import static com.google.common.util.concurrent.JdkFutureAdapters.listenInPoolThread;
 import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
+import static com.hp.hpl.jena.shared.Lock.READ;
 import static com.hp.hpl.jena.shared.Lock.WRITE;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -14,6 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Future;
 
@@ -81,17 +83,28 @@ public class CacheAssembler extends AbstractStage<Void> implements Callable<Set<
 		}
 		log.info("Finished queuing retrieval tasks.");
 		for (final Resource uri : uris) {
-			model.enterCriticalSection(WRITE);
 			try {
 				final Model m = internalQueue.take().get();
-				log.debug("Adding triples for resource: {}...", uri);
-				model.add(m);
-			} catch (final Exception e) {
-				log.error("Error adding triples to cache!");
+				m.enterCriticalSection(READ);
+				try {
+					log.debug("Adding triples for resource: {}...", uri);
+					model.enterCriticalSection(WRITE);
+					try {
+						model.add(m);
+					} catch (final Exception e) {
+						log.error("Error adding triples to cache!");
+						log.error("Exception: ", e);
+					} finally {
+						model.leaveCriticalSection();
+					}
+				} finally {
+					m.leaveCriticalSection();
+				}
+			} catch (InterruptedException | ExecutionException e) {
+				log.error("Error assembling triples to add to cache!");
 				log.error("Exception: ", e);
-			} finally {
-				model.leaveCriticalSection();
 			}
+
 		}
 		return successfullyLoadedResources;
 	}
