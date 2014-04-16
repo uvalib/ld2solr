@@ -88,16 +88,14 @@ public class CacheAssembler extends AbstractStage<Void> implements Callable<Set<
 				m.enterCriticalSection(READ);
 				try {
 					log.debug("Adding triples for resource: {}...", uri);
-					synchronized (model) {
-						model.enterCriticalSection(WRITE);
-						try {
-							model.add(m);
-						} catch (final Exception e) {
-							log.error("Error adding triples to cache!");
-							log.error("Exception: ", e);
-						} finally {
-							model.leaveCriticalSection();
-						}
+					model.enterCriticalSection(WRITE);
+					try {
+						model.add(m);
+					} catch (final Exception e) {
+						log.error("Error adding triples to cache!");
+						log.error("Exception: ", e);
+					} finally {
+						model.leaveCriticalSection();
 					}
 				} finally {
 					m.leaveCriticalSection();
