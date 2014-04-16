@@ -82,17 +82,21 @@ public class CacheAssembler extends AbstractStage<Void> implements Callable<Set<
 			});
 		}
 		log.info("Finished queuing retrieval tasks.");
-		for (final Resource uri : uris) {
+		// the only purpose of this loop is to ensure that we execute as many
+		// tasks to add triples to the cache as we have executed tasks to
+		// retrieve triples
+		for (@SuppressWarnings("unused")
+		final Resource uri : uris) {
 			try {
 				final Model m = internalQueue.take().get();
 				m.enterCriticalSection(READ);
 				try {
-					log.debug("Adding triples for resource: {}...", uri);
 					model.enterCriticalSection(WRITE);
 					try {
 						model.add(m);
 					} catch (final Exception e) {
 						log.error("Error adding triples to cache!");
+						log.error("Triples: ", m.getGraph());
 						log.error("Exception: ", e);
 					} finally {
 						model.leaveCriticalSection();
