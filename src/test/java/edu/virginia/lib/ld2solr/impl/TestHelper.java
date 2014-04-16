@@ -9,6 +9,7 @@ import static com.google.common.collect.Iterators.transform;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel;
 import static java.io.File.separator;
+import static java.lang.Thread.sleep;
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.FileVisitResult.TERMINATE;
 import static java.nio.file.Files.walkFileTree;
@@ -21,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.net.URL;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Path;
@@ -67,9 +69,25 @@ public abstract class TestHelper {
 	private static final Logger log = getLogger(TestHelper.class);
 
 	@Before
-	public void buildResources() throws FileNotFoundException, IOException {
+	public void buildResources() throws FileNotFoundException, IOException, InterruptedException {
 		walkFileTree(SAMPLE_RDF_FOR_RDFA.toPath(), new LDResourceStubber(LDMediaType.RDFA));
 		walkFileTree(SAMPLE_RDF_FOR_TURTLE.toPath(), new LDResourceStubber(LDMediaType.TURTLE));
+		while (!urisPresent()) {
+			log.debug("Waiting for test resources to be established...");
+			sleep(1000);
+		}
+	}
+
+	private boolean urisPresent() {
+		for (final Resource uri : uris) {
+			try {
+				new URL(uri.getURI()).getContent();
+				log.debug("Tested URI: {}", uri);
+			} catch (final IOException e) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**

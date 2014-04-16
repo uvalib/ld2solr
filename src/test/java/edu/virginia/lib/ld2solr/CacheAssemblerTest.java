@@ -35,8 +35,9 @@ public class CacheAssemblerTest extends TestHelper {
 	}
 
 	@Test
-	public void testAccumulation() throws InterruptedException {
-		assertEquals("Did not retrieve all resources successfully!", uris, testAssembler.call());
+	public void testAccumulation() {
+		final Set<Resource> successfullyRetrievedUris = testAssembler.call();
+		assertEquals("Did not retrieve all resources successfully!", uris, successfullyRetrievedUris);
 		log.debug("Retrieved triples: {}", inMemoryModel.getGraph());
 		for (final Resource uri : uris)
 			assertTrue("Did not find an appropriate subject " + uri + " in triplestore!",
@@ -44,7 +45,7 @@ public class CacheAssemblerTest extends TestHelper {
 	}
 
 	@Test
-	public void testAccumulationWithProblem() throws InterruptedException {
+	public void testAccumulationWithProblem() {
 		final Set<Resource> urisWithExtra = new HashSet<>(uris);
 		final Set<Resource> badUris = singleton(createResource());
 		urisWithExtra.addAll(badUris);

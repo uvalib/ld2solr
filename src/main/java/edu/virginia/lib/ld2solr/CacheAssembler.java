@@ -3,29 +3,28 @@
  */
 package edu.virginia.lib.ld2solr;
 
-import static com.google.common.collect.Collections2.transform;
 import static com.google.common.util.concurrent.Futures.addCallback;
+import static com.google.common.util.concurrent.JdkFutureAdapters.listenInPoolThread;
 import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
+import static com.hp.hpl.jena.shared.Lock.WRITE;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.io.IOException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Future;
 
-import org.apache.any23.extractor.ExtractionException;
 import org.slf4j.Logger;
 
-import com.google.common.base.Function;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import edu.virginia.lib.ld2solr.impl.JenaTriplesRetriever;
+import edu.virginia.lib.ld2solr.impl.JenaModelTriplesRetriever;
 import edu.virginia.lib.ld2solr.spi.AbstractStage;
 
 /**
@@ -36,9 +35,11 @@ public class CacheAssembler extends AbstractStage<Void> implements Callable<Set<
 
 	private Integer numReaderThreads = 1;
 
+	private final CompletionService<Model> internalQueue;
+
 	private final Model model;
 
-	private final Set<Resource> successfullyLoadedResources = new HashSet<>();
+	private Set<Resource> successfullyLoadedResources;
 
 	private final Set<Resource> uris;
 
@@ -50,49 +51,50 @@ public class CacheAssembler extends AbstractStage<Void> implements Callable<Set<
 		if (threads.length > 0)
 			numReaderThreads = threads[0];
 		threadpool = listeningDecorator(newFixedThreadPool(numReaderThreads));
+		this.internalQueue = new ExecutorCompletionService<Model>(threadpool);
 	}
 
 	/**
-	 * @param uris
-	 *            a set of resource URIs to load
 	 * @return a set of URIs of successfully loaded resources
-	 * @throws InterruptedException
 	 */
 	@Override
-	public Set<Resource> call() throws InterruptedException {
-		final List<Future<Resource>> results = threadpool().invokeAll(transform(uris, createLoadingTask));
-		// because invokeAll() above blocks until completion, the following
-		// callbacks will execute immediately. see Futures.addCallback()
-		// documentation
-		for (final Future<Resource> result : results)
-			addCallback((ListenableFuture<Resource>) result, new FutureCallback<Resource>() {
+	public Set<Resource> call() {
+		successfullyLoadedResources = new HashSet<>(uris.size());
+		for (final Resource uri : uris) {
+			log.debug("Retrieving URI: {}", uri);
+			final Future<Model> loadFuture = internalQueue.submit(new JenaModelTriplesRetriever(uri));
+			final ListenableFuture<Model> loadTask = listenInPoolThread(loadFuture);
+			addCallback(loadTask, new FutureCallback<Model>() {
 
 				@Override
-				public void onSuccess(final Resource uri) {
+				public void onSuccess(final Model result) {
+					log.debug("Retrieved URI: {} and will add its contents to cache.", uri);
 					successfullyLoadedResources.add(uri);
 				}
 
 				@Override
 				public void onFailure(final Throwable t) {
-					log.error("Resource failed to load!", t);
+					log.error("Failed to retrieve: {}!", uri);
+					log.error("Exception: ", t);
 				}
 			});
+		}
+		log.info("Finished queuing retrieval tasks.");
+		for (final Resource uri : uris) {
+			model.enterCriticalSection(WRITE);
+			try {
+				final Model m = internalQueue.take().get();
+				log.debug("Adding triples for resource: {}...", uri);
+				model.add(m);
+			} catch (final Exception e) {
+				log.error("Error adding triples to cache!");
+				log.error("Exception: ", e);
+			} finally {
+				model.leaveCriticalSection();
+			}
+		}
 		return successfullyLoadedResources;
 	}
-
-	private final Function<Resource, Callable<Resource>> createLoadingTask = new Function<Resource, Callable<Resource>>() {
-
-		@Override
-		public Callable<Resource> apply(final Resource uri) {
-			return new Callable<Resource>() {
-
-				@Override
-				public Resource call() throws IOException, ExtractionException {
-					return new JenaTriplesRetriever(model).load(uri);
-				}
-			};
-		}
-	};
 
 	@Override
 	public void andThen(final Acceptor<Void, ?> a) {

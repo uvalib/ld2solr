@@ -54,8 +54,7 @@ public class Main {
 
 	private static final Logger log = getLogger(Main.class);
 
-	public void fullRun(final String transformation, final Set<Resource> uris, final Set<Resource> successfullyRetrieved)
-			throws InterruptedException {
+	public void fullRun(final String transformation, final Set<Resource> uris, final Set<Resource> successfullyRetrieved) {
 
 		// first, we assemble the cache of RDF
 		successfullyRetrieved.addAll(new CacheAssembler(model, uris).call());
@@ -113,9 +112,8 @@ public class Main {
 	 * @param args
 	 * @throws ParseException
 	 * @throws IOException
-	 * @throws InterruptedException
 	 */
-	public static void main(final String[] args) throws ParseException, IOException, InterruptedException {
+	public static void main(final String[] args) throws ParseException, IOException {
 		final CommandLine cmd = new BasicParser().parse(getOptions(), args);
 		if (cmd.hasOption('h')) {
 			new HelpFormatter().printHelp("ld2solr -t transform-file -o output-dir -u input-uris", getOptions());
