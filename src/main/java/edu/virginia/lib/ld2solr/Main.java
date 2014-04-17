@@ -7,7 +7,6 @@ import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.collect.Collections2.transform;
 import static com.google.common.collect.Sets.difference;
 import static com.hp.hpl.jena.query.ReadWrite.READ;
-import static com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel;
 import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
 import static com.hp.hpl.jena.tdb.TDBFactory.createDataset;
 import static java.lang.System.err;
@@ -46,7 +45,7 @@ import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
  */
 public class Main {
 
-	private Model model;
+	private Dataset dataset;
 
 	private RecordPersister<?> persister;
 
@@ -57,7 +56,7 @@ public class Main {
 	public void fullRun(final String transformation, final Set<Resource> uris, final Set<Resource> successfullyRetrieved) {
 
 		// first, we assemble the cache of RDF
-		successfullyRetrieved.addAll(new CacheAssembler(model, uris).call());
+		successfullyRetrieved.addAll(new CacheAssembler(dataset, uris).call());
 		final Set<Resource> failures = difference(uris, successfullyRetrieved);
 		if (failures.size() > 0) {
 			log.warn("Failed to retrieve some resources!");
@@ -65,11 +64,13 @@ public class Main {
 				log.warn("Resource: {}", failure);
 			}
 		}
-		log.debug("Operating with triples:\n{}", model.getGraph());
+		dataset.begin(READ);
+		log.debug("Operating with triples:\n{}", dataset.getDefaultModel());
+		dataset.end();
 
-		log.info("Writing to: {}", persister.location());
+		log.info("Writing to output location: {}", persister.location());
 
-		final IndexRun indexRun = new IndexRun(transformation, successfullyRetrieved, new JenaBackend(model));
+		final IndexRun indexRun = new IndexRun(transformation, successfullyRetrieved, JenaBackend.with(dataset));
 
 		// workflow!
 		indexRun.andThen(outputStage);
@@ -79,12 +80,12 @@ public class Main {
 	}
 
 	/**
-	 * @param model
+	 * @param dataset
 	 *            the {@link Model} to use underneath the RDF cache
 	 * @return this {@link Main} for continued operation
 	 */
-	public Main model(final Model model) {
-		this.model = model;
+	public Main dataset(final Dataset d) {
+		this.dataset = d;
 		return this;
 	}
 
@@ -140,10 +141,10 @@ public class Main {
 				log.info("Using cache location: {}", cacheFile);
 				final Dataset dataset = createDataset(cacheFile);
 				dataset.begin(READ);
-				main.model = dataset.getDefaultModel();
+				main.dataset = dataset;
 				dataset.end();
 			} else {
-				main.model = createDefaultModel();
+				main.dataset = createDataset();
 			}
 			final Set<Resource> successfullyRetrieved = new HashSet<>(uris.size());
 			main.outputStage(new SolrLDOutputStage());

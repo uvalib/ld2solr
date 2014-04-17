@@ -7,8 +7,8 @@ import static com.google.common.collect.ObjectArrays.concat;
 import static com.google.common.collect.Sets.difference;
 import static com.google.common.io.Files.createTempDir;
 import static com.google.common.io.Files.write;
-import static com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel;
 import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
+import static com.hp.hpl.jena.tdb.TDBFactory.createDataset;
 import static edu.virginia.lib.ld2solr.Main.main;
 import static java.io.File.createTempFile;
 import static java.lang.System.currentTimeMillis;
@@ -17,6 +17,7 @@ import static java.util.UUID.randomUUID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +27,7 @@ import java.util.Set;
 import org.apache.marmotta.ldpath.LDPath;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -57,6 +59,8 @@ public class MainTest extends TestHelper {
 
 	private static final long TIMESTEP = 1000;
 
+	private static final Logger log = getLogger(MainTest.class);
+
 	@Before
 	public void setUp() {
 		/*
@@ -67,7 +71,7 @@ public class MainTest extends TestHelper {
 		 */
 		new LDPath<String>(null);
 		testMain = new Main();
-		testMain.model(createDefaultModel());
+		testMain.dataset(createDataset());
 		testSink = new TestSink();
 		testMain.persister(testSink);
 		testOutputStage = new TestOutputStage();
@@ -76,6 +80,7 @@ public class MainTest extends TestHelper {
 
 	@Test
 	public void testFullRun() throws InterruptedException {
+		log.trace("Entering testFullRun()...");
 		testMain.fullRun(transformation, uris, new HashSet<Resource>(uris.size()));
 		final long startTime = currentTimeMillis();
 		synchronized (testSink) {
@@ -94,10 +99,12 @@ public class MainTest extends TestHelper {
 						}
 					}));
 		}
+		log.trace("Leaving testFullRun().");
 	}
 
 	@Test
 	public void testRunWithUnloadableResources() throws InterruptedException {
+		log.trace("Entering testRunWithUnloadableResources()...");
 		final Set<Resource> urisWithExtra = new HashSet<>(uris);
 		final Set<Resource> badUris = singleton(createResource());
 		urisWithExtra.addAll(badUris);
@@ -111,20 +118,24 @@ public class MainTest extends TestHelper {
 		}
 		assertEquals("Didn't find the appropriate resource failing to be retrieved!", badUris,
 				difference(urisWithExtra, successfulUris));
+		log.trace("Leaving testRunWithUnloadableResources().");
 	}
 
 	@Test
 	public void testMainMethodExecutes() throws IOException {
+		log.trace("Entering testMainMethodExecutes()...");
 		final String[] argsWithSeparator = concat(createBasicArgsForMainMethodTest(), new String[] { "-s", "\n" },
 				String.class);
 		final Exception e = testMainMethod(argsWithSeparator);
 		if (e != null) {
 			fail("Failed to execute Main.main with exception: " + e);
 		}
+		log.trace("Leaving testMainMethodExecutes().");
 	}
 
 	@Test
 	public void testMainMethodExecutesWithPersistedCache() throws IOException {
+		log.trace("Entering testMainMethodExecutesWithPersistedCache()...");
 		final String cacheDirectory = createTempDir().getAbsolutePath();
 		final String[] argsWithPersistence = concat(createBasicArgsForMainMethodTest(), new String[] { "-c",
 				cacheDirectory }, String.class);
@@ -132,6 +143,7 @@ public class MainTest extends TestHelper {
 		if (e != null) {
 			fail("Failed to execute Main.main with persisted RDF cache with exception: " + e);
 		}
+		log.trace("Leaving testMainMethodExecutesWithPersistedCache().");
 	}
 
 	@Test

@@ -10,7 +10,7 @@
     <logger name="edu.virginia" additivity="false" level="TRACE">
         <appender-ref ref="STDOUT"/>
     </logger>
-    <logger name="com.hp.hpl.jena" additivity="false" level="TRACE">
+    <logger name="com.hp.hpl.jena" additivity="false" level="INFO">
         <appender-ref ref="STDOUT"/>
     </logger>
     <root additivity="false" level="WARN">

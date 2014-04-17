@@ -5,7 +5,8 @@ package edu.virginia.lib.ld2solr.impl;
 
 import static com.google.common.util.concurrent.Futures.addCallback;
 import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
-import static com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel;
+import static com.hp.hpl.jena.query.ReadWrite.READ;
+import static com.hp.hpl.jena.tdb.TDBFactory.createDataset;
 import static java.lang.Byte.parseByte;
 import static java.lang.System.getProperty;
 import static java.util.concurrent.Executors.newFixedThreadPool;
@@ -18,6 +19,7 @@ import org.slf4j.Logger;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
@@ -53,8 +55,12 @@ public class IndexRun extends AbstractStage<NamedFields> implements Runnable {
 		this.uris = uris;
 		if (caches.length > 0)
 			this.cache = caches[0];
-		else
-			this.cache = new JenaBackend(createDefaultModel());
+		else {
+			final Dataset dataset = createDataset();
+			dataset.begin(READ);
+			this.cache = new JenaBackend(dataset.getDefaultModel());
+			dataset.end();
+		}
 		this.indexer = new LDPathIndexer(cache);
 		numIndexerHeads = parseByte(getProperty("numIndexerHeads", Byte.toString(defaultNumIndexerHeads)));
 		threadpool = listeningDecorator(newFixedThreadPool(numIndexerHeads));
