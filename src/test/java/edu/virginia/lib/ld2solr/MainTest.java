@@ -138,6 +138,18 @@ public class MainTest extends TestHelper {
 	}
 
 	@Test
+	public void testMainMethodExecutesWithCustomThreading() throws IOException {
+		log.trace("Entering testMainMethodExecutesWithCustomThreading()...");
+		final String[] argsWithThreadingParams = concat(createBasicArgsForMainMethodTest(), new String[] {
+				"--indexing-threads", "7", "--assembler-threads", "7" }, String.class);
+		final Exception e = testMainMethod(argsWithThreadingParams);
+		if (e != null) {
+			fail("Failed to execute Main.main with threading parameters with exception: " + e);
+		}
+		log.trace("Leaving testMainMethodExecutesWithCustomThreading().");
+	}
+
+	@Test
 	public void testMainMethodExecutesWithPersistedCache() throws IOException {
 		log.trace("Entering testMainMethodExecutesWithPersistedCache()...");
 		final String cacheDirectory = createTempDir().getAbsolutePath();

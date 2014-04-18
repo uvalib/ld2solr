@@ -3,6 +3,7 @@
  */
 package edu.virginia.lib.ld2solr.impl;
 
+import static com.hp.hpl.jena.query.ReadWrite.READ;
 import static java.lang.System.currentTimeMillis;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -15,6 +16,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 
+import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.tdb.TDBFactory;
+
 import edu.virginia.lib.ld2solr.api.NamedFields;
 
 /**
@@ -26,6 +30,8 @@ public class IndexRunTest extends TestHelper {
 	private IndexRun testIndexRun;
 
 	private TestAcceptor<NamedFields, ?> acceptor;
+
+	private JenaBackend cache;
 
 	private static final String mockTransform = "title = dc:title :: xsd:string;";
 
@@ -46,7 +52,11 @@ public class IndexRunTest extends TestHelper {
 		 * initialized properly
 		 */
 		new LDPath<String>(null);
-		testIndexRun = new IndexRun(mockTransform, uris);
+		final Dataset dataset = TDBFactory.createDataset();
+		dataset.begin(READ);
+		cache = new JenaBackend(dataset.getDefaultModel());
+		dataset.end();
+		testIndexRun = new IndexRun(mockTransform, uris, cache, 5);
 		acceptor = new TestAcceptor<NamedFields, Void>();
 		testIndexRun.andThen(acceptor);
 	}
@@ -70,7 +80,7 @@ public class IndexRunTest extends TestHelper {
 
 	@Test
 	public void testRunWithBadTransform() throws InterruptedException {
-		testIndexRun = new IndexRun(badTransform, uris);
+		testIndexRun = new IndexRun(badTransform, uris, cache);
 		acceptor = new TestAcceptor<NamedFields, Void>();
 		testIndexRun.andThen(acceptor);
 		testIndexRun.run();

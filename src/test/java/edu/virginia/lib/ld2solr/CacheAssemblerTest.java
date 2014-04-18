@@ -32,7 +32,7 @@ public class CacheAssemblerTest extends TestHelper {
 	@Before
 	public void setUp() {
 		dataset = createDataset();
-		testAssembler = new CacheAssembler(dataset, Byte.valueOf("3"));
+		testAssembler = new CacheAssembler(dataset, 3);
 		testAssembler.uris(uris);
 	}
 

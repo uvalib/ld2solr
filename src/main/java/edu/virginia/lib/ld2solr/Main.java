@@ -10,7 +10,8 @@ import static com.google.common.collect.Sets.difference;
 import static com.hp.hpl.jena.query.ReadWrite.READ;
 import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
 import static com.hp.hpl.jena.tdb.TDBFactory.createDataset;
-import static java.lang.System.err;
+import static edu.virginia.lib.ld2solr.spi.Stage.DEFAULT_NUM_THREADS;
+import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -54,6 +55,8 @@ public class Main {
 
 	private OutputStage<?> outputStage = null;
 
+	private Integer numIndexerThreads = DEFAULT_NUM_THREADS;
+
 	private static final Logger log = getLogger(Main.class);
 
 	public void fullRun(final String transformation, final Set<Resource> uris, final Set<Resource> successfullyRetrieved) {
@@ -70,12 +73,13 @@ public class Main {
 			}
 		}
 		dataset.begin(READ);
-		log.debug("Operating with triples:\n{}", dataset.getDefaultModel());
+		log.trace("Operating with triples:\n{}", dataset.getDefaultModel());
 		dataset.end();
 
 		log.info("Writing to output location: {}", persister.location());
 
-		final IndexRun indexRun = new IndexRun(transformation, successfullyRetrieved, JenaBackend.with(dataset));
+		final IndexRun indexRun = new IndexRun(transformation, successfullyRetrieved, JenaBackend.with(dataset),
+				numIndexerThreads);
 
 		// workflow!
 		indexRun.andThen(outputStage);
@@ -135,7 +139,6 @@ public class Main {
 			new HelpFormatter().printHelp("ld2solr -t transform-file -o output-dir -u input-uris", getOptions());
 		} else {
 			if (!cmd.hasOption('u') || !cmd.hasOption('t') || !cmd.hasOption('o')) {
-				err.println("This utility requires a list of URIs to index, a transform to use for indexing and a place to put the index records!\n");
 				new HelpFormatter().printHelp("ld2solr -t transform-file -o output-dir -u input-uris", getOptions());
 				throw new IllegalArgumentException(
 						"This utility requires a list of URIs to index, a transform to use for indexing and a place to put the index records!\n");
@@ -162,13 +165,19 @@ public class Main {
 				main.dataset = createDataset();
 			}
 			if (!cmd.hasOption("skip-retrieval")) {
-				if (!cmd.hasOption('c')) {
-					final String bangLine = repeat("!", 80);
-					log.warn(bangLine);
-					log.warn("Operating over empty in-memory cache without retrieval step to fill it!");
-					log.warn(bangLine);
+				Integer assemblerThreads = DEFAULT_NUM_THREADS;
+				if (cmd.hasOption("assembler-threads")) {
+					assemblerThreads = parseInt(cmd.getOptionValue("assembler-threads"));
 				}
-				main.assembler(new CacheAssembler(main.dataset).uris(uris));
+				main.assembler(new CacheAssembler(main.dataset, assemblerThreads).uris(uris));
+			} else if (!cmd.hasOption('c')) {
+				final String bangLine = repeat("!", 80);
+				log.warn(bangLine);
+				log.warn("Operating over empty in-memory cache without retrieval step to fill it!");
+				log.warn(bangLine);
+			}
+			if (cmd.hasOption("indexing-threads")) {
+				main.numIndexerThreads = parseInt(cmd.getOptionValue("indexing-threads"));
 			}
 			final Set<Resource> successfullyRetrieved = new HashSet<>(uris.size());
 			main.outputStage(new SolrXMLOutputStage());
@@ -196,12 +205,13 @@ public class Main {
 				.addOption("s", "separator", true, "Separator between input URIs. (Defaults to \\n.)")
 				.addOption(
 						new Option(null, "assembler-threads", true,
-								"The number of threads to use for RDF cache accumulation. (Defaults to 5.)"))
+								"The number of threads to use for RDF cache accumulation. (Defaults to "
+										+ DEFAULT_NUM_THREADS + ".)"))
 				.addOption(
 						new Option(null, "indexing-threads", true,
-								"The number of threads to use for indexing operation. (Defaults to 10.)"))
+								"The number of threads to use for indexing operation. (Defaults to "
+										+ DEFAULT_NUM_THREADS + ".)"))
 				.addOption("h", "help", false, "Print this help message.");
-
 	}
 
 	private static Function<String, Resource> string2uri = new Function<String, Resource>() {

@@ -7,6 +7,7 @@ import static com.google.common.util.concurrent.Futures.addCallback;
 import static com.google.common.util.concurrent.JdkFutureAdapters.listenInPoolThread;
 import static com.hp.hpl.jena.query.ReadWrite.WRITE;
 import static com.hp.hpl.jena.shared.Lock.READ;
+import static edu.virginia.lib.ld2solr.spi.Stage.DEFAULT_NUM_THREADS;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -27,7 +28,6 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.impl.JenaModelTriplesRetriever;
-import edu.virginia.lib.ld2solr.spi.Stage;
 
 /**
  * @author ajs6f
@@ -35,7 +35,7 @@ import edu.virginia.lib.ld2solr.spi.Stage;
  */
 public class CacheAssembler implements Callable<Set<Resource>> {
 
-	private Byte numReaderThreads = Stage.DEFAULT_NUM_THREADS;
+	private Integer numReaderThreads = DEFAULT_NUM_THREADS;
 
 	private final CompletionService<Model> internalQueue;
 
@@ -47,7 +47,7 @@ public class CacheAssembler implements Callable<Set<Resource>> {
 
 	private static final Logger log = getLogger(CacheAssembler.class);
 
-	public CacheAssembler(final Dataset d, final Byte... threads) {
+	public CacheAssembler(final Dataset d, final Integer... threads) {
 		this.dataset = d;
 		if (threads.length > 0)
 			numReaderThreads = threads[0];
