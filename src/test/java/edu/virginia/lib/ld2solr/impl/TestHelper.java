@@ -58,9 +58,7 @@ public abstract class TestHelper {
 	@Rule
 	public WireMockRule wireMockRule = new WireMockRule(HTTP_PORT);
 
-	private static final File SAMPLE_RDF_FOR_TURTLE = new File("target/test-classes/rdf/ttl/");
-
-	private static final File SAMPLE_RDF_FOR_RDFA = new File("target/test-classes/rdf/rdfa/");
+	private static final String SAMPLE_RDF = "target/test-classes/rdf/";
 
 	private static String uriBase = "http://localhost:" + HTTP_PORT + "/";
 
@@ -70,8 +68,12 @@ public abstract class TestHelper {
 
 	@Before
 	public void buildResources() throws FileNotFoundException, IOException, InterruptedException {
-		walkFileTree(SAMPLE_RDF_FOR_RDFA.toPath(), new LDResourceStubber(LDMediaType.RDFA));
-		walkFileTree(SAMPLE_RDF_FOR_TURTLE.toPath(), new LDResourceStubber(LDMediaType.TURTLE));
+		for (final File sampleDirectory : new File(SAMPLE_RDF).listFiles()) {
+			final LDMediaType type = LDMediaType.valueOf(sampleDirectory.getName().toUpperCase());
+			log.trace("Publishing sample data of type: {}", type);
+			walkFileTree(sampleDirectory.toPath(), new LDResourceStubber(type, sampleDirectory));
+		}
+		// it takes a few moments for the resources to be present in our server
 		while (!urisPresent()) {
 			log.debug("Waiting for test resources to be established...");
 			sleep(1000);
@@ -82,7 +84,7 @@ public abstract class TestHelper {
 		for (final Resource uri : uris) {
 			try {
 				new URL(uri.getURI()).getContent();
-				log.debug("Tested URI: {}", uri);
+				log.trace("Tested retrieval of URI: {}", uri);
 			} catch (final IOException e) {
 				return false;
 			}
@@ -97,12 +99,15 @@ public abstract class TestHelper {
 	 * @author ajs6f
 	 * 
 	 */
-	private static class LDResourceStubber implements FileVisitor<Path> {
+	private static class LDResourceStubber implements FileVisitor<File> {
 
 		private final LDMediaType type;
 
-		public LDResourceStubber(final LDMediaType t) {
+		private final File sampleDirectory;
+
+		public LDResourceStubber(final LDMediaType t, final File sampleDir) {
 			this.type = t;
+			this.sampleDirectory = sampleDir;
 		}
 
 		@Override
@@ -112,7 +117,7 @@ public abstract class TestHelper {
 
 		@Override
 		public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
-			type.buildResource(file);
+			type.buildResource(file, sampleDirectory);
 			return CONTINUE;
 		}
 
@@ -130,9 +135,10 @@ public abstract class TestHelper {
 	private static enum LDMediaType {
 		RDFA {
 			@Override
-			public void buildResource(final Path fileName) throws FileNotFoundException, IOException {
+			public void buildResource(final Path fileName, final File sampleDirectory) throws FileNotFoundException,
+					IOException {
 				final String id = fileName.getFileName().toString();
-				buildHttpResource("/" + substringBefore(id, "."), "text/html", buildRdfaResponse(SAMPLE_RDF_FOR_RDFA
+				buildHttpResource("/" + substringBefore(id, "."), "text/html", buildRdfaResponse(sampleDirectory
 						+ separator + id));
 			}
 
@@ -170,28 +176,30 @@ public abstract class TestHelper {
 
 			private static final String rdfaSuffix = "</body></html>";
 		},
-		TURTLE {
+		TTL {
 			@Override
-			public void buildResource(final Path fileName) throws FileNotFoundException, IOException {
+			public void buildResource(final Path fileName, final File sampleDirectory) throws FileNotFoundException,
+					IOException {
 				final String id = fileName.getFileName().toString();
-				buildHttpResource("/" + substringBefore(id, "."), "text/turtle", buildTtlResponse(SAMPLE_RDF_FOR_TURTLE
+				buildHttpResource("/" + substringBefore(id, "."), "text/turtle", buildTtlResponse(sampleDirectory
 						+ separator + id));
 			}
 
 			private String buildTtlResponse(final String fileName) throws FileNotFoundException, IOException {
 				final Model m = retrieveSampleRdf(fileName);
 				try (StringWriter w = new StringWriter();) {
-					m.write(w, "TURTLE");
+					m.write(w, "TTL");
 					return w.toString();
 				}
 			}
 		};
-		public abstract void buildResource(Path fileName) throws FileNotFoundException, IOException;
+		public abstract void buildResource(Path fileName, File sampleDirectory) throws FileNotFoundException,
+				IOException;
 
 		private static Model retrieveSampleRdf(final String fileName) throws FileNotFoundException, IOException {
 			log.debug("Retrieving sample RDF from: {}", fileName);
 			try (InputStream in = new FileInputStream(new File(fileName))) {
-				final Model m = createDefaultModel().read(in, uriBase, "TURTLE");
+				final Model m = createDefaultModel().read(in, uriBase, "TTL");
 				uris.addAll(newHashSet(m.listSubjects()));
 				return m;
 			}
