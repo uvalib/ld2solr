@@ -43,13 +43,12 @@ public class CacheAssembler implements Callable<Set<Resource>> {
 
 	private Set<Resource> successfullyLoadedResources;
 
-	private final Set<Resource> uris;
+	private Set<Resource> uris;
 
 	private static final Logger log = getLogger(CacheAssembler.class);
 
-	public CacheAssembler(final Dataset d, final Set<Resource> uris, final Byte... threads) {
+	public CacheAssembler(final Dataset d, final Byte... threads) {
 		this.dataset = d;
-		this.uris = uris;
 		if (threads.length > 0)
 			numReaderThreads = threads[0];
 		this.internalQueue = new ExecutorCompletionService<Model>(newFixedThreadPool(numReaderThreads));
@@ -62,7 +61,7 @@ public class CacheAssembler implements Callable<Set<Resource>> {
 	public Set<Resource> call() {
 		successfullyLoadedResources = new HashSet<>(uris.size());
 		for (final Resource uri : uris) {
-			log.debug("Retrieving URI: {}", uri);
+			log.debug("Queueing retrieval task for URI: {}...", uri);
 			final Future<Model> loadFuture = internalQueue.submit(new JenaModelTriplesRetriever().apply(uri));
 			final ListenableFuture<Model> loadTask = listenInPoolThread(loadFuture);
 			addCallback(loadTask, new FutureCallback<Model>() {
@@ -114,5 +113,15 @@ public class CacheAssembler implements Callable<Set<Resource>> {
 			}
 		}
 		return successfullyLoadedResources;
+	}
+
+	/**
+	 * @param u
+	 *            the uris to retrieve
+	 * @return this {@link CacheAssembler} for chaining
+	 */
+	public CacheAssembler uris(final Set<Resource> u) {
+		this.uris = u;
+		return this;
 	}
 }

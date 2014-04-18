@@ -4,6 +4,7 @@
 package edu.virginia.lib.ld2solr;
 
 import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.base.Strings.repeat;
 import static com.google.common.collect.Collections2.transform;
 import static com.google.common.collect.Sets.difference;
 import static com.hp.hpl.jena.query.ReadWrite.READ;
@@ -47,6 +48,8 @@ public class Main {
 
 	private Dataset dataset;
 
+	private CacheAssembler cacheAssembler = null;
+
 	private RecordPersister<?> persister;
 
 	private OutputStage<?> outputStage = null;
@@ -55,13 +58,15 @@ public class Main {
 
 	public void fullRun(final String transformation, final Set<Resource> uris, final Set<Resource> successfullyRetrieved) {
 
-		// first, we assemble the cache of RDF
-		successfullyRetrieved.addAll(new CacheAssembler(dataset, uris).call());
-		final Set<Resource> failures = difference(uris, successfullyRetrieved);
-		if (failures.size() > 0) {
-			log.warn("Failed to retrieve some resources!");
-			for (final Resource failure : failures) {
-				log.warn("Resource: {}", failure);
+		// first, we may need to assemble the cache of RDF
+		if (cacheAssembler != null) {
+			successfullyRetrieved.addAll(cacheAssembler.call());
+			final Set<Resource> failures = difference(uris, successfullyRetrieved);
+			if (failures.size() > 0) {
+				log.warn("Failed to retrieve some resources!");
+				for (final Resource failure : failures) {
+					log.warn("Resource: {}", failure);
+				}
 			}
 		}
 		dataset.begin(READ);
@@ -86,6 +91,16 @@ public class Main {
 	 */
 	public Main dataset(final Dataset d) {
 		this.dataset = d;
+		return this;
+	}
+
+	/**
+	 * @param ca
+	 *            the {@link CacheAssembler} to use
+	 * @return this {@link Main} for continued operation
+	 */
+	public Main assembler(final CacheAssembler ca) {
+		this.cacheAssembler = ca;
 		return this;
 	}
 
@@ -146,6 +161,15 @@ public class Main {
 			} else {
 				main.dataset = createDataset();
 			}
+			if (!cmd.hasOption("skip-retrieval")) {
+				if (!cmd.hasOption('c')) {
+					final String bangLine = repeat("!", 80);
+					log.warn(bangLine);
+					log.warn("Operating over empty in-memory cache without retrieval step to fill it!");
+					log.warn(bangLine);
+				}
+				main.assembler(new CacheAssembler(main.dataset).uris(uris));
+			}
 			final Set<Resource> successfullyRetrieved = new HashSet<>(uris.size());
 			main.outputStage(new SolrXMLOutputStage());
 			main.persister(new FilesystemPersister().location(outputDirectory));
@@ -162,6 +186,13 @@ public class Main {
 						"(Required) Location of LDPath transform with which to create index records. ")
 				.addOption("c", "cache", true,
 						"Location of persistent triple cache. (Defaults to in-memory only operation.)")
+				.addOption(
+						"sr",
+						"skip-retrieval",
+						false,
+						"Should retrieval and caching of Linked Data resources before indexing stages be skipped?"
+								+ "If set, option for persistent triple cache must be supplied or "
+								+ "indexing stages will operate over an empty cache.")
 				.addOption("s", "separator", true, "Separator between input URIs. (Defaults to \\n.)")
 				.addOption(
 						new Option(null, "assembler-threads", true,

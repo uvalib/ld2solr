@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.api.OutputRecord;
@@ -71,9 +72,11 @@ public class MainTest extends TestHelper {
 		 */
 		new LDPath<String>(null);
 		testMain = new Main();
-		testMain.dataset(createDataset());
+		final Dataset dataset = createDataset();
+		testMain.dataset(dataset);
 		testSink = new TestSink();
 		testMain.persister(testSink);
+		testMain.assembler(new CacheAssembler(dataset).uris(uris));
 		testOutputStage = new TestOutputStage();
 		testMain.outputStage(testOutputStage);
 	}
@@ -85,7 +88,6 @@ public class MainTest extends TestHelper {
 		testMain.fullRun(transformation, uris, successfulUris);
 		final long startTime = currentTimeMillis();
 		synchronized (testSink) {
-
 			while (testSink.accepted().size() < successfulUris.size() && currentTimeMillis() < (startTime + TIMEOUT)) {
 				testSink.wait(TIMESTEP);
 			}
@@ -153,6 +155,30 @@ public class MainTest extends TestHelper {
 		final Exception e = testMainMethod(new String[] { "-h" });
 		if (e != null) {
 			fail("Failed to execute Main.main for help message with exception: " + e);
+		}
+	}
+
+	@Test
+	public void testSkipRetrieval() throws IOException {
+		final String cacheDirectory = createTempDir().getAbsolutePath();
+		final Dataset dataset = createDataset(cacheDirectory);
+		final Set<Resource> retrievedResources = new CacheAssembler(dataset).uris(uris).call();
+		assertEquals("Failed to cache all resources!", uris, retrievedResources);
+		final String[] args = concat(createBasicArgsForMainMethodTest(), new String[] { "-c", cacheDirectory,
+				"--skip-retrieval" }, String.class);
+		final Exception e = testMainMethod(args);
+		if (e != null) {
+			fail("Failed to execute Main.main with preassembled cache with exception: " + e);
+		}
+	}
+
+	@Test
+	public void testSkipRetrievalWithEmptyCache() throws IOException {
+		final String[] args = concat(createBasicArgsForMainMethodTest(), new String[] { "--skip-retrieval" },
+				String.class);
+		final Exception e = testMainMethod(args);
+		if (e != null) {
+			fail("Failed to execute Main.main with empty cache and no retrieval step with exception: " + e);
 		}
 	}
 

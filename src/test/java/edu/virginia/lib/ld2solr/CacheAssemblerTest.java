@@ -32,7 +32,8 @@ public class CacheAssemblerTest extends TestHelper {
 	@Before
 	public void setUp() {
 		dataset = createDataset();
-		testAssembler = new CacheAssembler(dataset, uris, Byte.valueOf("3"));
+		testAssembler = new CacheAssembler(dataset, Byte.valueOf("3"));
+		testAssembler.uris(uris);
 	}
 
 	@Test
@@ -52,7 +53,8 @@ public class CacheAssemblerTest extends TestHelper {
 		final Set<Resource> urisWithExtra = new HashSet<>(uris);
 		final Set<Resource> badUris = singleton(createResource());
 		urisWithExtra.addAll(badUris);
-		final Set<Resource> successfulUris = new CacheAssembler(dataset, urisWithExtra).call();
+		testAssembler = new CacheAssembler(dataset).uris(urisWithExtra);
+		final Set<Resource> successfulUris = testAssembler.call();
 		assertEquals("Didn't find the appropriate resource failing to be retrieved!", badUris,
 				difference(urisWithExtra, successfulUris));
 	}
