@@ -26,6 +26,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.marmotta.ldpath.LDPath;
 import org.slf4j.Logger;
 
 import com.google.common.base.Function;
@@ -47,6 +48,14 @@ import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
  */
 public class Main {
 
+	/*
+	 * because LDPath uses java.util.ServiceLoader to search the context
+	 * classpath, we need to explicitly call out LDPath here to make sure it
+	 * gets initialized properly
+	 */
+	@SuppressWarnings("unused")
+	private final LDPath<String> testTransform = new LDPath<>(null);
+
 	private Dataset dataset;
 
 	private CacheAssembler cacheAssembler = null;
@@ -59,7 +68,7 @@ public class Main {
 
 	private static final Logger log = getLogger(Main.class);
 
-	public void fullRun(final String transformation, final Set<Resource> uris, final Set<Resource> successfullyRetrieved) {
+	public void fullRun(final String transformation, final Set<Resource> uris, Set<Resource> successfullyRetrieved) {
 
 		// first, we may need to assemble the cache of RDF
 		if (cacheAssembler != null) {
@@ -71,9 +80,12 @@ public class Main {
 					log.warn("Resource: {}", failure);
 				}
 			}
+		} else {
+			// assume fully cached data
+			successfullyRetrieved = uris;
 		}
 		dataset.begin(READ);
-		log.trace("Operating with triples:\n{}", dataset.getDefaultModel());
+		// log.trace("Operating with triples:\n{}", dataset.getDefaultModel());
 		dataset.end();
 
 		log.info("Writing to output location: {}", persister.location());

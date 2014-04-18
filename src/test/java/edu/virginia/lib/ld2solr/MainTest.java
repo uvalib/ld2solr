@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.marmotta.ldpath.LDPath;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -64,13 +63,6 @@ public class MainTest extends TestHelper {
 
 	@Before
 	public void setUp() {
-		/*
-		 * because JUnit uses reflection to set up the classpath for a test and
-		 * LDPath uses java.util.ServiceLoader to search the context classpath,
-		 * we need to explicitly call out LDPath here to make sure it gets
-		 * initialized properly
-		 */
-		new LDPath<String>(null);
 		testMain = new Main();
 		final Dataset dataset = createDataset();
 		testMain.dataset(dataset);

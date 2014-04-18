@@ -8,8 +8,13 @@ import java.io.IOException;
 import java.util.concurrent.Callable;
 
 import org.apache.any23.Any23;
+import org.apache.any23.ExtractionReport;
 import org.apache.any23.extractor.ExtractionContext;
 import org.apache.any23.extractor.ExtractionException;
+import org.apache.any23.extractor.Extractor;
+import org.apache.any23.extractor.IssueReport.Issue;
+import org.apache.any23.validator.ValidationReport;
+import org.apache.any23.validator.ValidationReport.Error;
 import org.apache.any23.writer.TripleHandler;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -54,10 +59,30 @@ public class JenaModelTriplesRetriever implements TriplesRetriever {
 
 			@Override
 			public Model call() throws IOException, ExtractionException {
-				log.debug("Retrieving from URI: {}", uri.getURI());
+				final String resource = uri.getURI();
+				log.debug("Retrieving from URI: {}", resource);
 				final Model model = createDefaultModel();
 				try (final TriplesIntoModel tripleRecorder = new TriplesIntoModel(model);) {
-					extractor.extract(uri.getURI(), tripleRecorder);
+					final ExtractionReport report = extractor.extract(resource, tripleRecorder);
+					if (log.isDebugEnabled()) {
+						for (final Extractor<?> extractor : report.getMatchingExtractors()) {
+							for (final Issue issue : report.getExtractorIssues(extractor.getDescription()
+									.getExtractorName())) {
+								log.debug("Extraction issue in {}: {} at: {}",
+										new Object[] { resource, issue.getMessage(), issue.getRow() });
+							}
+						}
+						final ValidationReport validationReport = report.getValidationReport();
+						for (final org.apache.any23.validator.ValidationReport.Issue issue : validationReport
+								.getIssues()) {
+							log.debug("Validation issue in {}: {} at: {}", new Object[] { resource, issue.getMessage(),
+									issue.getOrigin() });
+						}
+						for (final Error error : validationReport.getErrors()) {
+							log.debug("Validation error in {}: {} for exception: {}",
+									new Object[] { resource, error.getMessage(), error.getCause() });
+						}
+					}
 				}
 				return model;
 			}

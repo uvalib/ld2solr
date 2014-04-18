@@ -87,9 +87,10 @@ public class CacheAssembler implements Callable<Set<Resource>> {
 		final Resource uri : uris) {
 			try {
 				final Model m = internalQueue.take().get();
-				log.debug("Adding {} triples to cache...", m.size());
 				if (!m.isEmpty()) {
 					m.enterCriticalSection(READ);
+					log.debug("Adding {} triples to cache...", m.size());
+					log.trace("Adding triples: {}", m);
 					try {
 						dataset.begin(WRITE);
 						try {
