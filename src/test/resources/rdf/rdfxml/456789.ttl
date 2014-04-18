@@ -1,0 +1,4 @@
+@prefix dc: <http://purl.org/dc/elements/1.1/>.
+<456789> dc:title "Kippers" ;
+	       dc:creator <http://viaf.org/viaf/146550835>;
+	       dc:identifier "456789".

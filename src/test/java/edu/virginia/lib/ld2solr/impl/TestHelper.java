@@ -8,7 +8,6 @@ import static com.google.common.base.Joiner.on;
 import static com.google.common.collect.Iterators.transform;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel;
-import static java.io.File.separator;
 import static java.lang.Thread.sleep;
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.FileVisitResult.TERMINATE;
@@ -71,7 +70,7 @@ public abstract class TestHelper {
 		for (final File sampleDirectory : new File(SAMPLE_RDF).listFiles()) {
 			final LDMediaType type = LDMediaType.valueOf(sampleDirectory.getName().toUpperCase());
 			log.trace("Publishing sample data of type: {}", type);
-			walkFileTree(sampleDirectory.toPath(), new LDResourceStubber(type, sampleDirectory));
+			walkFileTree(sampleDirectory.toPath(), new LDResourceStubber(type));
 		}
 		// it takes a few moments for the resources to be present in our server
 		while (!urisPresent()) {
@@ -99,15 +98,12 @@ public abstract class TestHelper {
 	 * @author ajs6f
 	 * 
 	 */
-	private static class LDResourceStubber implements FileVisitor<File> {
+	private static class LDResourceStubber implements FileVisitor<Path> {
 
 		private final LDMediaType type;
 
-		private final File sampleDirectory;
-
-		public LDResourceStubber(final LDMediaType t, final File sampleDir) {
+		public LDResourceStubber(final LDMediaType t) {
 			this.type = t;
-			this.sampleDirectory = sampleDir;
 		}
 
 		@Override
@@ -117,7 +113,7 @@ public abstract class TestHelper {
 
 		@Override
 		public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
-			type.buildResource(file, sampleDirectory);
+			type.buildResource(file);
 			return CONTINUE;
 		}
 
@@ -135,14 +131,12 @@ public abstract class TestHelper {
 	private static enum LDMediaType {
 		RDFA {
 			@Override
-			public void buildResource(final Path fileName, final File sampleDirectory) throws FileNotFoundException,
-					IOException {
+			public void buildResource(final Path fileName) throws FileNotFoundException, IOException {
 				final String id = fileName.getFileName().toString();
-				buildHttpResource("/" + substringBefore(id, "."), "text/html", buildRdfaResponse(sampleDirectory
-						+ separator + id));
+				buildHttpResource("/" + substringBefore(id, "."), "text/html", buildRdfaResponse(fileName));
 			}
 
-			private String buildRdfaResponse(final String fileName) throws FileNotFoundException, IOException {
+			private String buildRdfaResponse(final Path fileName) throws FileNotFoundException, IOException {
 				final Model m = retrieveSampleRdf(fileName);
 				final String triples = on("").join(transform(m.listStatements(), statementToRdfaTriple));
 				return rdfaPrefix + triples + rdfaSuffix;
@@ -176,29 +170,35 @@ public abstract class TestHelper {
 
 			private static final String rdfaSuffix = "</body></html>";
 		},
+
+		RDFXML {
+			@Override
+			public void buildResource(final Path fileName) throws FileNotFoundException, IOException {
+				final String id = fileName.getFileName().toString();
+				try (StringWriter w = new StringWriter()) {
+					retrieveSampleRdf(fileName).write(w);
+					buildHttpResource("/" + substringBefore(id, "."), "application/rdf+xml", w.toString());
+				}
+			}
+		},
+
 		TTL {
 			@Override
-			public void buildResource(final Path fileName, final File sampleDirectory) throws FileNotFoundException,
-					IOException {
+			public void buildResource(final Path fileName) throws FileNotFoundException, IOException {
 				final String id = fileName.getFileName().toString();
-				buildHttpResource("/" + substringBefore(id, "."), "text/turtle", buildTtlResponse(sampleDirectory
-						+ separator + id));
-			}
-
-			private String buildTtlResponse(final String fileName) throws FileNotFoundException, IOException {
 				final Model m = retrieveSampleRdf(fileName);
 				try (StringWriter w = new StringWriter();) {
 					m.write(w, "TTL");
-					return w.toString();
+					buildHttpResource("/" + substringBefore(id, "."), "text/turtle", w.toString());
 				}
 			}
 		};
-		public abstract void buildResource(Path fileName, File sampleDirectory) throws FileNotFoundException,
-				IOException;
 
-		private static Model retrieveSampleRdf(final String fileName) throws FileNotFoundException, IOException {
-			log.debug("Retrieving sample RDF from: {}", fileName);
-			try (InputStream in = new FileInputStream(new File(fileName))) {
+		public abstract void buildResource(Path fileName) throws FileNotFoundException, IOException;
+
+		private static Model retrieveSampleRdf(final Path fileName) throws FileNotFoundException, IOException {
+			log.debug("Retrieving sample RDF from file: {}", fileName);
+			try (InputStream in = new FileInputStream(fileName.toFile())) {
 				final Model m = createDefaultModel().read(in, uriBase, "TTL");
 				uris.addAll(newHashSet(m.listSubjects()));
 				return m;
