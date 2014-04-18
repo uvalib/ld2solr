@@ -35,7 +35,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import edu.virginia.lib.ld2solr.impl.FilesystemPersister;
 import edu.virginia.lib.ld2solr.impl.IndexRun;
 import edu.virginia.lib.ld2solr.impl.JenaBackend;
-import edu.virginia.lib.ld2solr.impl.SolrLDOutputStage;
+import edu.virginia.lib.ld2solr.impl.SolrXMLOutputStage;
 import edu.virginia.lib.ld2solr.spi.OutputStage;
 import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
 
@@ -147,7 +147,7 @@ public class Main {
 				main.dataset = createDataset();
 			}
 			final Set<Resource> successfullyRetrieved = new HashSet<>(uris.size());
-			main.outputStage(new SolrLDOutputStage());
+			main.outputStage(new SolrXMLOutputStage());
 			main.persister(new FilesystemPersister().location(outputDirectory));
 			main.fullRun(transform, uris, successfullyRetrieved);
 			log.debug("Successfully retrieved URIs: {}", successfullyRetrieved);

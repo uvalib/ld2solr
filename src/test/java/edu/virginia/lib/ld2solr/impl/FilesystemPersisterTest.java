@@ -2,14 +2,18 @@ package edu.virginia.lib.ld2solr.impl;
 
 import static com.google.common.io.Files.createTempDir;
 import static java.io.File.separator;
+import static java.nio.file.Files.createFile;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.file.Paths;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -43,6 +47,7 @@ public class FilesystemPersisterTest {
 	@Test
 	public void testAccept() throws UnsupportedEncodingException {
 		final String location = createTempDir().getAbsolutePath();
+		new File(location).deleteOnExit();
 		testPersister.location(location);
 		assertEquals("Stored wrong location for persistence!", location, testPersister.location());
 		testPersister.accept(outputRecord);
@@ -54,6 +59,17 @@ public class FilesystemPersisterTest {
 	public void testAndThen() {
 		testPersister.andThen(null);
 		fail("Should not have been able to set a following stage for FilesystemPersister!");
+	}
+
+	@Test
+	public void testBadOutputLocation() throws IOException {
+		final String location = createTempDir().getAbsolutePath();
+		testPersister.location(location);
+		new File(location).delete();
+		createFile(Paths.get(location));
+		testPersister.accept(outputRecord);
+		final File expectedFile = new File(location + separator + URLDecoder.decode(TEST_ID, "UTF-8"));
+		assertFalse("Found persisted record when we shouldn't have!", expectedFile.exists());
 	}
 
 }

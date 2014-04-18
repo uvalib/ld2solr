@@ -1,13 +1,10 @@
 package edu.virginia.lib.ld2solr.impl;
 
-import static com.google.common.base.Charsets.UTF_8;
-import static com.google.common.io.Resources.asCharSource;
 import static com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.URL;
 import java.util.concurrent.Callable;
 
 import org.apache.any23.Any23;
@@ -32,22 +29,16 @@ import edu.virginia.lib.ld2solr.spi.TriplesRetriever;
  * @author ajs6f
  * 
  */
-public class JenaModelTriplesRetriever implements Callable<Model> {
+public class JenaModelTriplesRetriever implements TriplesRetriever {
 
 	private static final String DEFAULT_USER_AGENT = "UVa Library Linked Data indexing engine";
-
-	private final Resource uri;
 
 	private final Any23 extractor = new Any23();
 
 	private static final Logger log = getLogger(JenaModelTriplesRetriever.class);
 
-	/**
-	 * @param m
-	 */
-	public JenaModelTriplesRetriever(final Resource u) {
+	public JenaModelTriplesRetriever() {
 		this.extractor.setHTTPUserAgent(DEFAULT_USER_AGENT);
-		this.uri = u;
 	}
 
 	/*
@@ -58,14 +49,19 @@ public class JenaModelTriplesRetriever implements Callable<Model> {
 	 * .model.Resource)
 	 */
 	@Override
-	public Model call() throws IOException, ExtractionException {
-		log.debug("Retrieving from URI: {}", uri.getURI());
-		final Model model = createDefaultModel();
-		try (final TriplesIntoModel tripleRecorder = new TriplesIntoModel(model);) {
-			final String rdf = asCharSource(new URL(uri.getURI()), UTF_8).read();
-			extractor.extract(rdf, uri.getURI(), tripleRecorder);
-		}
-		return model;
+	public Callable<Model> apply(final Resource uri) {
+		return new Callable<Model>() {
+
+			@Override
+			public Model call() throws IOException, ExtractionException {
+				log.debug("Retrieving from URI: {}", uri.getURI());
+				final Model model = createDefaultModel();
+				try (final TriplesIntoModel tripleRecorder = new TriplesIntoModel(model);) {
+					extractor.extract(uri.getURI(), tripleRecorder);
+				}
+				return model;
+			}
+		};
 	}
 
 	/**

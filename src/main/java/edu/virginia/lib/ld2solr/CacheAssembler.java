@@ -27,6 +27,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.impl.JenaModelTriplesRetriever;
+import edu.virginia.lib.ld2solr.spi.Stage;
 
 /**
  * @author ajs6f
@@ -34,7 +35,7 @@ import edu.virginia.lib.ld2solr.impl.JenaModelTriplesRetriever;
  */
 public class CacheAssembler implements Callable<Set<Resource>> {
 
-	private Integer numReaderThreads = 1;
+	private Byte numReaderThreads = Stage.DEFAULT_NUM_THREADS;
 
 	private final CompletionService<Model> internalQueue;
 
@@ -46,7 +47,7 @@ public class CacheAssembler implements Callable<Set<Resource>> {
 
 	private static final Logger log = getLogger(CacheAssembler.class);
 
-	public CacheAssembler(final Dataset d, final Set<Resource> uris, final Integer... threads) {
+	public CacheAssembler(final Dataset d, final Set<Resource> uris, final Byte... threads) {
 		this.dataset = d;
 		this.uris = uris;
 		if (threads.length > 0)
@@ -62,7 +63,7 @@ public class CacheAssembler implements Callable<Set<Resource>> {
 		successfullyLoadedResources = new HashSet<>(uris.size());
 		for (final Resource uri : uris) {
 			log.debug("Retrieving URI: {}", uri);
-			final Future<Model> loadFuture = internalQueue.submit(new JenaModelTriplesRetriever(uri));
+			final Future<Model> loadFuture = internalQueue.submit(new JenaModelTriplesRetriever().apply(uri));
 			final ListenableFuture<Model> loadTask = listenInPoolThread(loadFuture);
 			addCallback(loadTask, new FutureCallback<Model>() {
 

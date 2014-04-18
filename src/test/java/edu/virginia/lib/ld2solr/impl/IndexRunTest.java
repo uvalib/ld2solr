@@ -16,7 +16,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
-import edu.virginia.lib.ld2solr.impl.IndexRun;
 
 /**
  * @author ajs6f
@@ -29,6 +28,8 @@ public class IndexRunTest extends TestHelper {
 	private TestAcceptor<NamedFields, ?> acceptor;
 
 	private static final String mockTransform = "title = dc:title :: xsd:string;";
+
+	private static final String badTransform = "THIS IS NOT A LEGITIMATE LDPATH TRANSFORM!";
 
 	private static final Logger log = getLogger(IndexRunTest.class);
 
@@ -65,5 +66,21 @@ public class IndexRunTest extends TestHelper {
 			log.info("Created index record: {}", result);
 			assertTrue("Failed to create title in each test index record!", result.containsKey("title"));
 		}
+	}
+
+	@Test
+	public void testRunWithBadTransform() throws InterruptedException {
+		testIndexRun = new IndexRun(badTransform, uris);
+		acceptor = new TestAcceptor<NamedFields, Void>();
+		testIndexRun.andThen(acceptor);
+		testIndexRun.run();
+		final long startTime = currentTimeMillis();
+		synchronized (acceptor) {
+			while (acceptor.accepted().size() < uris.size() && currentTimeMillis() < (startTime + TIMEOUT)) {
+				acceptor.wait(TIMESTEP);
+			}
+		}
+		final Set<NamedFields> results = acceptor.accepted();
+		assertEquals("Received index records when we shouldn't have!", 0, results.size());
 	}
 }

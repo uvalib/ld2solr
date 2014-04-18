@@ -81,10 +81,12 @@ public class MainTest extends TestHelper {
 	@Test
 	public void testFullRun() throws InterruptedException {
 		log.trace("Entering testFullRun()...");
-		testMain.fullRun(transformation, uris, new HashSet<Resource>(uris.size()));
+		final Set<Resource> successfulUris = new HashSet<Resource>(uris.size());
+		testMain.fullRun(transformation, uris, successfulUris);
 		final long startTime = currentTimeMillis();
 		synchronized (testSink) {
-			while (testSink.accepted().isEmpty() && currentTimeMillis() < (startTime + TIMEOUT)) {
+
+			while (testSink.accepted().size() < successfulUris.size() && currentTimeMillis() < (startTime + TIMEOUT)) {
 				testSink.wait(TIMESTEP);
 			}
 		}
@@ -112,7 +114,7 @@ public class MainTest extends TestHelper {
 		testMain.fullRun(transformation, urisWithExtra, successfulUris);
 		final long startTime = currentTimeMillis();
 		synchronized (testSink) {
-			while (testSink.accepted().isEmpty() && currentTimeMillis() < (startTime + TIMEOUT)) {
+			while ((testSink.accepted().size() < successfulUris.size()) && currentTimeMillis() < (startTime + TIMEOUT)) {
 				testSink.wait(TIMESTEP);
 			}
 		}

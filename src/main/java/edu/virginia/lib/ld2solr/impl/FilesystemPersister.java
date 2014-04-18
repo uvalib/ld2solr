@@ -3,8 +3,6 @@
  */
 package edu.virginia.lib.ld2solr.impl;
 
-import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
-import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
@@ -28,13 +26,7 @@ public class FilesystemPersister extends AbstractStage<OutputRecord> implements 
 
 	File directory;
 
-	private final int numWriterThreads = 2;
-
 	private static final Logger log = getLogger(FilesystemPersister.class);
-
-	public FilesystemPersister() {
-		this.threadpool = listeningDecorator(newFixedThreadPool(numWriterThreads));
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -55,11 +47,11 @@ public class FilesystemPersister extends AbstractStage<OutputRecord> implements 
 		log.debug("Persisting to: {}", file.toString());
 		try {
 			Files.asByteSink(file).write(record.record());
+			log.debug("Persisted: {} to: {}", record.id(), fileName);
 		} catch (final IOException e) {
 			log.error("Error persisting: {}!", record.id());
 			log.error("Exception: ", e);
 		}
-		log.debug("Persisted: {} to: {}", record.id(), fileName);
 	}
 
 	/*

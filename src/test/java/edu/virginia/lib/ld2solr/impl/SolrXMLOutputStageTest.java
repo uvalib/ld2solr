@@ -7,6 +7,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Collection;
 
+import org.apache.solr.common.SolrInputDocument;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -17,12 +18,11 @@ import com.google.common.collect.Iterables;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
 import edu.virginia.lib.ld2solr.api.OutputRecord;
-import edu.virginia.lib.ld2solr.impl.SolrLDOutputStage;
 import edu.virginia.lib.ld2solr.impl.TestAcceptor.TestSink;
 
-public class SolrLDOutputStageTest {
+public class SolrXMLOutputStageTest {
 
-	private SolrLDOutputStage testStage;
+	private SolrXMLOutputStage testStage;
 
 	private TestSink testSink;
 
@@ -30,13 +30,14 @@ public class SolrLDOutputStageTest {
 
 	private NamedFields fields;
 
-	private static final Logger log = getLogger(SolrLDOutputStageTest.class);
+	private static final Logger log = getLogger(SolrXMLOutputStageTest.class);
 
 	@Before
 	public void setUp() {
-		testStage = new SolrLDOutputStage();
+		testStage = new SolrXMLOutputStage();
 		testSink = new TestSink();
 		testStage.andThen(testSink);
+		fields = new NamedFields(ImmutableMap.<String, Collection<?>> of(ID_FIELD, asList(testFieldValue)));
 	}
 
 	/**
@@ -44,7 +45,6 @@ public class SolrLDOutputStageTest {
 	 */
 	@Test
 	public void testAccept() {
-		fields = new NamedFields(ImmutableMap.<String, Collection<?>> of(ID_FIELD, asList(testFieldValue)));
 		testStage.accept(fields);
 		assertTrue("Didn't find our record in output from test stage!",
 				Iterables.any(testSink.accepted(), new Predicate<OutputRecord>() {
@@ -58,5 +58,13 @@ public class SolrLDOutputStageTest {
 		final String outputBytes = new String(testSink.accepted().iterator().next().record());
 		log.debug("Retrieved record: {}", outputBytes);
 		assertTrue("Failed to find test value in output record!", outputBytes.contains(testFieldValue));
+	}
+
+	@Test
+	public void testWrap() {
+		final SolrInputDocument result = SolrXMLOutputStage.wrap.apply(fields);
+		assertTrue("Should have found test field value under test field name in Solr document!",
+				result.getFieldValues(ID_FIELD).contains(testFieldValue));
+
 	}
 }

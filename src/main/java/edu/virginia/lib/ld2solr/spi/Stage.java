@@ -24,6 +24,8 @@ public interface Stage<Produces> {
 	 */
 	public ListeningExecutorService threadpool();
 
+	public static final Byte DEFAULT_NUM_THREADS = 5;
+
 	/**
 	 * A stage of workflow that, since it is not the first, must accept tasks.
 	 * 
