@@ -1,4 +1,4 @@
 @prefix dc: <http://purl.org/dc/elements/1.1/>.
-<456789> dc:title "Kippers" ;
+<456789> dc:title "Kippers"^^<http://www.w3.org/2001/XMLSchema#string> ;
 	       dc:creator <http://viaf.org/viaf/146550835>;
-	       dc:identifier "456789".
+	       dc:identifier "456789"^^<http://www.w3.org/2001/XMLSchema#string>.

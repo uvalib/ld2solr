@@ -3,6 +3,8 @@
  */
 package edu.virginia.lib.ld2solr.spi;
 
+import static com.google.common.util.concurrent.MoreExecutors.sameThreadExecutor;
+
 import com.google.common.util.concurrent.ListeningExecutorService;
 
 /**
@@ -11,7 +13,7 @@ import com.google.common.util.concurrent.ListeningExecutorService;
  */
 public abstract class AbstractStage<Produces> implements Stage<Produces> {
 
-	protected ListeningExecutorService threadpool;
+	protected ListeningExecutorService threadpool = sameThreadExecutor();
 	protected Acceptor<Produces, ?> nextStage;
 
 	@Override

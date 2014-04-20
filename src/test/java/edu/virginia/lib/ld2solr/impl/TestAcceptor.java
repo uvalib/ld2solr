@@ -1,5 +1,6 @@
 package edu.virginia.lib.ld2solr.impl;
 
+import static com.google.common.util.concurrent.MoreExecutors.sameThreadExecutor;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.HashSet;
@@ -18,6 +19,8 @@ public class TestAcceptor<Accepts, Produces> implements Acceptor<Accepts, Produc
 	private final Set<Accepts> accepted = new HashSet<>();
 
 	private static final Logger log = getLogger(TestAcceptor.class);
+
+	private final ListeningExecutorService threadpool = sameThreadExecutor();
 
 	@Override
 	public void andThen(final Acceptor<Produces, ?> a) {
@@ -38,7 +41,14 @@ public class TestAcceptor<Accepts, Produces> implements Acceptor<Accepts, Produc
 		return accepted;
 	}
 
+	@Override
+	public ListeningExecutorService threadpool() {
+		return threadpool;
+	}
+
 	public static class TestSink implements RecordPersister<TestSink> {
+
+		private final ListeningExecutorService threadpool = sameThreadExecutor();
 
 		private final Set<OutputRecord> accepted = new HashSet<>();
 
@@ -71,13 +81,7 @@ public class TestAcceptor<Accepts, Produces> implements Acceptor<Accepts, Produc
 
 		@Override
 		public ListeningExecutorService threadpool() {
-			// TODO Auto-generated method stub
-			return null;
+			return threadpool;
 		}
-	}
-
-	@Override
-	public ListeningExecutorService threadpool() {
-		throw new UnsupportedOperationException();
 	}
 }

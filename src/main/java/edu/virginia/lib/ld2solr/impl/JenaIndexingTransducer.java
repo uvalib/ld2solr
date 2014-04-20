@@ -9,6 +9,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,14 +54,16 @@ public class JenaIndexingTransducer implements IndexingTransducer {
 	public NamedFields apply(final Resource uri) {
 		log.debug("Indexing resource: {}", uri);
 		try (Reader transformationReader = new StringReader(transformation);) {
-			final NamedFields fields = new NamedFields(new LDPath<>(cache, new DefaultConfiguration<RDFNode>() {
+			final Map<String, Collection<?>> result = new LDPath<>(cache, new DefaultConfiguration<RDFNode>() {
 				@Override
 				public Map<String, String> getNamespaces() {
 					final Map<String, String> namespaces = new HashMap<>(super.getNamespaces());
 					namespaces.putAll(cache.model().getNsPrefixMap());
 					return namespaces;
 				}
-			}).programQuery(uri, transformationReader));
+			}).programQuery(uri, transformationReader);
+			log.trace("LDPath transform returned: {}", result);
+			final NamedFields fields = new NamedFields(result);
 			// the identifier of the record is the URI of the resource indexed
 			fields.id(uri.getURI());
 			log.trace("Created index fields: {}", fields);

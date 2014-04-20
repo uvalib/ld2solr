@@ -16,6 +16,11 @@ import org.apache.any23.extractor.IssueReport.Issue;
 import org.apache.any23.validator.ValidationReport;
 import org.apache.any23.validator.ValidationReport.Error;
 import org.apache.any23.writer.TripleHandler;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.util.EntityUtils;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.slf4j.Logger;
@@ -40,9 +45,14 @@ public class JenaModelTriplesRetriever implements TriplesRetriever {
 
 	private final Any23 extractor = new Any23();
 
+	private static final HttpClient client = new DefaultHttpClient(new PoolingClientConnectionManager());
+
+	private final String accept;
+
 	private static final Logger log = getLogger(JenaModelTriplesRetriever.class);
 
-	public JenaModelTriplesRetriever() {
+	public JenaModelTriplesRetriever(final String a) {
+		this.accept = a;
 		this.extractor.setHTTPUserAgent(DEFAULT_USER_AGENT);
 	}
 
@@ -61,9 +71,15 @@ public class JenaModelTriplesRetriever implements TriplesRetriever {
 			public Model call() throws IOException, ExtractionException {
 				final String resource = uri.getURI();
 				log.debug("Retrieving from URI: {}", resource);
+				final HttpGet get = new HttpGet(resource);
+				if (accept != null) {
+					get.setHeader("Accept", accept);
+				}
+				final String rdf = EntityUtils.toString(client.execute(get).getEntity());
+				log.trace("Retrieved from URI: {} RDF:\n{}", resource, rdf);
 				final Model model = createDefaultModel();
 				try (final TriplesIntoModel tripleRecorder = new TriplesIntoModel(model);) {
-					final ExtractionReport report = extractor.extract(resource, tripleRecorder);
+					final ExtractionReport report = extractor.extract(rdf, resource, tripleRecorder);
 					if (log.isDebugEnabled()) {
 						for (final Extractor<?> extractor : report.getMatchingExtractors()) {
 							for (final Issue issue : report.getExtractorIssues(extractor.getDescription()

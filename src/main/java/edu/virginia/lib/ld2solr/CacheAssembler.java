@@ -5,9 +5,9 @@ package edu.virginia.lib.ld2solr;
 
 import static com.google.common.util.concurrent.Futures.addCallback;
 import static com.google.common.util.concurrent.JdkFutureAdapters.listenInPoolThread;
+import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
 import static com.hp.hpl.jena.query.ReadWrite.WRITE;
 import static com.hp.hpl.jena.shared.Lock.READ;
-import static edu.virginia.lib.ld2solr.spi.Stage.DEFAULT_NUM_THREADS;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -28,12 +28,13 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.impl.JenaModelTriplesRetriever;
+import edu.virginia.lib.ld2solr.spi.AbstractStage;
 
 /**
  * @author ajs6f
  * 
  */
-public class CacheAssembler implements Callable<Set<Resource>> {
+public class CacheAssembler extends AbstractStage<Void> implements Callable<Set<Resource>> {
 
 	private Integer numReaderThreads = DEFAULT_NUM_THREADS;
 
@@ -45,13 +46,16 @@ public class CacheAssembler implements Callable<Set<Resource>> {
 
 	private Set<Resource> uris;
 
+	private String accepts = null;
+
 	private static final Logger log = getLogger(CacheAssembler.class);
 
 	public CacheAssembler(final Dataset d, final Integer... threads) {
 		this.dataset = d;
 		if (threads.length > 0)
 			numReaderThreads = threads[0];
-		this.internalQueue = new ExecutorCompletionService<Model>(newFixedThreadPool(numReaderThreads));
+		this.threadpool = listeningDecorator(newFixedThreadPool(numReaderThreads));
+		this.internalQueue = new ExecutorCompletionService<Model>(this.threadpool);
 	}
 
 	/**
@@ -62,7 +66,7 @@ public class CacheAssembler implements Callable<Set<Resource>> {
 		successfullyLoadedResources = new HashSet<>(uris.size());
 		for (final Resource uri : uris) {
 			log.debug("Queueing retrieval task for URI: {}...", uri);
-			final Future<Model> loadFuture = internalQueue.submit(new JenaModelTriplesRetriever().apply(uri));
+			final Future<Model> loadFuture = internalQueue.submit(new JenaModelTriplesRetriever(accepts).apply(uri));
 			final ListenableFuture<Model> loadTask = listenInPoolThread(loadFuture);
 			addCallback(loadTask, new FutureCallback<Model>() {
 
@@ -123,6 +127,16 @@ public class CacheAssembler implements Callable<Set<Resource>> {
 	 */
 	public CacheAssembler uris(final Set<Resource> u) {
 		this.uris = u;
+		return this;
+	}
+
+	/**
+	 * @param accepts
+	 *            the Accepts header to use
+	 * @return this {@link CacheAssembler} for further operation
+	 */
+	public CacheAssembler accepts(final String accepts) {
+		this.accepts = accepts;
 		return this;
 	}
 }

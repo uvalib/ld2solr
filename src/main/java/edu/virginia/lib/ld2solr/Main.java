@@ -11,8 +11,10 @@ import static com.hp.hpl.jena.query.ReadWrite.READ;
 import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
 import static com.hp.hpl.jena.tdb.TDBFactory.createDataset;
 import static edu.virginia.lib.ld2solr.spi.Stage.DEFAULT_NUM_THREADS;
+import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
@@ -68,7 +70,8 @@ public class Main {
 
 	private static final Logger log = getLogger(Main.class);
 
-	public void fullRun(final String transformation, final Set<Resource> uris, Set<Resource> successfullyRetrieved) {
+	public void fullRun(final String transformation, final Set<Resource> uris, Set<Resource> successfullyRetrieved)
+			throws InterruptedException {
 
 		// first, we may need to assemble the cache of RDF
 		if (cacheAssembler != null) {
@@ -80,6 +83,8 @@ public class Main {
 					log.warn("Resource: {}", failure);
 				}
 			}
+			cacheAssembler.threadpool().shutdown();
+			cacheAssembler.threadpool().awaitTermination(MAX_VALUE, SECONDS);
 		} else {
 			// assume fully cached data
 			successfullyRetrieved = uris;
@@ -97,7 +102,12 @@ public class Main {
 		indexRun.andThen(outputStage);
 		outputStage.andThen(persister);
 		indexRun.run();
-
+		indexRun.threadpool().shutdown();
+		indexRun.threadpool().awaitTermination(MAX_VALUE, SECONDS);
+		outputStage.threadpool().shutdown();
+		outputStage.threadpool().awaitTermination(MAX_VALUE, SECONDS);
+		persister.threadpool().shutdown();
+		persister.threadpool().awaitTermination(MAX_VALUE, SECONDS);
 	}
 
 	/**
@@ -144,8 +154,9 @@ public class Main {
 	 * @param args
 	 * @throws ParseException
 	 * @throws IOException
+	 * @throws InterruptedException
 	 */
-	public static void main(final String[] args) throws ParseException, IOException {
+	public static void main(final String[] args) throws ParseException, IOException, InterruptedException {
 		final CommandLine cmd = new BasicParser().parse(getOptions(), args);
 		if (cmd.hasOption('h')) {
 			new HelpFormatter().printHelp("ld2solr -t transform-file -o output-dir -u input-uris", getOptions());
@@ -181,7 +192,8 @@ public class Main {
 				if (cmd.hasOption("assembler-threads")) {
 					assemblerThreads = parseInt(cmd.getOptionValue("assembler-threads"));
 				}
-				main.assembler(new CacheAssembler(main.dataset, assemblerThreads).uris(uris));
+				main.assembler(new CacheAssembler(main.dataset, assemblerThreads).uris(uris).accepts(
+						cmd.hasOption('a') ? cmd.getOptionValue('a') : null));
 			} else if (!cmd.hasOption('c')) {
 				final String bangLine = repeat("!", 80);
 				log.warn(bangLine);
@@ -207,6 +219,7 @@ public class Main {
 						"(Required) Location of LDPath transform with which to create index records. ")
 				.addOption("c", "cache", true,
 						"Location of persistent triple cache. (Defaults to in-memory only operation.)")
+				.addOption("a", "accept", true, "HTTP 'Accept:' header to use. (Defaults to none.)")
 				.addOption(
 						"sr",
 						"skip-retrieval",

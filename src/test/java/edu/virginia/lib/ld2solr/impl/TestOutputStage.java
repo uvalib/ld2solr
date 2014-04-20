@@ -1,5 +1,7 @@
 package edu.virginia.lib.ld2solr.impl;
 
+import static com.google.common.util.concurrent.MoreExecutors.sameThreadExecutor;
+
 import com.google.common.util.concurrent.ListeningExecutorService;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
@@ -9,6 +11,8 @@ import edu.virginia.lib.ld2solr.spi.OutputStage;
 public class TestOutputStage implements OutputStage<TestOutputStage> {
 
 	private Acceptor<OutputRecord, ?> nextStage;
+
+	private final ListeningExecutorService threadpool = sameThreadExecutor();
 
 	@Override
 	public void accept(final NamedFields fields) {
@@ -42,7 +46,7 @@ public class TestOutputStage implements OutputStage<TestOutputStage> {
 
 	@Override
 	public ListeningExecutorService threadpool() {
-		throw new UnsupportedOperationException();
+		return threadpool;
 	}
 
 }

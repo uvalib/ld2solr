@@ -24,7 +24,7 @@ import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
  */
 public class FilesystemPersister extends AbstractStage<OutputRecord> implements RecordPersister<FilesystemPersister> {
 
-	File directory;
+	private File directory;
 
 	private static final Logger log = getLogger(FilesystemPersister.class);
 
