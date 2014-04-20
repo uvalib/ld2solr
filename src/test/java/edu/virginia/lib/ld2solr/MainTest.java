@@ -146,7 +146,7 @@ public class MainTest extends TestHelper {
 		log.trace("Entering testMainMethodExecutesWithPersistedCache()...");
 		final String cacheDirectory = createTempDir().getAbsolutePath();
 		final String[] argsWithPersistence = concat(createBasicArgsForMainMethodTest(), new String[] { "-c",
-				cacheDirectory }, String.class);
+				cacheDirectory, "-a", "application/rdf+xml" }, String.class);
 		final Exception e = testMainMethod(argsWithPersistence);
 		if (e != null) {
 			fail("Failed to execute Main.main with persisted RDF cache with exception: " + e);
@@ -177,12 +177,12 @@ public class MainTest extends TestHelper {
 	}
 
 	@Test
-	public void testSkipRetrievalWithEmptyCache() throws IOException {
+	public void testSkipRetrievalWithNoCache() throws IOException {
 		final String[] args = concat(createBasicArgsForMainMethodTest(), new String[] { "--skip-retrieval" },
 				String.class);
 		final Exception e = testMainMethod(args);
 		if (e != null) {
-			fail("Failed to execute Main.main with empty cache and no retrieval step with exception: " + e);
+			fail("Failed to execute Main.main with no cache and no retrieval step with exception: " + e);
 		}
 	}
 

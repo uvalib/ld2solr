@@ -192,8 +192,13 @@ public class Main {
 				if (cmd.hasOption("assembler-threads")) {
 					assemblerThreads = parseInt(cmd.getOptionValue("assembler-threads"));
 				}
-				main.assembler(new CacheAssembler(main.dataset, assemblerThreads).uris(uris).accepts(
-						cmd.hasOption('a') ? cmd.getOptionValue('a') : null));
+				final CacheAssembler assembler = new CacheAssembler(main.dataset, assemblerThreads).uris(uris);
+				if (cmd.hasOption('a')) {
+					final String accept = cmd.getOptionValue('a');
+					log.info("Requesting content-type: {} for resource retrieval.", accept);
+					assembler.accepts(accept);
+				}
+				main.assembler(assembler);
 			} else if (!cmd.hasOption('c')) {
 				final String bangLine = repeat("!", 80);
 				log.warn(bangLine);

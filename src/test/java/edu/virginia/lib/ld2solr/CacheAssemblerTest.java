@@ -1,6 +1,7 @@
 package edu.virginia.lib.ld2solr;
 
 import static com.google.common.collect.Sets.difference;
+import static com.google.common.collect.Sets.newHashSet;
 import static com.hp.hpl.jena.query.ReadWrite.READ;
 import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
 import static com.hp.hpl.jena.tdb.TDBFactory.createDataset;
@@ -40,6 +41,21 @@ public class CacheAssemblerTest extends TestHelper {
 	public void testAccumulation() {
 		final Set<Resource> successfullyRetrievedUris = testAssembler.call();
 		assertEquals("Did not retrieve all resources successfully!", uris, successfullyRetrievedUris);
+		dataset.begin(READ);
+		log.debug("Retrieved triples: {}", dataset.getDefaultModel());
+		for (final Resource uri : uris)
+			assertTrue("Did not find an appropriate subject " + uri + " in triplestore!", dataset.getDefaultModel()
+					.containsResource(uri));
+		dataset.end();
+	}
+
+	@Test
+	public void testAccumulationWithEmptyResource() {
+		final Set<Resource> urisWithEmpty = newHashSet(uris);
+		urisWithEmpty.add(createResource(uriBase + "empty"));
+		testAssembler.uris(urisWithEmpty);
+		final Set<Resource> successfullyRetrievedUris = testAssembler.call();
+		assertTrue("Did not retrieve all resources successfully!", successfullyRetrievedUris.containsAll(uris));
 		dataset.begin(READ);
 		log.debug("Retrieved triples: {}", dataset.getDefaultModel());
 		for (final Resource uri : uris)

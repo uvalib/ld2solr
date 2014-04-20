@@ -7,7 +7,7 @@
         </encoder>
     </appender>
     
-    <logger name="edu.virginia" additivity="false" level="TRACE">
+    <logger name="edu.virginia" additivity="false" level="INFO">
         <appender-ref ref="STDOUT"/>
     </logger>
     <root additivity="false" level="WARN">

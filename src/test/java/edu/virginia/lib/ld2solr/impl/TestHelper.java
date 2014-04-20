@@ -57,9 +57,9 @@ public abstract class TestHelper {
 	@Rule
 	public WireMockRule wireMockRule = new WireMockRule(HTTP_PORT);
 
-	private static final String SAMPLE_RDF = "target/test-classes/rdf/";
+	protected static final String SAMPLE_RDF = "target/test-classes/rdf/";
 
-	private static String uriBase = "http://localhost:" + HTTP_PORT + "/";
+	protected static String uriBase = "http://localhost:" + HTTP_PORT + "/";
 
 	protected static Set<Resource> uris = new HashSet<>();
 
@@ -67,6 +67,7 @@ public abstract class TestHelper {
 
 	@Before
 	public void buildResources() throws FileNotFoundException, IOException, InterruptedException {
+		uris = new HashSet<>();
 		for (final File sampleDirectory : new File(SAMPLE_RDF).listFiles()) {
 			final LDMediaType type = LDMediaType.valueOf(sampleDirectory.getName().toUpperCase());
 			log.trace("Publishing sample data of type: {}", type);
@@ -128,7 +129,7 @@ public abstract class TestHelper {
 		}
 	}
 
-	private static enum LDMediaType {
+	protected static enum LDMediaType {
 		RDFA {
 			@Override
 			public void buildResource(final Path fileName) throws FileNotFoundException, IOException {
@@ -196,7 +197,7 @@ public abstract class TestHelper {
 
 		public abstract void buildResource(Path fileName) throws FileNotFoundException, IOException;
 
-		private static Model retrieveSampleRdf(final Path fileName) throws FileNotFoundException, IOException {
+		protected static Model retrieveSampleRdf(final Path fileName) throws FileNotFoundException, IOException {
 			log.debug("Retrieving sample RDF from file: {}", fileName);
 			try (InputStream in = new FileInputStream(fileName.toFile())) {
 				final Model m = createDefaultModel().read(in, uriBase, "TTL");

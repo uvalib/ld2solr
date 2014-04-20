@@ -13,8 +13,6 @@ import org.apache.any23.extractor.ExtractionContext;
 import org.apache.any23.extractor.ExtractionException;
 import org.apache.any23.extractor.Extractor;
 import org.apache.any23.extractor.IssueReport.Issue;
-import org.apache.any23.validator.ValidationReport;
-import org.apache.any23.validator.ValidationReport.Error;
 import org.apache.any23.writer.TripleHandler;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -88,16 +86,6 @@ public class JenaModelTriplesRetriever implements TriplesRetriever {
 										new Object[] { resource, issue.getMessage(), issue.getRow() });
 							}
 						}
-						final ValidationReport validationReport = report.getValidationReport();
-						for (final org.apache.any23.validator.ValidationReport.Issue issue : validationReport
-								.getIssues()) {
-							log.debug("Validation issue in {}: {} at: {}", new Object[] { resource, issue.getMessage(),
-									issue.getOrigin() });
-						}
-						for (final Error error : validationReport.getErrors()) {
-							log.debug("Validation error in {}: {} for exception: {}",
-									new Object[] { resource, error.getMessage(), error.getCause() });
-						}
 					}
 				}
 				return model;
@@ -111,7 +99,7 @@ public class JenaModelTriplesRetriever implements TriplesRetriever {
 	 * @author ajs6f
 	 * 
 	 */
-	private static class TriplesIntoModel implements CloseableTripleHandler {
+	private static class TriplesIntoModel implements TripleHandler, Closeable {
 
 		private final Model model;
 
@@ -169,10 +157,5 @@ public class JenaModelTriplesRetriever implements TriplesRetriever {
 		@Override
 		public void close() {
 		}
-
 	}
-
-	private static interface CloseableTripleHandler extends TripleHandler, Closeable {
-	}
-
 }
