@@ -92,14 +92,14 @@ import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
 
 <span class="fc" id="L93">		log.info(&quot;Writing to output location: {}&quot;, persister.location());</span>
 
-<span class="fc" id="L95">		final IndexRun indexRun = new IndexRun(transformation, successfullyRetrieved, JenaBackend.with(dataset),</span>
-				numIndexerThreads);
+<span class="fc" id="L95">		final IndexRun indexRun = new IndexRun(transformation, successfullyRetrieved, JenaBackend.with(dataset))</span>
+				.threads(numIndexerThreads);
 
 		// workflow!
 <span class="fc" id="L99">		indexRun.andThen(outputStage);</span>
 <span class="fc" id="L100">		outputStage.andThen(persister);</span>
 <span class="fc" id="L101">		indexRun.run();</span>
-<span class="fc" id="L102">		indexRun.threadpool().shutdown();</span>
+<span class="fc" id="L102">		indexRun.shutdown();</span>
 <span class="fc" id="L103">		outputStage.shutdown();</span>
 <span class="fc" id="L104">		persister.shutdown();</span>
 
@@ -188,7 +188,7 @@ import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
 <span class="fc bfc" id="L188" title="All 2 branches covered.">				if (cmd.hasOption(&quot;assembler-threads&quot;)) {</span>
 <span class="fc" id="L189">					assemblerThreads = parseInt(cmd.getOptionValue(&quot;assembler-threads&quot;));</span>
 				}
-<span class="fc" id="L191">				final CacheAssembler assembler = new CacheAssembler(main.dataset, assemblerThreads).uris(uris);</span>
+<span class="fc" id="L191">				final CacheAssembler assembler = new CacheAssembler(main.dataset).threads(assemblerThreads).uris(uris);</span>
 <span class="fc bfc" id="L192" title="All 2 branches covered.">				if (cmd.hasOption('a')) {</span>
 <span class="fc" id="L193">					final String accept = cmd.getOptionValue('a');</span>
 <span class="fc" id="L194">					log.info(&quot;Requesting content-type: {} for resource retrieval.&quot;, accept);</span>

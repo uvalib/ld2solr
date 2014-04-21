@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>IndexRun.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Linked Data to Solr</a> &gt; <a href="index.source.html" class="el_package">edu.virginia.lib.ld2solr.impl</a> &gt; <span class="el_source">IndexRun.java</span></div><h1>IndexRun.java</h1><pre class="source lang-java linenums">package edu.virginia.lib.ld2solr.impl;
 
 import static com.google.common.util.concurrent.Futures.addCallback;
-import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
-import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Set;
@@ -28,7 +26,7 @@ import edu.virginia.lib.ld2solr.spi.Stage;
  * @author ajs6f
  * 
  */
-public class IndexRun extends AbstractStage&lt;NamedFields&gt; implements Runnable {
+public class IndexRun extends AbstractStage&lt;IndexRun, NamedFields&gt; implements Runnable {
 
 	private final JenaBackend cache;
 
@@ -38,7 +36,7 @@ public class IndexRun extends AbstractStage&lt;NamedFields&gt; implements Runnab
 
 	private final LDPathIndexer indexer;
 
-<span class="fc" id="L41">	private static final Logger log = getLogger(IndexRun.class);</span>
+<span class="nc" id="L39">	private static final Logger log = getLogger(IndexRun.class);</span>
 
 	/**
 	 * @param transformationSource
@@ -47,47 +45,41 @@ public class IndexRun extends AbstractStage&lt;NamedFields&gt; implements Runnab
 	 *            Resources to index
 	 * @param c
 	 *            Linked Data cache over which to operate
-	 * @param threads
-	 *            optional number of threads to use for indexing
 	 */
-	public IndexRun(final String transformationSource, final Set&lt;Resource&gt; uris, final JenaBackend c,
-<span class="fc" id="L54">			final Integer... threads) {</span>
-<span class="fc" id="L55">		this.transformation = transformationSource;</span>
-<span class="fc" id="L56">		this.uris = uris;</span>
-<span class="fc" id="L57">		this.cache = c;</span>
-<span class="fc" id="L58">		this.indexer = new LDPathIndexer(cache);</span>
-<span class="fc bfc" id="L59" title="All 2 branches covered.">		if (threads.length &gt; 0) {</span>
-<span class="fc" id="L60">			threadpool = listeningDecorator(newFixedThreadPool(threads[0]));</span>
-		}
-<span class="fc" id="L62">	}</span>
+<span class="nc" id="L49">	public IndexRun(final String transformationSource, final Set&lt;Resource&gt; uris, final JenaBackend c) {</span>
+<span class="nc" id="L50">		this.transformation = transformationSource;</span>
+<span class="nc" id="L51">		this.uris = uris;</span>
+<span class="nc" id="L52">		this.cache = c;</span>
+<span class="nc" id="L53">		this.indexer = new LDPathIndexer(cache);</span>
+<span class="nc" id="L54">	}</span>
 
 	@Override
 	public void run() {
-<span class="fc bfc" id="L66" title="All 2 branches covered.">		for (final Resource uri : uris) {</span>
-<span class="fc" id="L67">			log.info(&quot;Indexing {}...&quot;, uri);</span>
-<span class="fc" id="L68">			final ListenableFuture&lt;NamedFields&gt; result = threadpool().submit(new Callable&lt;NamedFields&gt;() {</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">		for (final Resource uri : uris) {</span>
+<span class="nc" id="L59">			log.info(&quot;Indexing {}...&quot;, uri);</span>
+<span class="nc" id="L60">			final ListenableFuture&lt;NamedFields&gt; result = threadpool().submit(new Callable&lt;NamedFields&gt;() {</span>
 
 				@Override
 				public NamedFields call() {
-<span class="fc" id="L72">					return indexer.apply(transformation).apply(uri);</span>
+<span class="nc" id="L64">					return indexer.apply(transformation).apply(uri);</span>
 				}
 			});
-<span class="fc" id="L75">			addCallback(result, new FutureCallback&lt;NamedFields&gt;() {</span>
+<span class="nc" id="L67">			addCallback(result, new FutureCallback&lt;NamedFields&gt;() {</span>
 
 				@Override
 				public void onSuccess(final NamedFields fields) {
-<span class="fc" id="L79">					log.info(&quot;Finished indexing: {}&quot;, uri);</span>
-<span class="fc" id="L80">					log.debug(&quot;With result: {}&quot;, fields);</span>
-<span class="fc" id="L81">					next(fields);</span>
-<span class="fc" id="L82">				}</span>
+<span class="nc" id="L71">					log.info(&quot;Finished indexing: {}&quot;, uri);</span>
+<span class="nc" id="L72">					log.debug(&quot;With result: {}&quot;, fields);</span>
+<span class="nc" id="L73">					next(fields);</span>
+<span class="nc" id="L74">				}</span>
 
 				@Override
 				public void onFailure(final Throwable t) {
-<span class="fc" id="L86">					log.error(&quot;Failed to index: {}!&quot;, uri);</span>
-<span class="fc" id="L87">					log.error(&quot;With exception: &quot;, t);</span>
-<span class="fc" id="L88">				}</span>
+<span class="nc" id="L78">					log.error(&quot;Failed to index: {}!&quot;, uri);</span>
+<span class="nc" id="L79">					log.error(&quot;With exception: &quot;, t);</span>
+<span class="nc" id="L80">				}</span>
 			});
-<span class="fc" id="L90">		}</span>
-<span class="fc" id="L91">	}</span>
+<span class="nc" id="L82">		}</span>
+<span class="nc" id="L83">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.0.201403182114</span></div></body></html>

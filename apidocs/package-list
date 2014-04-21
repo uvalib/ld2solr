@@ -1,0 +1,4 @@
+edu.virginia.lib.ld2solr
+edu.virginia.lib.ld2solr.api
+edu.virginia.lib.ld2solr.impl
+edu.virginia.lib.ld2solr.spi

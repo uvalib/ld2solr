@@ -2,8 +2,6 @@
 
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.collect.Maps.transformEntries;
-import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
-import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.IOException;
@@ -21,7 +19,6 @@ import edu.virginia.lib.ld2solr.api.NamedFields;
 import edu.virginia.lib.ld2solr.api.OutputRecord;
 import edu.virginia.lib.ld2solr.spi.AbstractStage;
 import edu.virginia.lib.ld2solr.spi.OutputStage;
-import edu.virginia.lib.ld2solr.spi.Stage;
 
 /**
  * An {@link OutputStage} that produces records in Solr XML form.
@@ -29,68 +26,58 @@ import edu.virginia.lib.ld2solr.spi.Stage;
  * @author ajs6f
  * 
  */
-public class SolrXMLOutputStage extends AbstractStage&lt;OutputRecord&gt; implements OutputStage {
+<span class="fc" id="L29">public class SolrXMLOutputStage extends AbstractStage&lt;SolrXMLOutputStage, OutputRecord&gt; implements OutputStage {</span>
 
 	// TODO make index-time boost somehow adjustable, or something
-<span class="fc" id="L35">	public static final Long INDEX_TIME_BOOST = 1L;</span>
+<span class="fc" id="L32">	public static final Long INDEX_TIME_BOOST = 1L;</span>
 
-<span class="fc" id="L37">	private static final Logger log = getLogger(SolrXMLOutputStage.class);</span>
-
-	/**
-	 * @param threads
-	 *            the number of threads to use in this {@link Stage}
-	 */
-<span class="fc" id="L43">	public SolrXMLOutputStage(final Integer... threads) {</span>
-<span class="fc bfc" id="L44" title="All 2 branches covered.">		if (threads.length &gt; 0) {</span>
-<span class="fc" id="L45">			threadpool = listeningDecorator(newFixedThreadPool(threads[0]));</span>
-		}
-<span class="fc" id="L47">	}</span>
+<span class="fc" id="L34">	private static final Logger log = getLogger(SolrXMLOutputStage.class);</span>
 
 	@Override
 	public void accept(final NamedFields fields) {
-<span class="fc" id="L51">		final SolrInputDocument record = wrap.apply(fields);</span>
-<span class="fc" id="L52">		next(new OutputRecord() {</span>
+<span class="fc" id="L38">		final SolrInputDocument record = wrap.apply(fields);</span>
+<span class="fc" id="L39">		next(new OutputRecord() {</span>
 
 			@Override
 			public String id() {
-<span class="fc" id="L56">				return fields.id();</span>
+<span class="fc" id="L43">				return fields.id();</span>
 			}
 
 			@Override
 			public byte[] record() {
 				try {
-<span class="fc" id="L62">					return new UpdateRequest().add(record).getXML().getBytes();</span>
-<span class="nc" id="L63">				} catch (final IOException e) {</span>
-<span class="nc" id="L64">					throw propagate(e);</span>
+<span class="fc" id="L49">					return new UpdateRequest().add(record).getXML().getBytes();</span>
+<span class="nc" id="L50">				} catch (final IOException e) {</span>
+<span class="nc" id="L51">					throw propagate(e);</span>
 				}
 			}
 		});
-<span class="fc" id="L68">	}</span>
+<span class="fc" id="L55">	}</span>
 
 	/**
 	 * Produces a {@link SolrInputDocument} from a {@link NamedFields} input.
 	 */
-<span class="fc" id="L73">	protected static Function&lt;NamedFields, SolrInputDocument&gt; wrap = new Function&lt;NamedFields, SolrInputDocument&gt;() {</span>
+<span class="fc" id="L60">	protected static Function&lt;NamedFields, SolrInputDocument&gt; wrap = new Function&lt;NamedFields, SolrInputDocument&gt;() {</span>
 
 		@Override
 		public SolrInputDocument apply(final NamedFields fields) {
-<span class="fc" id="L77">			return new SolrInputDocument(transformEntries(fields, collection2solrInputField));</span>
+<span class="fc" id="L64">			return new SolrInputDocument(transformEntries(fields, collection2solrInputField));</span>
 		}
 	};
 
 	/**
 	 * Creates a {@link SolrInputField} from a single named field.
 	 */
-<span class="fc" id="L84">	private static EntryTransformer&lt;String, Collection&lt;String&gt;, SolrInputField&gt; collection2solrInputField = new EntryTransformer&lt;String, Collection&lt;String&gt;, SolrInputField&gt;() {</span>
+<span class="fc" id="L71">	private static EntryTransformer&lt;String, Collection&lt;String&gt;, SolrInputField&gt; collection2solrInputField = new EntryTransformer&lt;String, Collection&lt;String&gt;, SolrInputField&gt;() {</span>
 
 		@Override
 		public SolrInputField transformEntry(final String key, final Collection&lt;String&gt; input) {
-<span class="fc" id="L88">			final SolrInputField field = new SolrInputField(key);</span>
-<span class="fc bfc" id="L89" title="All 2 branches covered.">			for (final String value : input) {</span>
-<span class="fc" id="L90">				log.trace(&quot;Adding value: {} to field: {}&quot;, value, key);</span>
-<span class="fc" id="L91">				field.addValue(value, INDEX_TIME_BOOST);</span>
-<span class="fc" id="L92">			}</span>
-<span class="fc" id="L93">			return field;</span>
+<span class="fc" id="L75">			final SolrInputField field = new SolrInputField(key);</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">			for (final String value : input) {</span>
+<span class="fc" id="L77">				log.trace(&quot;Adding value: {} to field: {}&quot;, value, key);</span>
+<span class="fc" id="L78">				field.addValue(value, INDEX_TIME_BOOST);</span>
+<span class="fc" id="L79">			}</span>
+<span class="fc" id="L80">			return field;</span>
 		}
 	};
 }

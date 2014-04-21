@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>DatasetCacheLoader.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Linked Data to Solr</a> &gt; <a href="index.source.html" class="el_package">edu.virginia.lib.ld2solr.impl</a> &gt; <span class="el_source">DatasetCacheLoader.java</span></div><h1>DatasetCacheLoader.java</h1><pre class="source lang-java linenums">package edu.virginia.lib.ld2solr.impl;
+
+import static com.google.common.util.concurrent.Futures.addCallback;
+import static com.hp.hpl.jena.query.ReadWrite.WRITE;
+import static org.slf4j.LoggerFactory.getLogger;
+
+import org.slf4j.Logger;
+
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.rdf.model.Model;
+
+import edu.virginia.lib.ld2solr.spi.AbstractStage;
+import edu.virginia.lib.ld2solr.spi.CacheLoader;
+
+/**
+ * A {@link CacheLoader} that loads RDF into a Jena {@link Dataset}.
+ * 
+ * @author ajs6f
+ * 
+ */
+<span class="nc" id="L23">public class DatasetCacheLoader extends AbstractStage&lt;DatasetCacheLoader, Void&gt; implements CacheLoader {</span>
+
+	private Dataset dataset;
+
+<span class="nc" id="L27">	private static final Logger log = getLogger(CacheAssembler.class);</span>
+
+	@Override
+	public void accept(final Model additions) {
+<span class="nc" id="L31">		final ListenableFuture&lt;?&gt; task = threadpool().submit(new Runnable() {</span>
+			@Override
+			public void run() {
+<span class="nc" id="L34">				dataset.begin(WRITE);</span>
+				try {
+<span class="nc" id="L36">					dataset.getDefaultModel().add(additions);</span>
+<span class="nc" id="L37">					dataset.commit();</span>
+				} finally {
+<span class="nc" id="L39">					dataset.end();</span>
+<span class="nc" id="L40">				}</span>
+<span class="nc" id="L41">			}</span>
+		});
+<span class="nc" id="L43">		addCallback(task, new ReportCallback(additions));</span>
+<span class="nc" id="L44">	}</span>
+
+<span class="nc" id="L46">	private static class ReportCallback implements FutureCallback&lt;Object&gt; {</span>
+
+		private final Model model;
+
+<span class="nc" id="L50">		public ReportCallback(final Model m) {</span>
+<span class="nc" id="L51">			this.model = m;</span>
+<span class="nc" id="L52">		}</span>
+
+		@Override
+		public void onSuccess(final Object result) {
+<span class="nc" id="L56">			log.debug(&quot;Added {} triples to cache...&quot;, model.size());</span>
+<span class="nc" id="L57">			log.trace(&quot;Added triples: {}&quot;, model);</span>
+<span class="nc" id="L58">		}</span>
+
+		@Override
+		public void onFailure(final Throwable t) {
+<span class="nc" id="L62">			log.error(&quot;Error assembling triples to add to cache!&quot;);</span>
+<span class="nc" id="L63">			log.error(&quot;Exception: &quot;, t);</span>
+<span class="nc" id="L64">		}</span>
+
+	}
+
+	/**
+	 * @param d
+	 *            the {@link Dataset} with which to back this loader
+	 * @return this {@link DatasetCacheLoader} for continued operation
+	 */
+	public DatasetCacheLoader dataset(final Dataset d) {
+<span class="nc" id="L74">		this.dataset = d;</span>
+<span class="nc" id="L75">		return this;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.0.201403182114</span></div></body></html>

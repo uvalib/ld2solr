@@ -11,7 +11,7 @@ import com.google.common.util.concurrent.ListeningExecutorService;
  * @author ajs6f
  * 
  */
-<span class="fc" id="L14">public abstract class AbstractStage&lt;Produces&gt; implements Stage&lt;Produces&gt; {</span>
+<span class="fc" id="L14">public abstract class AbstractStage&lt;T extends AbstractStage&lt;T, Produces&gt;, Produces&gt; implements Stage&lt;Produces&gt; {</span>
 
 <span class="fc" id="L16">	public static final Integer DEFAULT_NUM_THREADS = 10;</span>
 
@@ -38,7 +38,7 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 	 * @return a {@link ListeningExecutorService} that should be used for work
 	 *         associated with tasks transiting this stage
 	 */
-	public ListeningExecutorService threadpool() {
+	protected ListeningExecutorService threadpool() {
 <span class="fc" id="L42">		return threadpool;</span>
 	}
 
@@ -47,5 +47,20 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 <span class="fc" id="L47">		this.threadpool.shutdown();</span>
 <span class="fc" id="L48">		this.threadpool.awaitTermination(MAX_VALUE, SECONDS);</span>
 <span class="fc" id="L49">	}</span>
+
+	/**
+	 * Alter the number of threads being used in this {@link Stage}.
+	 * 
+	 * @param numThreads
+	 *            the number of threads to use
+	 * @throws InterruptedException
+	 */
+	public T threads(final Integer numThreads) throws InterruptedException {
+<span class="fc" id="L59">		shutdown();</span>
+<span class="fc" id="L60">		threadpool = listeningDecorator(newFixedThreadPool(numThreads));</span>
+		@SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L62">		final T t = (T) this;</span>
+<span class="fc" id="L63">		return t;</span>
+	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.0.201403182114</span></div></body></html>

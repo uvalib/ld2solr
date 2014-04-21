@@ -19,7 +19,7 @@ public class JenaBackend extends GenericJenaBackend {
 	private final Model model;
 
 	/**
-	 * @param model
+	 * @param m
 	 *            the model with which to back this cache.
 	 */
 	public JenaBackend(final Model m) {
@@ -33,7 +33,7 @@ public class JenaBackend extends GenericJenaBackend {
 	 * 
 	 * @param d
 	 *            The {@link Dataset} on which to draw.
-	 * @return
+	 * @return a {@link JenaBackend} backed by d
 	 */
 	public static JenaBackend with(final Dataset d) {
 <span class="fc" id="L39">		d.begin(READ);</span>
