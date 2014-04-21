@@ -21,12 +21,12 @@
             <item name="UVa Library" href="http://www.library.virginia.edu/" />
         </links>
         <menu>
-           <!-- <item>
+           <item name="Building the software" href="building.html">
                 <description>Building ld2solr</description>
             </item>
-            <item>
-                <description>Using ld2solr</description>
-            </item> -->
+            <item name="Design" href="design.html">
+                <description>Theory of operation</description>
+            </item> 
         </menu>
         <menu ref="reports"/>
     </body>
