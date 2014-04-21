@@ -16,6 +16,8 @@ import edu.virginia.lib.ld2solr.spi.AbstractStage;
 import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
 
 /**
+ * A {@link RecordPersister} that writes {@link OutputRecords} to a filesystem.
+ * 
  * @author ajs6f
  * 
  */
@@ -76,6 +78,7 @@ public class FilesystemPersister extends AbstractStage<OutputRecord> implements 
 
 	@Override
 	public void andThen(final Acceptor<OutputRecord, ?> a) {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(
+				"It is currently not expected that indexing workflow will continue after persistence.");
 	}
 }

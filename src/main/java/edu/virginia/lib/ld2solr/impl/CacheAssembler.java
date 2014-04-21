@@ -116,7 +116,7 @@ public class CacheAssembler extends AbstractStage<Void> implements Callable<Set<
 
 	/**
 	 * @param u
-	 *            the uris to retrieve
+	 *            the URIs to retrieve
 	 * @return this {@link CacheAssembler} for further operation
 	 */
 	public CacheAssembler uris(final Set<Resource> u) {

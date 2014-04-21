@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -45,13 +46,15 @@ import edu.virginia.lib.ld2solr.spi.OutputStage;
  * @author ajs6f
  * 
  */
-public class MainTest extends TestHelper {
+public class WorkflowTest extends TestHelper {
 
 	private Workflow testMain;
 
 	private TestSink testSink;
 
 	private OutputStage testOutputStage;
+
+	private CacheAssembler testAssembler;
 
 	private static final String transformation = "title = dc:title :: xsd:string;\n"
 			+ "alt_id = dc:identifier :: xsd:string;";
@@ -60,7 +63,7 @@ public class MainTest extends TestHelper {
 
 	private static final long TIMESTEP = 1000;
 
-	private static final Logger log = getLogger(MainTest.class);
+	private static final Logger log = getLogger(WorkflowTest.class);
 
 	@Before
 	public void setUp() {
@@ -69,16 +72,23 @@ public class MainTest extends TestHelper {
 		testMain.dataset(dataset);
 		testSink = new TestSink();
 		testMain.persister(testSink);
-		testMain.assembler(new CacheAssembler(dataset).uris(uris));
+		testAssembler = new CacheAssembler(dataset).uris(uris);
+		testMain.assembler(testAssembler);
 		testOutputStage = new TestOutputStage();
 		testMain.outputStage(testOutputStage);
+	}
+
+	@After
+	public void tearDown() throws InterruptedException {
+		testAssembler.shutdown();
+		testOutputStage.shutdown();
+		testSink.shutdown();
 	}
 
 	@Test
 	public void testFullRun() throws InterruptedException {
 		log.trace("Entering testFullRun()...");
-		final Set<Resource> successfulUris = new HashSet<Resource>(uris.size());
-		testMain.fullRun(transformation, uris, successfulUris);
+		final Set<Resource> successfulUris = testMain.fullRun(transformation, uris);
 		final long startTime = currentTimeMillis();
 		synchronized (testSink) {
 			while (testSink.accepted().size() < successfulUris.size() && currentTimeMillis() < (startTime + TIMEOUT)) {
@@ -105,8 +115,7 @@ public class MainTest extends TestHelper {
 		final Set<Resource> urisWithExtra = new HashSet<>(uris);
 		final Set<Resource> badUris = singleton(createResource());
 		urisWithExtra.addAll(badUris);
-		final Set<Resource> successfulUris = new HashSet<>();
-		testMain.fullRun(transformation, urisWithExtra, successfulUris);
+		final Set<Resource> successfulUris = testMain.fullRun(transformation, urisWithExtra);
 		final long startTime = currentTimeMillis();
 		synchronized (testSink) {
 			while ((testSink.accepted().size() < successfulUris.size()) && currentTimeMillis() < (startTime + TIMEOUT)) {

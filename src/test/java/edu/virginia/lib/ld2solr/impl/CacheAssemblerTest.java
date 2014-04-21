@@ -1,7 +1,6 @@
-package edu.virginia.lib.ld2solr;
+package edu.virginia.lib.ld2solr.impl;
 
 import static com.google.common.collect.Sets.difference;
-import static com.google.common.collect.Sets.newHashSet;
 import static com.hp.hpl.jena.query.ReadWrite.READ;
 import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
 import static com.hp.hpl.jena.tdb.TDBFactory.createDataset;
@@ -19,9 +18,6 @@ import org.slf4j.Logger;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Resource;
-
-import edu.virginia.lib.ld2solr.impl.CacheAssembler;
-import edu.virginia.lib.ld2solr.impl.TestHelper;
 
 public class CacheAssemblerTest extends TestHelper {
 
@@ -52,7 +48,7 @@ public class CacheAssemblerTest extends TestHelper {
 
 	@Test
 	public void testAccumulationWithEmptyResource() {
-		final Set<Resource> urisWithEmpty = newHashSet(uris);
+		final Set<Resource> urisWithEmpty = new HashSet<>(uris);
 		urisWithEmpty.add(createResource(uriBase + "empty"));
 		testAssembler.uris(urisWithEmpty);
 		final Set<Resource> successfullyRetrievedUris = testAssembler.call();

@@ -20,7 +20,11 @@ public class TestAcceptor<Accepts, Produces> implements Acceptor<Accepts, Produc
 	@Override
 	public void andThen(final Acceptor<Produces, ?> a) {
 		// NOOP
+	}
 
+	@Override
+	public void next(final Produces task) {
+		// // NO-OP
 	}
 
 	@Override
@@ -41,22 +45,7 @@ public class TestAcceptor<Accepts, Produces> implements Acceptor<Accepts, Produc
 		// NO-OP
 	}
 
-	public static class TestSink implements RecordPersister {
-
-		private final Set<OutputRecord> accepted = new HashSet<>();
-
-		@Override
-		public void accept(final OutputRecord task) {
-			accepted.add(task);
-			synchronized (this) {
-				notifyAll();
-			}
-		}
-
-		@Override
-		public void andThen(final Acceptor<OutputRecord, ?> a) {
-			// NOOP
-		}
+	public static class TestSink extends TestAcceptor<OutputRecord, OutputRecord> implements RecordPersister {
 
 		@Override
 		public TestSink location(final String location) {
@@ -66,15 +55,6 @@ public class TestAcceptor<Accepts, Produces> implements Acceptor<Accepts, Produc
 		@Override
 		public String location() {
 			return "/dev/null";
-		}
-
-		public Set<OutputRecord> accepted() {
-			return accepted;
-		}
-
-		@Override
-		public void shutdown() {
-			// NO-OP
 		}
 	}
 }

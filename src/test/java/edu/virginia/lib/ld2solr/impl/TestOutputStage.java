@@ -2,15 +2,14 @@ package edu.virginia.lib.ld2solr.impl;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
 import edu.virginia.lib.ld2solr.api.OutputRecord;
+import edu.virginia.lib.ld2solr.spi.AbstractStage;
 import edu.virginia.lib.ld2solr.spi.OutputStage;
 
-public class TestOutputStage implements OutputStage {
-
-	private Acceptor<OutputRecord, ?> nextStage;
+public class TestOutputStage extends AbstractStage<OutputRecord> implements OutputStage {
 
 	@Override
 	public void accept(final NamedFields fields) {
-		nextStage.accept(new OutputRecord() {
+		next(new OutputRecord() {
 
 			private final String id = fields.id();
 
@@ -29,18 +28,5 @@ public class TestOutputStage implements OutputStage {
 				return "Record id: " + id;
 			}
 		});
-
 	}
-
-	@Override
-	public void andThen(final Acceptor<OutputRecord, ?> a) {
-		this.nextStage = a;
-
-	}
-
-	@Override
-	public void shutdown() {
-		nextStage = null;
-	}
-
 }

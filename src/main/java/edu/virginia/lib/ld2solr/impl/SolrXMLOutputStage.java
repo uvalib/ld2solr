@@ -49,7 +49,7 @@ public class SolrXMLOutputStage extends AbstractStage<OutputRecord> implements O
 	@Override
 	public void accept(final NamedFields fields) {
 		final SolrInputDocument record = wrap.apply(fields);
-		nextStage.accept(new OutputRecord() {
+		next(new OutputRecord() {
 
 			@Override
 			public String id() {

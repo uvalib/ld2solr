@@ -24,6 +24,16 @@ public abstract class AbstractStage<Produces> implements Stage<Produces> {
 		this.nextStage = a;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see edu.virginia.lib.ld2solr.spi.Stage#next(java.lang.Object)
+	 */
+	@Override
+	public void next(final Produces task) {
+		nextStage.accept(task);
+	}
+
 	/**
 	 * @return a {@link ListeningExecutorService} that should be used for work
 	 *         associated with tasks transiting this stage

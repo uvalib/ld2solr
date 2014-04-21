@@ -7,10 +7,8 @@ import static com.google.common.collect.Sets.difference;
 import static com.hp.hpl.jena.query.ReadWrite.READ;
 import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
 import static com.hp.hpl.jena.tdb.TDBFactory.createDataset;
-import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
@@ -30,7 +28,6 @@ import org.slf4j.Logger;
 import com.google.common.base.Function;
 import com.google.common.io.Files;
 import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.impl.CacheAssembler;
@@ -68,17 +65,17 @@ public class Workflow {
 
 	private static final Logger log = getLogger(Workflow.class);
 
-	public void fullRun(final String transformation, final Set<Resource> uris, Set<Resource> successfullyRetrieved)
-			throws InterruptedException {
+	public Set<Resource> fullRun(final String transformation, final Set<Resource> uris) throws InterruptedException {
 
+		Set<Resource> successfullyRetrieved = new HashSet<>(uris.size());
 		// first, we may need to assemble the cache of RDF
 		if (cacheAssembler != null) {
 			successfullyRetrieved.addAll(cacheAssembler.call());
 			final Set<Resource> failures = difference(uris, successfullyRetrieved);
 			if (failures.size() > 0) {
-				log.warn("Failed to retrieve some resources!");
+				log.error("Failed to retrieve some resources!");
 				for (final Resource failure : failures) {
-					log.warn("Resource: {}", failure);
+					log.warn("Resource: {} could not be retrieved!", failure);
 				}
 			}
 			cacheAssembler.shutdown();
@@ -100,14 +97,15 @@ public class Workflow {
 		outputStage.andThen(persister);
 		indexRun.run();
 		indexRun.threadpool().shutdown();
-		indexRun.threadpool().awaitTermination(MAX_VALUE, SECONDS);
 		outputStage.shutdown();
 		persister.shutdown();
+
+		return successfullyRetrieved;
 	}
 
 	/**
-	 * @param dataset
-	 *            the {@link Model} to use underneath the RDF cache
+	 * @param d
+	 *            the {@link Dataset} to use underneath the RDF cache
 	 * @return this {@link Workflow} for continued operation
 	 */
 	public Workflow dataset(final Dataset d) {
@@ -126,22 +124,22 @@ public class Workflow {
 	}
 
 	/**
-	 * @param persister
+	 * @param rp
 	 *            the {@link RecordPersister} to use
 	 * @return this {@link Workflow} for continued operation
 	 */
-	public Workflow persister(final RecordPersister persister) {
-		this.persister = persister;
+	public Workflow persister(final RecordPersister rp) {
+		this.persister = rp;
 		return this;
 	}
 
 	/**
-	 * @param persister
-	 *            the {@link RecordPersister} to use
+	 * @param os
+	 *            the {@link OutputStage} to use
 	 * @return this {@link Workflow} for continued operation
 	 */
-	public Workflow outputStage(final OutputStage stage) {
-		this.outputStage = stage;
+	public Workflow outputStage(final OutputStage os) {
+		this.outputStage = os;
 		return this;
 	}
 
@@ -203,10 +201,9 @@ public class Workflow {
 			if (cmd.hasOption("indexing-threads")) {
 				main.numIndexerThreads = parseInt(cmd.getOptionValue("indexing-threads"));
 			}
-			final Set<Resource> successfullyRetrieved = new HashSet<>(uris.size());
 			main.outputStage(new SolrXMLOutputStage());
 			main.persister(new FilesystemPersister().location(outputDirectory));
-			main.fullRun(transform, uris, successfullyRetrieved);
+			final Set<Resource> successfullyRetrieved = main.fullRun(transform, uris);
 			log.debug("Successfully retrieved URIs: {}", successfullyRetrieved);
 		}
 	}

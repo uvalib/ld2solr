@@ -18,6 +18,13 @@ public interface Stage<Produces> {
 	public void andThen(Acceptor<Produces, ?> a);
 
 	/**
+	 * Hand a task over to the next stage of workflow.
+	 * 
+	 * @param task
+	 */
+	public void next(Produces task);
+
+	/**
 	 * Frees any resources associated to this {@link Stage}.
 	 * 
 	 * @throws InterruptedException

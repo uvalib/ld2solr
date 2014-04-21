@@ -78,7 +78,7 @@ public class IndexRun extends AbstractStage<NamedFields> implements Runnable {
 				public void onSuccess(final NamedFields fields) {
 					log.info("Finished indexing: {}", uri);
 					log.debug("With result: {}", fields);
-					nextStage.accept(fields);
+					next(fields);
 				}
 
 				@Override
