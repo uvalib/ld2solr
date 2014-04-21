@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Stage.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Linked Data to Solr</a> &gt; <a href="index.source.html" class="el_package">edu.virginia.lib.ld2solr.spi</a> &gt; <span class="el_source">Stage.java</span></div><h1>Stage.java</h1><pre class="source lang-java linenums">package edu.virginia.lib.ld2solr.spi;
+
+import com.google.common.util.concurrent.ListeningExecutorService;
+
+/**
+ * A stage of workflow.
+ * 
+ * @author ajs6f
+ * @param &lt;Produces&gt;
+ *            the type of thing produced by this stage
+ */
+public interface Stage&lt;Produces&gt; {
+
+	/**
+	 * Assign the next stage of workflow.
+	 * 
+	 * @param a
+	 */
+	public void andThen(Acceptor&lt;Produces, ?&gt; a);
+
+	/**
+	 * @return a {@link ListeningExecutorService} that should be used for work
+	 *         associated with tasks transiting this stage
+	 */
+	public ListeningExecutorService threadpool();
+
+<span class="fc" id="L27">	public static final Integer DEFAULT_NUM_THREADS = 10;</span>
+
+	/**
+	 * A stage of workflow that, since it is not the first, must accept tasks.
+	 * 
+	 * @author ajs6f
+	 * 
+	 * @param &lt;S&gt;
+	 *            the type of thing accepted by this stage
+	 * @param &lt;T&gt;
+	 *            the type of thing produced by this stage
+	 */
+	public interface Acceptor&lt;Accepts, Produces&gt; extends Stage&lt;Produces&gt; {
+
+		/**
+		 * Accept a task.
+		 * 
+		 * @param task
+		 */
+		public void accept(Accepts task);
+
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.0.201403182114</span></div></body></html>

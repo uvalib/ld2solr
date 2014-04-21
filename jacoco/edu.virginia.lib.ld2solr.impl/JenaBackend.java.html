@@ -3,11 +3,17 @@
  */
 package edu.virginia.lib.ld2solr.impl;
 
+import static com.hp.hpl.jena.query.ReadWrite.READ;
+
 import org.apache.marmotta.ldpath.backend.jena.GenericJenaBackend;
 
+import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 
 /**
+ * We subclass {@link GenericJenaBackend} in order to expose the Jena
+ * {@link Model} inside it, because we wish to manipulate that model directly.
+ * 
  * @author ajs6f
  * 
  */
@@ -16,19 +22,26 @@ public class JenaBackend extends GenericJenaBackend {
 	private final Model model;
 
 	/**
-	 * @param m
+	 * @param model
 	 *            the model with which to back this cache.
 	 */
 	public JenaBackend(final Model m) {
-<span class="fc" id="L23">		super(m);</span>
-<span class="fc" id="L24">		this.model = m;</span>
-<span class="fc" id="L25">	}</span>
+<span class="fc" id="L29">		super(m);</span>
+<span class="fc" id="L30">		this.model = m;</span>
+<span class="fc" id="L31">	}</span>
+
+	public static JenaBackend with(final Dataset d) {
+<span class="fc" id="L34">		d.begin(READ);</span>
+<span class="fc" id="L35">		final Model m = d.getDefaultModel();</span>
+<span class="fc" id="L36">		d.end();</span>
+<span class="fc" id="L37">		return new JenaBackend(m);</span>
+	}
 
 	/**
 	 * @return the model in use
 	 */
 	public Model model() {
-<span class="fc" id="L31">		return model;</span>
+<span class="fc" id="L44">		return model;</span>
 	}
 
 }
