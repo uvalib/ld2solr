@@ -66,7 +66,7 @@ public class DatasetCacheLoader extends AbstractStage<DatasetCacheLoader, Void> 
 	}
 
 	/**
-	 * @param dataset
+	 * @param d
 	 *            the {@link Dataset} with which to back this loader
 	 * @return this {@link DatasetCacheLoader} for continued operation
 	 */

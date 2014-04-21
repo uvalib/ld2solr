@@ -45,8 +45,6 @@ public class IndexRun extends AbstractStage<IndexRun, NamedFields> implements Ru
 	 *            Resources to index
 	 * @param c
 	 *            Linked Data cache over which to operate
-	 * @param threads
-	 *            optional number of threads to use for indexing
 	 */
 	public IndexRun(final String transformationSource, final Set<Resource> uris, final JenaBackend c) {
 		this.transformation = transformationSource;

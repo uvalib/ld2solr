@@ -14,11 +14,12 @@
 	</organization>
 
 	<scm>
-		<connection>git@github.com:uvalib/ld2solr.git</connection>
+		<connection>scm:git@github.com:uvalib/ld2solr.git</connection>
 		<url>https://github.com/uvalib/ld2solr</url>
 	</scm>
 
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<marmotta.version>3.2.0</marmotta.version>
 		<jena.version>2.11.1</jena.version>
 		<jena.tdb.version>1.0.1</jena.tdb.version>
@@ -37,13 +38,21 @@
 			<roles>
 				<role>Instigator</role>
 			</roles>
-			<timezone>America/New York</timezone>
+			<timezone>-4</timezone>
 		</developer>
 	</developers>
 
 	<prerequisites>
 		<maven>3.0</maven>
 	</prerequisites>
+
+	<distributionManagement>
+		<repository>
+			<name>UVa Library Maven Repository</name>
+			<url>http://hudson01.lib.virginia.edu:8080/archiva/repository</url>
+		</repository>
+
+	</distributionManagement>
 
 	<dependencies>
 		<dependency>
@@ -141,6 +150,7 @@
 				<configuration>
 					<source>1.7</source>
 					<target>1.7</target>
+					<encoding></encoding>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -187,7 +197,7 @@
 					</execution>
 					<execution>
 						<id>jacoco-site</id>
-						<phase>site</phase>
+						<phase>pre-site</phase>
 						<goals>
 							<goal>report</goal>
 						</goals>
@@ -271,28 +281,16 @@
 						<goals>
 							<goal>site</goal>
 						</goals>
-						<phase>site-deploy</phase>
+						<phase>post-site</phase>
 					</execution>
 				</executions>
 			</plugin>
 			<plugin>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9.1</version>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>3.3</version>
 				<configuration>
-					<linksource>true</linksource>
-					<keywords>true</keywords>
-					<doctitle>${project.name} ${project.version}</doctitle>
-					<windowtitle>${project.name} ${project.version}</windowtitle>
+					<generateSitemap>true</generateSitemap>
 				</configuration>
-				<executions>
-					<execution>
-						<phase>site</phase>
-						<goals>
-							<goal>javadoc</goal>
-							<goal>test-javadoc</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
@@ -302,51 +300,28 @@
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.9.1</version>
-				<reportSets>
-					<reportSet>
-						<id>html</id>
-						<configuration>
-							<linksource>true</linksource>
-							<includeDependencySources>true</includeDependencySources>
-							<includeTransitiveDependencySources>true</includeTransitiveDependencySources>
-							<keywords>true</keywords>
-							<doctitle>${project.name} ${project.version}</doctitle>
-							<windowtitle>${project.name} ${project.version}</windowtitle>
-						</configuration>
-						<reports>
-							<report>javadoc</report>
-							<report>test-javadoc</report>
-						</reports>
-					</reportSet>
-				</reportSets>
+				<configuration>
+					<linksource>true</linksource>
+					<keywords>true</keywords>
+					<doctitle>${project.name} ${project.version}</doctitle>
+					<windowtitle>${project.name} ${project.version}</windowtitle>
+				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
 				<version>2.7</version>
-				<configuration>
-					<dependencyLocationsEnabled>false</dependencyLocationsEnabled>
-					<dependencyDetailsEnabled>false</dependencyDetailsEnabled>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
 				<version>2.1</version>
-				<reportSets>
-					<reportSet>
-						<reports>
-							<report>dependency-updates-report</report>
-							<report>plugin-updates-report</report>
-							<report>property-updates-report</report>
-						</reports>
-					</reportSet>
-				</reportSets>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jxr-plugin</artifactId>
 				<version>2.4</version>
 				<configuration>
+					<linkJavadoc>true</linkJavadoc>
 				</configuration>
 			</plugin>
 		</plugins>
