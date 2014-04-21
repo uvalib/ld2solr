@@ -1,6 +1,3 @@
-/**
- * 
- */
 package edu.virginia.lib.ld2solr.impl;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -22,7 +19,7 @@ import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
  * @author ajs6f
  * 
  */
-public class FilesystemPersister extends AbstractStage<OutputRecord> implements RecordPersister<FilesystemPersister> {
+public class FilesystemPersister extends AbstractStage<OutputRecord> implements RecordPersister {
 
 	private File directory;
 
@@ -81,5 +78,4 @@ public class FilesystemPersister extends AbstractStage<OutputRecord> implements 
 	public void andThen(final Acceptor<OutputRecord, ?> a) {
 		throw new UnsupportedOperationException();
 	}
-
 }

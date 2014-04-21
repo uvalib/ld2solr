@@ -1,6 +1,3 @@
-/**
- * 
- */
 package edu.virginia.lib.ld2solr.impl;
 
 import static com.google.common.util.concurrent.Futures.addCallback;
@@ -19,8 +16,15 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
 import edu.virginia.lib.ld2solr.spi.AbstractStage;
+import edu.virginia.lib.ld2solr.spi.Stage;
 
 /**
+ * A {@link Stage} of workflow that creates index records as {@link NamedFields}
+ * units. Implements {@link Runnable} because it is usually separated from the
+ * previous {@link Stage}s of cache accumulation. This is to enable users to
+ * avoid (expensive, network-bound) retrieval operations if desired by beginning
+ * workflow with this {@link Stage} over a pre-assembled cache.
+ * 
  * @author ajs6f
  * 
  */
@@ -34,14 +38,17 @@ public class IndexRun extends AbstractStage<NamedFields> implements Runnable {
 
 	private final LDPathIndexer indexer;
 
-	private Integer numIndexerThreads = DEFAULT_NUM_THREADS;
-
 	private static final Logger log = getLogger(IndexRun.class);
 
 	/**
 	 * @param transformationSource
+	 *            LDPath transformation or program to use for indexing
 	 * @param uris
-	 * @param cache
+	 *            Resources to index
+	 * @param c
+	 *            Linked Data cache over which to operate
+	 * @param threads
+	 *            optional number of threads to use for indexing
 	 */
 	public IndexRun(final String transformationSource, final Set<Resource> uris, final JenaBackend c,
 			final Integer... threads) {
@@ -50,9 +57,8 @@ public class IndexRun extends AbstractStage<NamedFields> implements Runnable {
 		this.cache = c;
 		this.indexer = new LDPathIndexer(cache);
 		if (threads.length > 0) {
-			numIndexerThreads = threads[0];
+			threadpool = listeningDecorator(newFixedThreadPool(threads[0]));
 		}
-		threadpool = listeningDecorator(newFixedThreadPool(numIndexerThreads));
 	}
 
 	@Override
@@ -83,5 +89,4 @@ public class IndexRun extends AbstractStage<NamedFields> implements Runnable {
 			});
 		}
 	}
-
 }

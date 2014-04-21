@@ -1,6 +1,3 @@
-/**
- * 
- */
 package edu.virginia.lib.ld2solr;
 
 import static com.google.common.base.Charsets.UTF_8;
@@ -10,7 +7,6 @@ import static com.google.common.collect.Sets.difference;
 import static com.hp.hpl.jena.query.ReadWrite.READ;
 import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
 import static com.hp.hpl.jena.tdb.TDBFactory.createDataset;
-import static edu.virginia.lib.ld2solr.spi.Stage.DEFAULT_NUM_THREADS;
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
@@ -37,10 +33,12 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+import edu.virginia.lib.ld2solr.impl.CacheAssembler;
 import edu.virginia.lib.ld2solr.impl.FilesystemPersister;
 import edu.virginia.lib.ld2solr.impl.IndexRun;
 import edu.virginia.lib.ld2solr.impl.JenaBackend;
 import edu.virginia.lib.ld2solr.impl.SolrXMLOutputStage;
+import edu.virginia.lib.ld2solr.spi.AbstractStage;
 import edu.virginia.lib.ld2solr.spi.OutputStage;
 import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
 
@@ -48,7 +46,7 @@ import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
  * @author ajs6f
  * 
  */
-public class Main {
+public class Workflow {
 
 	/*
 	 * because LDPath uses java.util.ServiceLoader to search the context
@@ -62,13 +60,13 @@ public class Main {
 
 	private CacheAssembler cacheAssembler = null;
 
-	private RecordPersister<?> persister;
+	private RecordPersister persister;
 
-	private OutputStage<?> outputStage = null;
+	private OutputStage outputStage = null;
 
-	private Integer numIndexerThreads = DEFAULT_NUM_THREADS;
+	private Integer numIndexerThreads = AbstractStage.DEFAULT_NUM_THREADS;
 
-	private static final Logger log = getLogger(Main.class);
+	private static final Logger log = getLogger(Workflow.class);
 
 	public void fullRun(final String transformation, final Set<Resource> uris, Set<Resource> successfullyRetrieved)
 			throws InterruptedException {
@@ -83,8 +81,7 @@ public class Main {
 					log.warn("Resource: {}", failure);
 				}
 			}
-			cacheAssembler.threadpool().shutdown();
-			cacheAssembler.threadpool().awaitTermination(MAX_VALUE, SECONDS);
+			cacheAssembler.shutdown();
 		} else {
 			// assume fully cached data
 			successfullyRetrieved = uris;
@@ -104,18 +101,16 @@ public class Main {
 		indexRun.run();
 		indexRun.threadpool().shutdown();
 		indexRun.threadpool().awaitTermination(MAX_VALUE, SECONDS);
-		outputStage.threadpool().shutdown();
-		outputStage.threadpool().awaitTermination(MAX_VALUE, SECONDS);
-		persister.threadpool().shutdown();
-		persister.threadpool().awaitTermination(MAX_VALUE, SECONDS);
+		outputStage.shutdown();
+		persister.shutdown();
 	}
 
 	/**
 	 * @param dataset
 	 *            the {@link Model} to use underneath the RDF cache
-	 * @return this {@link Main} for continued operation
+	 * @return this {@link Workflow} for continued operation
 	 */
-	public Main dataset(final Dataset d) {
+	public Workflow dataset(final Dataset d) {
 		this.dataset = d;
 		return this;
 	}
@@ -123,9 +118,9 @@ public class Main {
 	/**
 	 * @param ca
 	 *            the {@link CacheAssembler} to use
-	 * @return this {@link Main} for continued operation
+	 * @return this {@link Workflow} for continued operation
 	 */
-	public Main assembler(final CacheAssembler ca) {
+	public Workflow assembler(final CacheAssembler ca) {
 		this.cacheAssembler = ca;
 		return this;
 	}
@@ -133,9 +128,9 @@ public class Main {
 	/**
 	 * @param persister
 	 *            the {@link RecordPersister} to use
-	 * @return this {@link Main} for continued operation
+	 * @return this {@link Workflow} for continued operation
 	 */
-	public Main persister(final RecordPersister<?> persister) {
+	public Workflow persister(final RecordPersister persister) {
 		this.persister = persister;
 		return this;
 	}
@@ -143,9 +138,9 @@ public class Main {
 	/**
 	 * @param persister
 	 *            the {@link RecordPersister} to use
-	 * @return this {@link Main} for continued operation
+	 * @return this {@link Workflow} for continued operation
 	 */
-	public Main outputStage(final OutputStage<?> stage) {
+	public Workflow outputStage(final OutputStage stage) {
 		this.outputStage = stage;
 		return this;
 	}
@@ -176,7 +171,7 @@ public class Main {
 			final String transform = Files.toString(transformFile, UTF_8);
 			final String outputDirectory = cmd.getOptionValue('o');
 			log.info("Using output directory: {}", outputDirectory);
-			final Main main = new Main();
+			final Workflow main = new Workflow();
 			if (cmd.hasOption('c')) {
 				final String cacheFile = cmd.getOptionValue('c');
 				log.info("Using cache location: {}", cacheFile);
@@ -188,7 +183,7 @@ public class Main {
 				main.dataset = createDataset();
 			}
 			if (!cmd.hasOption("skip-retrieval")) {
-				Integer assemblerThreads = DEFAULT_NUM_THREADS;
+				Integer assemblerThreads = AbstractStage.DEFAULT_NUM_THREADS;
 				if (cmd.hasOption("assembler-threads")) {
 					assemblerThreads = parseInt(cmd.getOptionValue("assembler-threads"));
 				}
@@ -236,11 +231,11 @@ public class Main {
 				.addOption(
 						new Option(null, "assembler-threads", true,
 								"The number of threads to use for RDF cache accumulation. (Defaults to "
-										+ DEFAULT_NUM_THREADS + ".)"))
+										+ AbstractStage.DEFAULT_NUM_THREADS + ".)"))
 				.addOption(
 						new Option(null, "indexing-threads", true,
 								"The number of threads to use for indexing operation. (Defaults to "
-										+ DEFAULT_NUM_THREADS + ".)"))
+										+ AbstractStage.DEFAULT_NUM_THREADS + ".)"))
 				.addOption("h", "help", false, "Print this help message.");
 	}
 

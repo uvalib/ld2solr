@@ -1,6 +1,3 @@
-/**
- * 
- */
 package edu.virginia.lib.ld2solr.spi;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
@@ -14,6 +11,6 @@ import edu.virginia.lib.ld2solr.spi.Stage.Acceptor;
  * 
  * @param <OutputType>
  */
-public interface OutputStage<T extends OutputStage<T>> extends Acceptor<NamedFields, OutputRecord> {
+public interface OutputStage extends Acceptor<NamedFields, OutputRecord> {
 
 }

@@ -1,7 +1,5 @@
 package edu.virginia.lib.ld2solr.spi;
 
-import com.google.common.util.concurrent.ListeningExecutorService;
-
 /**
  * A stage of workflow.
  * 
@@ -15,36 +13,35 @@ public interface Stage<Produces> {
 	 * Assign the next stage of workflow.
 	 * 
 	 * @param a
+	 *            the next {@link Stage} of workflow
 	 */
 	public void andThen(Acceptor<Produces, ?> a);
 
 	/**
-	 * @return a {@link ListeningExecutorService} that should be used for work
-	 *         associated with tasks transiting this stage
+	 * Frees any resources associated to this {@link Stage}.
+	 * 
+	 * @throws InterruptedException
 	 */
-	public ListeningExecutorService threadpool();
-
-	public static final Integer DEFAULT_NUM_THREADS = 10;
+	public void shutdown() throws InterruptedException;
 
 	/**
-	 * A stage of workflow that, since it is not the first, must accept tasks.
+	 * A stage of workflow that is not the first and therefore accepts tasks.
 	 * 
 	 * @author ajs6f
-	 * 
-	 * @param <S>
+	 * @param <Accepts>
 	 *            the type of thing accepted by this stage
-	 * @param <T>
+	 * @param <Produces>
 	 *            the type of thing produced by this stage
 	 */
 	public interface Acceptor<Accepts, Produces> extends Stage<Produces> {
 
 		/**
-		 * Accept a task.
+		 * Accept a task or quantum of work.
 		 * 
 		 * @param task
+		 *            the task to perform
 		 */
 		public void accept(Accepts task);
-
 	}
 
 }

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package edu.virginia.lib.ld2solr.spi;
 
 import edu.virginia.lib.ld2solr.api.OutputRecord;
@@ -20,14 +17,14 @@ public interface RecordSink extends Acceptor<OutputRecord, OutputRecord> {
 	 * @author ajs6f
 	 * 
 	 */
-	public static interface RecordPersister<T extends RecordPersister<T>> extends RecordSink {
+	public static interface RecordPersister extends RecordSink {
 
 		/**
 		 * @param location
 		 *            the location of the persisted records
 		 * @return the {@link RecordPersister} for continued operation
 		 */
-		public T location(String location);
+		public RecordPersister location(String location);
 
 		/**
 		 * @return the location of the persisted records

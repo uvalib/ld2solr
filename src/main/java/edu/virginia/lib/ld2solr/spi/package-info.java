@@ -1,5 +1,5 @@
 /**
- * Types implemented to create the steps of ld2solr workflow.
+ * Types to implement to create steps in ld2solr workflow.
  * 
  * @author ajs6f
  *

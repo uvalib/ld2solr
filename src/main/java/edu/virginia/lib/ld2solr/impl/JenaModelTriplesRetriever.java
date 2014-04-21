@@ -31,8 +31,8 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import edu.virginia.lib.ld2solr.spi.TriplesRetriever;
 
 /**
- * A {@link TriplesRetriever} that puts its retrieved triples into a Jena
- * {@link Model}.
+ * A {@link TriplesRetriever} that returns its retrieved triples in an in-memory
+ * Jena {@link Model}.
  * 
  * @author ajs6f
  * 

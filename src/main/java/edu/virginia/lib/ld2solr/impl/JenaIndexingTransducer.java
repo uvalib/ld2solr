@@ -1,6 +1,3 @@
-/**
- * 
- */
 package edu.virginia.lib.ld2solr.impl;
 
 import static com.google.common.base.Throwables.propagate;
@@ -25,6 +22,9 @@ import edu.virginia.lib.ld2solr.api.NamedFields;
 import edu.virginia.lib.ld2solr.spi.IndexingTransducer;
 
 /**
+ * An {@link IndexingTransducer} that indexes from a {@link JenaBackend} Linked
+ * Data store using an LDPath transformation.
+ * 
  * @author ajs6f
  * 
  */
@@ -72,19 +72,4 @@ public class JenaIndexingTransducer implements IndexingTransducer {
 			throw propagate(e);
 		}
 	}
-
-	/**
-	 * @return the transformation
-	 */
-	public String transformation() {
-		return transformation;
-	}
-
-	/**
-	 * @return the cache
-	 */
-	public JenaBackend cache() {
-		return cache;
-	}
-
 }

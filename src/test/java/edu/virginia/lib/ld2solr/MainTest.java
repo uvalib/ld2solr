@@ -9,7 +9,7 @@ import static com.google.common.io.Files.createTempDir;
 import static com.google.common.io.Files.write;
 import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
 import static com.hp.hpl.jena.tdb.TDBFactory.createDataset;
-import static edu.virginia.lib.ld2solr.Main.main;
+import static edu.virginia.lib.ld2solr.Workflow.main;
 import static java.io.File.createTempFile;
 import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.singleton;
@@ -34,6 +34,7 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.api.OutputRecord;
+import edu.virginia.lib.ld2solr.impl.CacheAssembler;
 import edu.virginia.lib.ld2solr.impl.TestAcceptor.TestSink;
 import edu.virginia.lib.ld2solr.impl.TestHelper;
 import edu.virginia.lib.ld2solr.impl.TestOutputStage;
@@ -46,11 +47,11 @@ import edu.virginia.lib.ld2solr.spi.OutputStage;
  */
 public class MainTest extends TestHelper {
 
-	private Main testMain;
+	private Workflow testMain;
 
 	private TestSink testSink;
 
-	private OutputStage<?> testOutputStage;
+	private OutputStage testOutputStage;
 
 	private static final String transformation = "title = dc:title :: xsd:string;\n"
 			+ "alt_id = dc:identifier :: xsd:string;";
@@ -63,7 +64,7 @@ public class MainTest extends TestHelper {
 
 	@Before
 	public void setUp() {
-		testMain = new Main();
+		testMain = new Workflow();
 		final Dataset dataset = createDataset();
 		testMain.dataset(dataset);
 		testSink = new TestSink();
@@ -124,7 +125,7 @@ public class MainTest extends TestHelper {
 				String.class);
 		final Exception e = testMainMethod(argsWithSeparator);
 		if (e != null) {
-			fail("Failed to execute Main.main with exception: " + e);
+			fail("Failed to execute Workflow.main with exception: " + e);
 		}
 		log.trace("Leaving testMainMethodExecutes().");
 	}
@@ -136,7 +137,7 @@ public class MainTest extends TestHelper {
 				"--indexing-threads", "7", "--assembler-threads", "7" }, String.class);
 		final Exception e = testMainMethod(argsWithThreadingParams);
 		if (e != null) {
-			fail("Failed to execute Main.main with threading parameters with exception: " + e);
+			fail("Failed to execute Workflow.main with threading parameters with exception: " + e);
 		}
 		log.trace("Leaving testMainMethodExecutesWithCustomThreading().");
 	}
@@ -149,7 +150,7 @@ public class MainTest extends TestHelper {
 				cacheDirectory, "-a", "application/rdf+xml" }, String.class);
 		final Exception e = testMainMethod(argsWithPersistence);
 		if (e != null) {
-			fail("Failed to execute Main.main with persisted RDF cache with exception: " + e);
+			fail("Failed to execute Workflow.main with persisted RDF cache with exception: " + e);
 		}
 		log.trace("Leaving testMainMethodExecutesWithPersistedCache().");
 	}
@@ -158,7 +159,7 @@ public class MainTest extends TestHelper {
 	public void testHelp() {
 		final Exception e = testMainMethod(new String[] { "-h" });
 		if (e != null) {
-			fail("Failed to execute Main.main for help message with exception: " + e);
+			fail("Failed to execute Workflow.main for help message with exception: " + e);
 		}
 	}
 
@@ -172,7 +173,7 @@ public class MainTest extends TestHelper {
 				"--skip-retrieval" }, String.class);
 		final Exception e = testMainMethod(args);
 		if (e != null) {
-			fail("Failed to execute Main.main with preassembled cache with exception: " + e);
+			fail("Failed to execute Workflow.main with preassembled cache with exception: " + e);
 		}
 	}
 
@@ -182,7 +183,7 @@ public class MainTest extends TestHelper {
 				String.class);
 		final Exception e = testMainMethod(args);
 		if (e != null) {
-			fail("Failed to execute Main.main with no cache and no retrieval step with exception: " + e);
+			fail("Failed to execute Workflow.main with no cache and no retrieval step with exception: " + e);
 		}
 	}
 
@@ -190,31 +191,31 @@ public class MainTest extends TestHelper {
 	public void testMissingRequiredCLIArgs() {
 		Exception e = testMainMethod(new String[] { "-t", "fakeTransform", "-u", "fakeUris" });
 		if (e == null) {
-			fail("Should have failed to execute Main.main without required parameter for output directory!");
+			fail("Should have failed to execute Workflow.main without required parameter for output directory!");
 		}
 		e = testMainMethod(new String[] { "-t", "fakeTransform", "-o", "fakeOutputDirectory" });
 		if (e == null) {
-			fail("Should have failed to execute Main.main without required parameter for input URIs!");
+			fail("Should have failed to execute Workflow.main without required parameter for input URIs!");
 		}
 		e = testMainMethod(new String[] { "-u", "fakeUris", "-o", "fakeOutputDirectory" });
 		if (e == null) {
-			fail("Should have failed to execute Main.main without required parameter for indexing transform!");
+			fail("Should have failed to execute Workflow.main without required parameter for indexing transform!");
 		}
 		e = testMainMethod(new String[] { "-o", "fakeOutputDirectory" });
 		if (e == null) {
-			fail("Should have failed to execute Main.main without required parameters for indexing transform and input URIs!");
+			fail("Should have failed to execute Workflow.main without required parameters for indexing transform and input URIs!");
 		}
 		e = testMainMethod(new String[] { "-u", "fakeUris" });
 		if (e == null) {
-			fail("Should have failed to execute Main.main without required parameters for indexing transform and output directory!");
+			fail("Should have failed to execute Workflow.main without required parameters for indexing transform and output directory!");
 		}
 		e = testMainMethod(new String[] { "-t", "fakeTransform" });
 		if (e == null) {
-			fail("Should have failed to execute Main.main without required parameters for input URIs and output directory!");
+			fail("Should have failed to execute Workflow.main without required parameters for input URIs and output directory!");
 		}
 		e = testMainMethod(new String[] {});
 		if (e == null) {
-			fail("Should have failed to execute Main.main without required parameters for input URIs, indexing transform, and output directory!");
+			fail("Should have failed to execute Workflow.main without required parameters for input URIs, indexing transform, and output directory!");
 		}
 	}
 

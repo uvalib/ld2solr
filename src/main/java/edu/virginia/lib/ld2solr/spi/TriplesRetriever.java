@@ -6,6 +6,11 @@ import com.google.common.base.Function;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+/**
+ * Creates retrieval tasks from {@link Resources}.
+ * 
+ * @author ajs6f
+ * 
+ */
 public interface TriplesRetriever extends Function<Resource, Callable<Model>> {
-
 }

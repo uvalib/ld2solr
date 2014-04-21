@@ -1,14 +1,11 @@
 package edu.virginia.lib.ld2solr.impl;
 
-import static com.google.common.util.concurrent.MoreExecutors.sameThreadExecutor;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import org.slf4j.Logger;
-
-import com.google.common.util.concurrent.ListeningExecutorService;
 
 import edu.virginia.lib.ld2solr.api.OutputRecord;
 import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
@@ -19,8 +16,6 @@ public class TestAcceptor<Accepts, Produces> implements Acceptor<Accepts, Produc
 	private final Set<Accepts> accepted = new HashSet<>();
 
 	private static final Logger log = getLogger(TestAcceptor.class);
-
-	private final ListeningExecutorService threadpool = sameThreadExecutor();
 
 	@Override
 	public void andThen(final Acceptor<Produces, ?> a) {
@@ -42,13 +37,11 @@ public class TestAcceptor<Accepts, Produces> implements Acceptor<Accepts, Produc
 	}
 
 	@Override
-	public ListeningExecutorService threadpool() {
-		return threadpool;
+	public void shutdown() {
+		// NO-OP
 	}
 
-	public static class TestSink implements RecordPersister<TestSink> {
-
-		private final ListeningExecutorService threadpool = sameThreadExecutor();
+	public static class TestSink implements RecordPersister {
 
 		private final Set<OutputRecord> accepted = new HashSet<>();
 
@@ -80,8 +73,8 @@ public class TestAcceptor<Accepts, Produces> implements Acceptor<Accepts, Produc
 		}
 
 		@Override
-		public ListeningExecutorService threadpool() {
-			return threadpool;
+		public void shutdown() {
+			// NO-OP
 		}
 	}
 }

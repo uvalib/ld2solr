@@ -1,6 +1,3 @@
-/**
- * 
- */
 package edu.virginia.lib.ld2solr.spi;
 
 import com.google.common.base.Function;
@@ -18,5 +15,4 @@ import edu.virginia.lib.ld2solr.api.NamedFields;
  * 
  */
 public interface IndexingTransducer extends Function<Resource, NamedFields> {
-
 }

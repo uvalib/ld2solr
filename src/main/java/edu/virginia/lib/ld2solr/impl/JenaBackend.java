@@ -1,6 +1,3 @@
-/**
- * 
- */
 package edu.virginia.lib.ld2solr.impl;
 
 import static com.hp.hpl.jena.query.ReadWrite.READ;
@@ -30,6 +27,14 @@ public class JenaBackend extends GenericJenaBackend {
 		this.model = m;
 	}
 
+	/**
+	 * A factory method to use when operating over a (transactional)
+	 * {@link Dataset}. The default model in the {@link Dataset} is used.
+	 * 
+	 * @param d
+	 *            The {@link Dataset} on which to draw.
+	 * @return
+	 */
 	public static JenaBackend with(final Dataset d) {
 		d.begin(READ);
 		final Model m = d.getDefaultModel();

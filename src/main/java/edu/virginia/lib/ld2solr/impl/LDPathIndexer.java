@@ -1,11 +1,11 @@
-/**
- * 
- */
 package edu.virginia.lib.ld2solr.impl;
 
 import edu.virginia.lib.ld2solr.spi.Indexer;
 
 /**
+ * An {@link Indexer} that produces {@link JenaIndexingTransducers} from a
+ * {@link JenaBackend} Linked Data store.
+ * 
  * @author ajs6f
  * 
  */
