@@ -1,10 +1,10 @@
 GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
 Linked Data to Solr,edu.virginia.lib.ld2solr,Workflow.new Function() {...},0,6,0,0,0,2,0,2,0,2
 Linked Data to Solr,edu.virginia.lib.ld2solr,Workflow,0,446,0,28,0,86,0,23,0,9
-Linked Data to Solr,edu.virginia.lib.ld2solr.impl,IndexRun,56,0,2,0,13,0,4,0,3,0
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,IndexRun,0,56,0,2,0,13,0,4,0,3
 Linked Data to Solr,edu.virginia.lib.ld2solr.impl,JenaModelTriplesRetriever.new Callable() {...},30,119,6,10,0,19,4,6,0,2
-Linked Data to Solr,edu.virginia.lib.ld2solr.impl,IndexRun.new Callable() {...},20,0,0,0,2,0,2,0,2,0
-Linked Data to Solr,edu.virginia.lib.ld2solr.impl,IndexRun.new FutureCallback() {...},33,0,0,0,8,0,3,0,3,0
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,IndexRun.new Callable() {...},0,20,0,0,0,2,0,2,0,2
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,IndexRun.new FutureCallback() {...},0,33,0,0,0,8,0,3,0,3
 Linked Data to Solr,edu.virginia.lib.ld2solr.impl,FilesystemPersister,5,67,0,0,2,17,0,6,0,6
 Linked Data to Solr,edu.virginia.lib.ld2solr.impl,JenaBackend,0,23,0,0,0,8,0,3,0,3
 Linked Data to Solr,edu.virginia.lib.ld2solr.impl,DatasetCacheLoader,28,0,0,0,8,0,4,0,4,0

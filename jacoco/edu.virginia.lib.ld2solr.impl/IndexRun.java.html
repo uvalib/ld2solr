@@ -36,7 +36,7 @@ public class IndexRun extends AbstractStage&lt;IndexRun, NamedFields&gt; impleme
 
 	private final LDPathIndexer indexer;
 
-<span class="nc" id="L39">	private static final Logger log = getLogger(IndexRun.class);</span>
+<span class="fc" id="L39">	private static final Logger log = getLogger(IndexRun.class);</span>
 
 	/**
 	 * @param transformationSource
@@ -46,40 +46,40 @@ public class IndexRun extends AbstractStage&lt;IndexRun, NamedFields&gt; impleme
 	 * @param c
 	 *            Linked Data cache over which to operate
 	 */
-<span class="nc" id="L49">	public IndexRun(final String transformationSource, final Set&lt;Resource&gt; uris, final JenaBackend c) {</span>
-<span class="nc" id="L50">		this.transformation = transformationSource;</span>
-<span class="nc" id="L51">		this.uris = uris;</span>
-<span class="nc" id="L52">		this.cache = c;</span>
-<span class="nc" id="L53">		this.indexer = new LDPathIndexer(cache);</span>
-<span class="nc" id="L54">	}</span>
+<span class="fc" id="L49">	public IndexRun(final String transformationSource, final Set&lt;Resource&gt; uris, final JenaBackend c) {</span>
+<span class="fc" id="L50">		this.transformation = transformationSource;</span>
+<span class="fc" id="L51">		this.uris = uris;</span>
+<span class="fc" id="L52">		this.cache = c;</span>
+<span class="fc" id="L53">		this.indexer = new LDPathIndexer(cache);</span>
+<span class="fc" id="L54">	}</span>
 
 	@Override
 	public void run() {
-<span class="nc bnc" id="L58" title="All 2 branches missed.">		for (final Resource uri : uris) {</span>
-<span class="nc" id="L59">			log.info(&quot;Indexing {}...&quot;, uri);</span>
-<span class="nc" id="L60">			final ListenableFuture&lt;NamedFields&gt; result = threadpool().submit(new Callable&lt;NamedFields&gt;() {</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">		for (final Resource uri : uris) {</span>
+<span class="fc" id="L59">			log.info(&quot;Indexing {}...&quot;, uri);</span>
+<span class="fc" id="L60">			final ListenableFuture&lt;NamedFields&gt; result = threadpool().submit(new Callable&lt;NamedFields&gt;() {</span>
 
 				@Override
 				public NamedFields call() {
-<span class="nc" id="L64">					return indexer.apply(transformation).apply(uri);</span>
+<span class="fc" id="L64">					return indexer.apply(transformation).apply(uri);</span>
 				}
 			});
-<span class="nc" id="L67">			addCallback(result, new FutureCallback&lt;NamedFields&gt;() {</span>
+<span class="fc" id="L67">			addCallback(result, new FutureCallback&lt;NamedFields&gt;() {</span>
 
 				@Override
 				public void onSuccess(final NamedFields fields) {
-<span class="nc" id="L71">					log.info(&quot;Finished indexing: {}&quot;, uri);</span>
-<span class="nc" id="L72">					log.debug(&quot;With result: {}&quot;, fields);</span>
-<span class="nc" id="L73">					next(fields);</span>
-<span class="nc" id="L74">				}</span>
+<span class="fc" id="L71">					log.info(&quot;Finished indexing: {}&quot;, uri);</span>
+<span class="fc" id="L72">					log.debug(&quot;With result: {}&quot;, fields);</span>
+<span class="fc" id="L73">					next(fields);</span>
+<span class="fc" id="L74">				}</span>
 
 				@Override
 				public void onFailure(final Throwable t) {
-<span class="nc" id="L78">					log.error(&quot;Failed to index: {}!&quot;, uri);</span>
-<span class="nc" id="L79">					log.error(&quot;With exception: &quot;, t);</span>
-<span class="nc" id="L80">				}</span>
+<span class="fc" id="L78">					log.error(&quot;Failed to index: {}!&quot;, uri);</span>
+<span class="fc" id="L79">					log.error(&quot;With exception: &quot;, t);</span>
+<span class="fc" id="L80">				}</span>
 			});
-<span class="nc" id="L82">		}</span>
-<span class="nc" id="L83">	}</span>
+<span class="fc" id="L82">		}</span>
+<span class="fc" id="L83">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.0.201403182114</span></div></body></html>
