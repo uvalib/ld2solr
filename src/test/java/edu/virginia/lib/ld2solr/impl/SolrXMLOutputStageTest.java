@@ -62,6 +62,7 @@ public class SolrXMLOutputStageTest {
 
 	@Test
 	public void testWrap() {
+		testStage = new SolrXMLOutputStage(1);
 		final SolrInputDocument result = SolrXMLOutputStage.wrap.apply(fields);
 		assertTrue("Should have found test field value under test field name in Solr document!",
 				result.getFieldValues(ID_FIELD).contains(testFieldValue));

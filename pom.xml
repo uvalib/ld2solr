@@ -19,11 +19,11 @@
 	</scm>
 
 	<properties>
-		<marmotta.version>3.1.0-incubating</marmotta.version>
+		<marmotta.version>3.2.0</marmotta.version>
 		<jena.version>2.11.1</jena.version>
 		<jena.tdb.version>1.0.1</jena.tdb.version>
 		<any23.version>0.9.0</any23.version>
-		<solr.version>4.7.1</solr.version>
+		<solr.version>4.7.2</solr.version>
 	</properties>
 
 	<developers>
@@ -39,6 +39,10 @@
 			<timezone>America/New York</timezone>
 		</developer>
 	</developers>
+
+	<prerequisites>
+		<maven>3.0</maven>
+	</prerequisites>
 
 	<dependencies>
 		<dependency>
@@ -244,7 +248,7 @@
 			<plugin>
 				<groupId>com.github.github</groupId>
 				<artifactId>site-maven-plugin</artifactId>
-				<version>0.8</version>
+				<version>0.9</version>
 				<configuration>
 					<message>Creating site for ${project.version}</message>
 					<repositoryOwner>uvalib</repositoryOwner>
@@ -281,9 +285,6 @@
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.9.1</version>
-				<configuration>
-
-				</configuration>
 				<reportSets>
 					<reportSet>
 						<id>html</id>
@@ -322,7 +323,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jxr-plugin</artifactId>
-				<version>2.3</version>
+				<version>2.4</version>
 				<configuration>
 				</configuration>
 			</plugin>
