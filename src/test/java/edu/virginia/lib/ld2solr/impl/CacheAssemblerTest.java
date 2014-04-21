@@ -28,9 +28,9 @@ public class CacheAssemblerTest extends TestHelper {
 	private static final Logger log = getLogger(CacheAssemblerTest.class);
 
 	@Before
-	public void setUp() {
+	public void setUp() throws InterruptedException {
 		dataset = createDataset();
-		testAssembler = new CacheAssembler(dataset, 3);
+		testAssembler = new CacheAssembler(dataset).threads(3);
 		testAssembler.uris(uris);
 	}
 

@@ -9,7 +9,6 @@ import edu.virginia.lib.ld2solr.spi.Stage.Acceptor;
  * 
  * @author ajs6f
  * 
- * @param <OutputType>
  */
 public interface OutputStage extends Acceptor<NamedFields, OutputRecord> {
 

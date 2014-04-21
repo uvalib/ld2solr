@@ -44,7 +44,7 @@ public class IndexRunTest extends TestHelper {
 	private static final long TIMESTEP = 1000;
 
 	@Before
-	public void setUp() {
+	public void setUp() throws InterruptedException {
 		/*
 		 * because JUnit uses reflection to set up the classpath for a test and
 		 * LDPath uses java.util.ServiceLoader to search the context classpath,
@@ -56,7 +56,7 @@ public class IndexRunTest extends TestHelper {
 		dataset.begin(READ);
 		cache = new JenaBackend(dataset.getDefaultModel());
 		dataset.end();
-		testIndexRun = new IndexRun(mockTransform, uris, cache, 5);
+		testIndexRun = new IndexRun(mockTransform, uris, cache).threads(5);
 		acceptor = new TestAcceptor<NamedFields, Void>();
 		testIndexRun.andThen(acceptor);
 	}

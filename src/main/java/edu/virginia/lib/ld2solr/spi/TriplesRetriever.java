@@ -7,7 +7,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
- * Creates retrieval tasks from {@link Resources}.
+ * Creates retrieval tasks from {@link Resource}s.
  * 
  * @author ajs6f
  * 

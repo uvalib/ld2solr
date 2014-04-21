@@ -22,6 +22,7 @@
 		<marmotta.version>3.2.0</marmotta.version>
 		<jena.version>2.11.1</jena.version>
 		<jena.tdb.version>1.0.1</jena.tdb.version>
+		<rio.version>2.7.11</rio.version>
 		<any23.version>0.9.0</any23.version>
 		<solr.version>4.7.2</solr.version>
 	</properties>
@@ -93,7 +94,7 @@
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-rio-rdfxml</artifactId>
-			<version>2.7.11</version>
+			<version>${rio.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.any23</groupId>
@@ -175,8 +176,18 @@
 						</goals>
 					</execution>
 					<execution>
-						<id>jacoco-site</id>
+						<id>local</id>
 						<phase>prepare-package</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>
+						</configuration>
+					</execution>
+					<execution>
+						<id>jacoco-site</id>
+						<phase>site</phase>
 						<goals>
 							<goal>report</goal>
 						</goals>
@@ -260,13 +271,19 @@
 						<goals>
 							<goal>site</goal>
 						</goals>
-						<phase>site</phase>
+						<phase>site-deploy</phase>
 					</execution>
 				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.9.1</version>
+				<configuration>
+					<linksource>true</linksource>
+					<keywords>true</keywords>
+					<doctitle>${project.name} ${project.version}</doctitle>
+					<windowtitle>${project.name} ${project.version}</windowtitle>
+				</configuration>
 				<executions>
 					<execution>
 						<phase>site</phase>
@@ -290,6 +307,11 @@
 						<id>html</id>
 						<configuration>
 							<linksource>true</linksource>
+							<includeDependencySources>true</includeDependencySources>
+							<includeTransitiveDependencySources>true</includeTransitiveDependencySources>
+							<keywords>true</keywords>
+							<doctitle>${project.name} ${project.version}</doctitle>
+							<windowtitle>${project.name} ${project.version}</windowtitle>
 						</configuration>
 						<reports>
 							<report>javadoc</report>

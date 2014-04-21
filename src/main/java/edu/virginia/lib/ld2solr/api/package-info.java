@@ -1,4 +1,6 @@
 /**
+ * Types available to client software.
+ * 
  * @author ajs6f
  *
  */

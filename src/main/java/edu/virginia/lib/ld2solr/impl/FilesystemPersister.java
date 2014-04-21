@@ -16,12 +16,12 @@ import edu.virginia.lib.ld2solr.spi.AbstractStage;
 import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
 
 /**
- * A {@link RecordPersister} that writes {@link OutputRecords} to a filesystem.
+ * A {@link RecordPersister} that writes {@link OutputRecord}s to a filesystem.
  * 
  * @author ajs6f
  * 
  */
-public class FilesystemPersister extends AbstractStage<OutputRecord> implements RecordPersister {
+public class FilesystemPersister extends AbstractStage<FilesystemPersister, OutputRecord> implements RecordPersister {
 
 	private File directory;
 

@@ -2,8 +2,6 @@ package edu.virginia.lib.ld2solr.impl;
 
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.collect.Maps.transformEntries;
-import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
-import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.IOException;
@@ -21,7 +19,6 @@ import edu.virginia.lib.ld2solr.api.NamedFields;
 import edu.virginia.lib.ld2solr.api.OutputRecord;
 import edu.virginia.lib.ld2solr.spi.AbstractStage;
 import edu.virginia.lib.ld2solr.spi.OutputStage;
-import edu.virginia.lib.ld2solr.spi.Stage;
 
 /**
  * An {@link OutputStage} that produces records in Solr XML form.
@@ -29,22 +26,12 @@ import edu.virginia.lib.ld2solr.spi.Stage;
  * @author ajs6f
  * 
  */
-public class SolrXMLOutputStage extends AbstractStage<OutputRecord> implements OutputStage {
+public class SolrXMLOutputStage extends AbstractStage<SolrXMLOutputStage, OutputRecord> implements OutputStage {
 
 	// TODO make index-time boost somehow adjustable, or something
 	public static final Long INDEX_TIME_BOOST = 1L;
 
 	private static final Logger log = getLogger(SolrXMLOutputStage.class);
-
-	/**
-	 * @param threads
-	 *            the number of threads to use in this {@link Stage}
-	 */
-	public SolrXMLOutputStage(final Integer... threads) {
-		if (threads.length > 0) {
-			threadpool = listeningDecorator(newFixedThreadPool(threads[0]));
-		}
-	}
 
 	@Override
 	public void accept(final NamedFields fields) {

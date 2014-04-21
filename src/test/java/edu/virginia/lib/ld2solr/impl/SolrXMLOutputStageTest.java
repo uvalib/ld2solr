@@ -61,8 +61,8 @@ public class SolrXMLOutputStageTest {
 	}
 
 	@Test
-	public void testWrap() {
-		testStage = new SolrXMLOutputStage(1);
+	public void testWrap() throws InterruptedException {
+		testStage = new SolrXMLOutputStage().threads(2);
 		final SolrInputDocument result = SolrXMLOutputStage.wrap.apply(fields);
 		assertTrue("Should have found test field value under test field name in Solr document!",
 				result.getFieldValues(ID_FIELD).contains(testFieldValue));

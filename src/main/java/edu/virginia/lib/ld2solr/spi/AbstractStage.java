@@ -11,7 +11,7 @@ import com.google.common.util.concurrent.ListeningExecutorService;
  * @author ajs6f
  * 
  */
-public abstract class AbstractStage<Produces> implements Stage<Produces> {
+public abstract class AbstractStage<T extends AbstractStage<T, Produces>, Produces> implements Stage<Produces> {
 
 	public static final Integer DEFAULT_NUM_THREADS = 10;
 
@@ -38,7 +38,7 @@ public abstract class AbstractStage<Produces> implements Stage<Produces> {
 	 * @return a {@link ListeningExecutorService} that should be used for work
 	 *         associated with tasks transiting this stage
 	 */
-	public ListeningExecutorService threadpool() {
+	protected ListeningExecutorService threadpool() {
 		return threadpool;
 	}
 
@@ -46,5 +46,20 @@ public abstract class AbstractStage<Produces> implements Stage<Produces> {
 	public void shutdown() throws InterruptedException {
 		this.threadpool.shutdown();
 		this.threadpool.awaitTermination(MAX_VALUE, SECONDS);
+	}
+
+	/**
+	 * Alter the number of threads being used in this {@link Stage}.
+	 * 
+	 * @param numThreads
+	 *            the number of threads to use
+	 * @throws InterruptedException
+	 */
+	public T threads(final Integer numThreads) throws InterruptedException {
+		shutdown();
+		threadpool = listeningDecorator(newFixedThreadPool(numThreads));
+		@SuppressWarnings("unchecked")
+		final T t = (T) this;
+		return t;
 	}
 }

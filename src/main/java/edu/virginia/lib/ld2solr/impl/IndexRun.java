@@ -1,8 +1,6 @@
 package edu.virginia.lib.ld2solr.impl;
 
 import static com.google.common.util.concurrent.Futures.addCallback;
-import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
-import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Set;
@@ -28,7 +26,7 @@ import edu.virginia.lib.ld2solr.spi.Stage;
  * @author ajs6f
  * 
  */
-public class IndexRun extends AbstractStage<NamedFields> implements Runnable {
+public class IndexRun extends AbstractStage<IndexRun, NamedFields> implements Runnable {
 
 	private final JenaBackend cache;
 
@@ -50,15 +48,11 @@ public class IndexRun extends AbstractStage<NamedFields> implements Runnable {
 	 * @param threads
 	 *            optional number of threads to use for indexing
 	 */
-	public IndexRun(final String transformationSource, final Set<Resource> uris, final JenaBackend c,
-			final Integer... threads) {
+	public IndexRun(final String transformationSource, final Set<Resource> uris, final JenaBackend c) {
 		this.transformation = transformationSource;
 		this.uris = uris;
 		this.cache = c;
 		this.indexer = new LDPathIndexer(cache);
-		if (threads.length > 0) {
-			threadpool = listeningDecorator(newFixedThreadPool(threads[0]));
-		}
 	}
 
 	@Override

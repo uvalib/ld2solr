@@ -40,6 +40,9 @@ import edu.virginia.lib.ld2solr.spi.OutputStage;
 import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
 
 /**
+ * Assembles and operates an indexing workflow from SPI implementations, as well
+ * as CLI support therefor.
+ * 
  * @author ajs6f
  * 
  */
@@ -89,14 +92,14 @@ public class Workflow {
 
 		log.info("Writing to output location: {}", persister.location());
 
-		final IndexRun indexRun = new IndexRun(transformation, successfullyRetrieved, JenaBackend.with(dataset),
-				numIndexerThreads);
+		final IndexRun indexRun = new IndexRun(transformation, successfullyRetrieved, JenaBackend.with(dataset))
+				.threads(numIndexerThreads);
 
 		// workflow!
 		indexRun.andThen(outputStage);
 		outputStage.andThen(persister);
 		indexRun.run();
-		indexRun.threadpool().shutdown();
+		indexRun.shutdown();
 		outputStage.shutdown();
 		persister.shutdown();
 
@@ -185,7 +188,7 @@ public class Workflow {
 				if (cmd.hasOption("assembler-threads")) {
 					assemblerThreads = parseInt(cmd.getOptionValue("assembler-threads"));
 				}
-				final CacheAssembler assembler = new CacheAssembler(main.dataset, assemblerThreads).uris(uris);
+				final CacheAssembler assembler = new CacheAssembler(main.dataset).threads(assemblerThreads).uris(uris);
 				if (cmd.hasOption('a')) {
 					final String accept = cmd.getOptionValue('a');
 					log.info("Requesting content-type: {} for resource retrieval.", accept);

@@ -2,10 +2,8 @@ package edu.virginia.lib.ld2solr.impl;
 
 import static com.google.common.util.concurrent.Futures.addCallback;
 import static com.google.common.util.concurrent.JdkFutureAdapters.listenInPoolThread;
-import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
 import static com.hp.hpl.jena.query.ReadWrite.WRITE;
 import static com.hp.hpl.jena.shared.Lock.READ;
-import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.HashSet;
@@ -30,9 +28,9 @@ import edu.virginia.lib.ld2solr.spi.AbstractStage;
  * @author ajs6f
  * 
  */
-public class CacheAssembler extends AbstractStage<Void> implements Callable<Set<Resource>> {
+public class CacheAssembler extends AbstractStage<CacheAssembler, Void> implements Callable<Set<Resource>> {
 
-	private final CompletionService<Model> internalQueue;
+	private CompletionService<Model> internalQueue;
 
 	private final Dataset dataset;
 
@@ -44,11 +42,8 @@ public class CacheAssembler extends AbstractStage<Void> implements Callable<Set<
 
 	private static final Logger log = getLogger(CacheAssembler.class);
 
-	public CacheAssembler(final Dataset d, final Integer... threads) {
+	public CacheAssembler(final Dataset d) {
 		this.dataset = d;
-		if (threads.length > 0) {
-			this.threadpool = listeningDecorator(newFixedThreadPool(threads[0]));
-		}
 		this.internalQueue = new ExecutorCompletionService<Model>(this.threadpool);
 	}
 
@@ -121,6 +116,19 @@ public class CacheAssembler extends AbstractStage<Void> implements Callable<Set<
 	 */
 	public CacheAssembler uris(final Set<Resource> u) {
 		this.uris = u;
+		return this;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * edu.virginia.lib.ld2solr.spi.AbstractStage#threads(java.lang.Integer)
+	 */
+	@Override
+	public CacheAssembler threads(final Integer numThreads) throws InterruptedException {
+		super.threads(numThreads);
+		this.internalQueue = new ExecutorCompletionService<Model>(this.threadpool);
 		return this;
 	}
 
