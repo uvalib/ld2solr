@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>CacheAssembler.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Linked Data to Solr</a> &gt; <a href="index.source.html" class="el_package">edu.virginia.lib.ld2solr.impl</a> &gt; <span class="el_source">CacheAssembler.java</span></div><h1>CacheAssembler.java</h1><pre class="source lang-java linenums">package edu.virginia.lib.ld2solr.impl;
+
+import static com.google.common.util.concurrent.Futures.addCallback;
+import static com.google.common.util.concurrent.JdkFutureAdapters.listenInPoolThread;
+import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
+import static com.hp.hpl.jena.query.ReadWrite.WRITE;
+import static com.hp.hpl.jena.shared.Lock.READ;
+import static java.util.concurrent.Executors.newFixedThreadPool;
+import static org.slf4j.LoggerFactory.getLogger;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.Future;
+
+import org.slf4j.Logger;
+
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
+
+import edu.virginia.lib.ld2solr.spi.AbstractStage;
+
+/**
+ * @author ajs6f
+ * 
+ */
+public class CacheAssembler extends AbstractStage&lt;Void&gt; implements Callable&lt;Set&lt;Resource&gt;&gt; {
+
+	private final CompletionService&lt;Model&gt; internalQueue;
+
+	private final Dataset dataset;
+
+	private Set&lt;Resource&gt; successfullyLoadedResources;
+
+	private Set&lt;Resource&gt; uris;
+
+<span class="fc" id="L43">	private String accepts = null;</span>
+
+<span class="fc" id="L45">	private static final Logger log = getLogger(CacheAssembler.class);</span>
+
+<span class="fc" id="L47">	public CacheAssembler(final Dataset d, final Integer... threads) {</span>
+<span class="fc" id="L48">		this.dataset = d;</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">		if (threads.length &gt; 0) {</span>
+<span class="fc" id="L50">			this.threadpool = listeningDecorator(newFixedThreadPool(threads[0]));</span>
+		}
+<span class="fc" id="L52">		this.internalQueue = new ExecutorCompletionService&lt;Model&gt;(this.threadpool);</span>
+<span class="fc" id="L53">	}</span>
+
+	/**
+	 * @return a set of URIs of successfully loaded resources
+	 */
+	@Override
+	public Set&lt;Resource&gt; call() {
+<span class="fc" id="L60">		successfullyLoadedResources = new HashSet&lt;&gt;(uris.size());</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">		for (final Resource uri : uris) {</span>
+<span class="fc" id="L62">			log.debug(&quot;Queueing retrieval task for URI: {}...&quot;, uri);</span>
+<span class="fc" id="L63">			final Future&lt;Model&gt; loadFuture = internalQueue.submit(new JenaModelTriplesRetriever(accepts).apply(uri));</span>
+<span class="fc" id="L64">			final ListenableFuture&lt;Model&gt; loadTask = listenInPoolThread(loadFuture);</span>
+<span class="fc" id="L65">			addCallback(loadTask, new FutureCallback&lt;Model&gt;() {</span>
+
+				@Override
+				public void onSuccess(final Model result) {
+<span class="fc" id="L69">					log.debug(&quot;Retrieved URI: {} and will add its contents to cache.&quot;, uri);</span>
+<span class="fc" id="L70">					successfullyLoadedResources.add(uri);</span>
+<span class="fc" id="L71">				}</span>
+
+				@Override
+				public void onFailure(final Throwable t) {
+<span class="fc" id="L75">					log.error(&quot;Failed to retrieve: {}!&quot;, uri);</span>
+<span class="fc" id="L76">					log.error(&quot;Exception: &quot;, t);</span>
+<span class="fc" id="L77">				}</span>
+			});
+<span class="fc" id="L79">		}</span>
+<span class="fc" id="L80">		log.info(&quot;Finished queuing retrieval tasks.&quot;);</span>
+		// the only purpose of this loop is to ensure that we execute as many
+		// tasks to add triples to the cache as we have executed tasks to
+		// retrieve triples
+		for (@SuppressWarnings(&quot;unused&quot;)
+<span class="fc bfc" id="L85" title="All 2 branches covered.">		final Resource uri : uris) {</span>
+			try {
+<span class="fc" id="L87">				final Model m = internalQueue.take().get();</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">				if (!m.isEmpty()) {</span>
+<span class="fc" id="L89">					m.enterCriticalSection(READ);</span>
+<span class="fc" id="L90">					log.debug(&quot;Adding {} triples to cache...&quot;, m.size());</span>
+<span class="fc" id="L91">					log.trace(&quot;Adding triples: {}&quot;, m);</span>
+					try {
+<span class="fc" id="L93">						dataset.begin(WRITE);</span>
+						try {
+<span class="fc" id="L95">							dataset.getDefaultModel().add(m);</span>
+<span class="fc" id="L96">							dataset.commit();</span>
+<span class="nc" id="L97">						} catch (final Exception e) {</span>
+<span class="nc" id="L98">							log.error(&quot;Error adding triples to cache!&quot;);</span>
+<span class="nc" id="L99">							log.error(&quot;Triples: &quot;, m);</span>
+<span class="nc" id="L100">							log.error(&quot;Exception: &quot;, e);</span>
+						} finally {
+<span class="pc" id="L102">							dataset.end();</span>
+<span class="pc" id="L103">						}</span>
+					} finally {
+<span class="pc" id="L105">						m.leaveCriticalSection();</span>
+<span class="pc" id="L106">						m.close();</span>
+<span class="fc" id="L107">					}</span>
+				}
+<span class="fc" id="L109">			} catch (InterruptedException | ExecutionException e) {</span>
+<span class="fc" id="L110">				log.error(&quot;Error assembling triples to add to cache!&quot;);</span>
+<span class="fc" id="L111">				log.error(&quot;Exception: &quot;, e);</span>
+<span class="fc" id="L112">			}</span>
+<span class="fc" id="L113">		}</span>
+<span class="fc" id="L114">		return successfullyLoadedResources;</span>
+	}
+
+	/**
+	 * @param u
+	 *            the URIs to retrieve
+	 * @return this {@link CacheAssembler} for further operation
+	 */
+	public CacheAssembler uris(final Set&lt;Resource&gt; u) {
+<span class="fc" id="L123">		this.uris = u;</span>
+<span class="fc" id="L124">		return this;</span>
+	}
+
+	/**
+	 * @param accepts
+	 *            the HTTP Accepts header to use in retrieving Linked Data
+	 *            resources
+	 * @return this {@link CacheAssembler} for further operation
+	 */
+	public CacheAssembler accepts(final String accepts) {
+<span class="fc" id="L134">		this.accepts = accepts;</span>
+<span class="fc" id="L135">		return this;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.0.201403182114</span></div></body></html>

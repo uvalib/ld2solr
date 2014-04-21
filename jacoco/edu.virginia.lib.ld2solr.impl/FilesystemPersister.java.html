@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>FilesystemPersister.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Linked Data to Solr</a> &gt; <a href="index.source.html" class="el_package">edu.virginia.lib.ld2solr.impl</a> &gt; <span class="el_source">FilesystemPersister.java</span></div><h1>FilesystemPersister.java</h1><pre class="source lang-java linenums">package edu.virginia.lib.ld2solr.impl;
+
+import static org.slf4j.LoggerFactory.getLogger;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
+import org.slf4j.Logger;
+
+import com.google.common.io.Files;
+
+import edu.virginia.lib.ld2solr.api.OutputRecord;
+import edu.virginia.lib.ld2solr.spi.AbstractStage;
+import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
+
+/**
+ * A {@link RecordPersister} that writes {@link OutputRecords} to a filesystem.
+ * 
+ * @author ajs6f
+ * 
+ */
+<span class="fc" id="L24">public class FilesystemPersister extends AbstractStage&lt;OutputRecord&gt; implements RecordPersister {</span>
+
+	private File directory;
+
+<span class="fc" id="L28">	private static final Logger log = getLogger(FilesystemPersister.class);</span>
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * edu.virginia.lib.ld2solr.spi.RecordSink#accept(edu.virginia.lib.ld2solr
+	 * .api.OutputRecord)
+	 */
+	@Override
+	public void accept(final OutputRecord record) {
+		final String fileName;
+		try {
+<span class="fc" id="L41">			fileName = URLEncoder.encode(record.id(), &quot;UTF-8&quot;);</span>
+<span class="nc" id="L42">		} catch (final UnsupportedEncodingException e) {</span>
+<span class="nc" id="L43">			throw new AssertionError();</span>
+<span class="fc" id="L44">		}</span>
+<span class="fc" id="L45">		final File file = new File(directory, fileName);</span>
+<span class="fc" id="L46">		log.debug(&quot;Persisting to: {}&quot;, file.toString());</span>
+		try {
+<span class="fc" id="L48">			Files.asByteSink(file).write(record.record());</span>
+<span class="fc" id="L49">			log.debug(&quot;Persisted: {} to: {}&quot;, record.id(), fileName);</span>
+<span class="fc" id="L50">		} catch (final IOException e) {</span>
+<span class="fc" id="L51">			log.error(&quot;Error persisting: {}!&quot;, record.id());</span>
+<span class="fc" id="L52">			log.error(&quot;Exception: &quot;, e);</span>
+<span class="fc" id="L53">		}</span>
+<span class="fc" id="L54">	}</span>
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister#location(java
+	 * .lang.String)
+	 */
+	@Override
+	public FilesystemPersister location(final String location) {
+<span class="fc" id="L65">		directory = new File(location);</span>
+<span class="fc" id="L66">		return this;</span>
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister#location()
+	 */
+	@Override
+	public String location() {
+<span class="fc" id="L76">		return directory.getAbsolutePath();</span>
+	}
+
+	@Override
+	public void andThen(final Acceptor&lt;OutputRecord, ?&gt; a) {
+<span class="fc" id="L81">		throw new UnsupportedOperationException(</span>
+				&quot;It is currently not expected that indexing workflow will continue after persistence.&quot;);
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.0.201403182114</span></div></body></html>
