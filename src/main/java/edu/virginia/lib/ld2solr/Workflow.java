@@ -35,7 +35,7 @@ import edu.virginia.lib.ld2solr.impl.FilesystemPersister;
 import edu.virginia.lib.ld2solr.impl.IndexRun;
 import edu.virginia.lib.ld2solr.impl.JenaBackend;
 import edu.virginia.lib.ld2solr.impl.SolrXMLOutputStage;
-import edu.virginia.lib.ld2solr.spi.AbstractStage;
+import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 import edu.virginia.lib.ld2solr.spi.OutputStage;
 import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
 
@@ -64,7 +64,7 @@ public class Workflow {
 
 	private OutputStage outputStage = null;
 
-	private Integer numIndexerThreads = AbstractStage.DEFAULT_NUM_THREADS;
+	private Integer numIndexerThreads = ThreadedStage.DEFAULT_NUM_THREADS;
 
 	private static final Logger log = getLogger(Workflow.class);
 
@@ -184,7 +184,7 @@ public class Workflow {
 				main.dataset = createDataset();
 			}
 			if (!cmd.hasOption("skip-retrieval")) {
-				Integer assemblerThreads = AbstractStage.DEFAULT_NUM_THREADS;
+				Integer assemblerThreads = ThreadedStage.DEFAULT_NUM_THREADS;
 				if (cmd.hasOption("assembler-threads")) {
 					assemblerThreads = parseInt(cmd.getOptionValue("assembler-threads"));
 				}
@@ -231,11 +231,11 @@ public class Workflow {
 				.addOption(
 						new Option(null, "assembler-threads", true,
 								"The number of threads to use for RDF cache accumulation. (Defaults to "
-										+ AbstractStage.DEFAULT_NUM_THREADS + ".)"))
+										+ ThreadedStage.DEFAULT_NUM_THREADS + ".)"))
 				.addOption(
 						new Option(null, "indexing-threads", true,
 								"The number of threads to use for indexing operation. (Defaults to "
-										+ AbstractStage.DEFAULT_NUM_THREADS + ".)"))
+										+ ThreadedStage.DEFAULT_NUM_THREADS + ".)"))
 				.addOption("h", "help", false, "Print this help message.");
 	}
 

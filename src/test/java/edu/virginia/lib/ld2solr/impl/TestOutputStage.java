@@ -2,10 +2,10 @@ package edu.virginia.lib.ld2solr.impl;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
 import edu.virginia.lib.ld2solr.api.OutputRecord;
-import edu.virginia.lib.ld2solr.spi.AbstractStage;
+import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 import edu.virginia.lib.ld2solr.spi.OutputStage;
 
-public class TestOutputStage extends AbstractStage<TestOutputStage, OutputRecord> implements OutputStage {
+public class TestOutputStage extends ThreadedStage<TestOutputStage, OutputRecord> implements OutputStage {
 
 	@Override
 	public void accept(final NamedFields fields) {

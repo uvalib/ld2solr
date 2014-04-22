@@ -22,13 +22,13 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import edu.virginia.lib.ld2solr.spi.AbstractStage;
+import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 
 /**
  * @author ajs6f
  * 
  */
-public class CacheAssembler extends AbstractStage<CacheAssembler, Void> implements Callable<Set<Resource>> {
+public class CacheAssembler extends ThreadedStage<CacheAssembler, Void> implements Callable<Set<Resource>> {
 
 	private CompletionService<Model> internalQueue;
 
@@ -123,7 +123,7 @@ public class CacheAssembler extends AbstractStage<CacheAssembler, Void> implemen
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * edu.virginia.lib.ld2solr.spi.AbstractStage#threads(java.lang.Integer)
+	 * edu.virginia.lib.ld2solr.spi.ThreadedStage#threads(java.lang.Integer)
 	 */
 	@Override
 	public CacheAssembler threads(final Integer numThreads) throws InterruptedException {

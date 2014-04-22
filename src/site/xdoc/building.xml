@@ -3,6 +3,16 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/XDOC/2.0 http://maven.apache.org/xsd/xdoc-2.0.xsd">
     <body>
-        <section name="Requirements"></section>
+        <section name="Requirements">
+            <p>ld2solr requires Java 7 or 8, and <a href="http://maven.apache.org/">Apache Maven</a> version 3 or above.</p>
+        </section>
+        <section name="Build">
+            <p>Having procured a source tree from the ld2solr <a href="https://github.com/uvalib/ld2solr">Github project</a>, execute a normal Maven package build in the top directory: <code>mvn package</code></p>
+            <p>You will then find an executable JAR in the <code>target/</code> subdirectory.</p>
+        </section>
+        <section name="Building the site">
+            <p>If you would like to have a local copy of this site, including JavaDocs, coverage reports, and other development paraphernalia, perform a Maven site build: <code>mvn -o site</code></p>
+            <p>You will find the generated documentation in <code>target/site/</code>.</p>
+        </section>
     </body>
 </document>

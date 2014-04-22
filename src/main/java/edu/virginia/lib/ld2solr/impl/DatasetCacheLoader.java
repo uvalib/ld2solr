@@ -11,7 +11,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 
-import edu.virginia.lib.ld2solr.spi.AbstractStage;
+import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 import edu.virginia.lib.ld2solr.spi.CacheLoader;
 
 /**
@@ -20,7 +20,7 @@ import edu.virginia.lib.ld2solr.spi.CacheLoader;
  * @author ajs6f
  * 
  */
-public class DatasetCacheLoader extends AbstractStage<DatasetCacheLoader, Void> implements CacheLoader {
+public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> implements CacheLoader {
 
 	private Dataset dataset;
 

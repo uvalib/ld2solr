@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import com.google.common.io.Files;
 
 import edu.virginia.lib.ld2solr.api.OutputRecord;
-import edu.virginia.lib.ld2solr.spi.AbstractStage;
+import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
 
 /**
@@ -21,7 +21,7 @@ import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
  * @author ajs6f
  * 
  */
-public class FilesystemPersister extends AbstractStage<FilesystemPersister, OutputRecord> implements RecordPersister {
+public class FilesystemPersister extends ThreadedStage<FilesystemPersister, OutputRecord> implements RecordPersister {
 
 	private File directory;
 

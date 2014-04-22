@@ -11,7 +11,7 @@ import com.google.common.util.concurrent.ListeningExecutorService;
  * @author ajs6f
  * 
  */
-public abstract class AbstractStage<T extends AbstractStage<T, Produces>, Produces> implements Stage<Produces> {
+public abstract class ThreadedStage<T extends ThreadedStage<T, Produces>, Produces> implements Stage<Produces> {
 
 	public static final Integer DEFAULT_NUM_THREADS = 10;
 
