@@ -55,14 +55,14 @@ public class CacheAssembler extends ThreadedStage<CacheAssembler, Void> implemen
 	public Set<Resource> call() {
 		successfullyLoadedResources = new HashSet<>(uris.size());
 		for (final Resource uri : uris) {
-			log.debug("Queueing retrieval task for URI: {}...", uri);
+			log.info("Queueing retrieval task for URI: {}...", uri);
 			final Future<Model> loadFuture = internalQueue.submit(new JenaModelTriplesRetriever(accepts).apply(uri));
 			final ListenableFuture<Model> loadTask = listenInPoolThread(loadFuture);
 			addCallback(loadTask, new FutureCallback<Model>() {
 
 				@Override
 				public void onSuccess(final Model result) {
-					log.debug("Retrieved URI: {} and will add its contents to cache.", uri);
+					log.info("Retrieved URI: {} and will add its contents to cache.", uri);
 					successfullyLoadedResources.add(uri);
 				}
 
@@ -77,8 +77,7 @@ public class CacheAssembler extends ThreadedStage<CacheAssembler, Void> implemen
 		// the only purpose of this loop is to ensure that we execute as many
 		// tasks to add triples to the cache as we have executed tasks to
 		// retrieve triples
-		for (@SuppressWarnings("unused")
-		final Resource uri : uris) {
+		for (@SuppressWarnings("unused") final Resource uri : uris) {
 			try {
 				final Model m = internalQueue.take().get();
 				if (!m.isEmpty()) {

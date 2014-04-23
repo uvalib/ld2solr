@@ -74,7 +74,7 @@ public class JenaModelTriplesRetriever implements TriplesRetriever {
 					get.setHeader("Accept", accept);
 				}
 				final String rdf = EntityUtils.toString(client.execute(get).getEntity());
-				log.trace("Retrieved from URI: {} RDF:\n{}", resource, rdf);
+				log.debug("Retrieved from URI: {} RDF:\n{}", resource, rdf);
 				final Model model = createDefaultModel();
 				try (final TriplesIntoModel tripleRecorder = new TriplesIntoModel(model);) {
 					final ExtractionReport report = extractor.extract(rdf, resource, tripleRecorder);
