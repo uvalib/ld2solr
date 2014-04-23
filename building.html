@@ -79,7 +79,7 @@
         Design</a>
             </li>
                               <li class="nav-header">Project Documentation</li>
-                                                                                                                                                                                                                                                                                                        
+                                                                                                                                                                                                                                                                                      
       <li>
   
                           <a href="project-info.html" title="Project Information">
@@ -133,9 +133,17 @@
 <div class="section">
 <h2>Building the site<a name="Building_the_site"></a></h2>
             
-<p>If you would like to have a local copy of this site, including JavaDocs, coverage reports, and other development paraphernalia, perform a Maven site build: <tt>mvn -o site</tt></p>
+<p>If you would like to have a local copy of this site, including JavaDocs, coverage reports, and other development paraphernalia, perform a build as described above, then perform a Maven site build: <tt>mvn -o site</tt></p>
             
 <p>You will find the generated documentation in <tt>target/site/</tt>.</p>
+        </div>
+        
+<div class="section">
+<h2>Deploying the site<a name="Deploying_the_site"></a></h2>
+            
+<p>If you would like to have to publish the site to Github, perform a Maven post-site build: <tt>mvn -o post-site</tt></p>
+            
+<p>You will have to have supplied appropriate credentials for UVaLib's Github account. See <a class="externalLink" href="https://github.com/github/maven-plugins">here</a> for details.</p>
         </div>
     
 

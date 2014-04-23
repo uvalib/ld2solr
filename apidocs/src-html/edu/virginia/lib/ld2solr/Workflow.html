@@ -85,167 +85,166 @@
 <span class="sourceLineNo">077</span><a name="line.77"></a>
 <span class="sourceLineNo">078</span>        private static final Logger log = getLogger(Workflow.class);<a name="line.78"></a>
 <span class="sourceLineNo">079</span><a name="line.79"></a>
-<span class="sourceLineNo">080</span>        public Set&lt;Resource&gt; fullRun(final String transformation, final Set&lt;Resource&gt; uris) throws InterruptedException {<a name="line.80"></a>
-<span class="sourceLineNo">081</span><a name="line.81"></a>
-<span class="sourceLineNo">082</span>                log.info("Using transformation:\n{}", transformation);<a name="line.82"></a>
-<span class="sourceLineNo">083</span><a name="line.83"></a>
-<span class="sourceLineNo">084</span>                Set&lt;Resource&gt; successfullyRetrieved = new HashSet&lt;&gt;(uris.size());<a name="line.84"></a>
-<span class="sourceLineNo">085</span>                // first, we may need to assemble the cache of RDF<a name="line.85"></a>
-<span class="sourceLineNo">086</span>                if (cacheAssembler != null) {<a name="line.86"></a>
-<span class="sourceLineNo">087</span>                        successfullyRetrieved.addAll(cacheAssembler.call());<a name="line.87"></a>
-<span class="sourceLineNo">088</span>                        final Set&lt;Resource&gt; failures = difference(uris, successfullyRetrieved);<a name="line.88"></a>
-<span class="sourceLineNo">089</span>                        if (failures.size() &gt; 0) {<a name="line.89"></a>
-<span class="sourceLineNo">090</span>                                log.error("Failed to retrieve some resources!");<a name="line.90"></a>
-<span class="sourceLineNo">091</span>                                for (final Resource failure : failures) {<a name="line.91"></a>
-<span class="sourceLineNo">092</span>                                        log.warn("Resource: {} could not be retrieved!", failure);<a name="line.92"></a>
-<span class="sourceLineNo">093</span>                                }<a name="line.93"></a>
-<span class="sourceLineNo">094</span>                        }<a name="line.94"></a>
-<span class="sourceLineNo">095</span>                        cacheAssembler.shutdown();<a name="line.95"></a>
-<span class="sourceLineNo">096</span>                } else {<a name="line.96"></a>
-<span class="sourceLineNo">097</span>                        // assume fully cached data<a name="line.97"></a>
-<span class="sourceLineNo">098</span>                        successfullyRetrieved = uris;<a name="line.98"></a>
-<span class="sourceLineNo">099</span>                }<a name="line.99"></a>
-<span class="sourceLineNo">100</span>                dataset.begin(READ);<a name="line.100"></a>
-<span class="sourceLineNo">101</span>                log.trace("Operating with triples:\n{}", dataset.getDefaultModel());<a name="line.101"></a>
-<span class="sourceLineNo">102</span>                dataset.end();<a name="line.102"></a>
-<span class="sourceLineNo">103</span><a name="line.103"></a>
-<span class="sourceLineNo">104</span>                log.info("Writing to output location: {}", persister.location());<a name="line.104"></a>
+<span class="sourceLineNo">080</span>        public Set&lt;Resource&gt; cache(final Set&lt;Resource&gt; uris) throws InterruptedException {<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                final Set&lt;Resource&gt; successfullyRetrieved = cacheAssembler.call();<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                final Set&lt;Resource&gt; failures = difference(uris, successfullyRetrieved);<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                if (failures.size() &gt; 0) {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                        log.error("Failed to retrieve some resources!");<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                        for (final Resource failure : failures) {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                                log.warn("Resource: {} could not be retrieved!", failure);<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                        }<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                }<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                cacheAssembler.shutdown();<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                return successfullyRetrieved;<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        }<a name="line.91"></a>
+<span class="sourceLineNo">092</span><a name="line.92"></a>
+<span class="sourceLineNo">093</span>        public void index(final String transformation, final Set&lt;Resource&gt; uris) throws InterruptedException {<a name="line.93"></a>
+<span class="sourceLineNo">094</span><a name="line.94"></a>
+<span class="sourceLineNo">095</span>                log.info("Using transformation:\n{}", transformation);<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span>                dataset.begin(READ);<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                log.trace("Operating with triples:\n{}", dataset.getDefaultModel());<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                dataset.end();<a name="line.99"></a>
+<span class="sourceLineNo">100</span><a name="line.100"></a>
+<span class="sourceLineNo">101</span>                log.info("Writing to output location: {}", persister.location());<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>                final IndexRun indexRun = new IndexRun(transformation, uris, JenaBackend.with(dataset))<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                                .threads(numIndexerThreads);<a name="line.104"></a>
 <span class="sourceLineNo">105</span><a name="line.105"></a>
-<span class="sourceLineNo">106</span>                final IndexRun indexRun = new IndexRun(transformation, successfullyRetrieved, JenaBackend.with(dataset))<a name="line.106"></a>
-<span class="sourceLineNo">107</span>                                .threads(numIndexerThreads);<a name="line.107"></a>
-<span class="sourceLineNo">108</span><a name="line.108"></a>
-<span class="sourceLineNo">109</span>                // workflow!<a name="line.109"></a>
-<span class="sourceLineNo">110</span>                indexRun.andThen(outputStage);<a name="line.110"></a>
-<span class="sourceLineNo">111</span>                outputStage.andThen(persister);<a name="line.111"></a>
-<span class="sourceLineNo">112</span>                indexRun.run();<a name="line.112"></a>
-<span class="sourceLineNo">113</span>                indexRun.shutdown();<a name="line.113"></a>
-<span class="sourceLineNo">114</span>                outputStage.shutdown();<a name="line.114"></a>
-<span class="sourceLineNo">115</span>                persister.shutdown();<a name="line.115"></a>
-<span class="sourceLineNo">116</span><a name="line.116"></a>
-<span class="sourceLineNo">117</span>                return successfullyRetrieved;<a name="line.117"></a>
-<span class="sourceLineNo">118</span>        }<a name="line.118"></a>
-<span class="sourceLineNo">119</span><a name="line.119"></a>
-<span class="sourceLineNo">120</span>        /**<a name="line.120"></a>
-<span class="sourceLineNo">121</span>         * @param d<a name="line.121"></a>
-<span class="sourceLineNo">122</span>         *            the {@link Dataset} to use underneath the RDF cache<a name="line.122"></a>
-<span class="sourceLineNo">123</span>         * @return this {@link Workflow} for continued operation<a name="line.123"></a>
-<span class="sourceLineNo">124</span>         */<a name="line.124"></a>
-<span class="sourceLineNo">125</span>        public Workflow dataset(final Dataset d) {<a name="line.125"></a>
-<span class="sourceLineNo">126</span>                this.dataset = d;<a name="line.126"></a>
-<span class="sourceLineNo">127</span>                return this;<a name="line.127"></a>
-<span class="sourceLineNo">128</span>        }<a name="line.128"></a>
-<span class="sourceLineNo">129</span><a name="line.129"></a>
-<span class="sourceLineNo">130</span>        /**<a name="line.130"></a>
-<span class="sourceLineNo">131</span>         * @param ca<a name="line.131"></a>
-<span class="sourceLineNo">132</span>         *            the {@link CacheAssembler} to use<a name="line.132"></a>
-<span class="sourceLineNo">133</span>         * @return this {@link Workflow} for continued operation<a name="line.133"></a>
-<span class="sourceLineNo">134</span>         */<a name="line.134"></a>
-<span class="sourceLineNo">135</span>        public Workflow assembler(final CacheAssembler ca) {<a name="line.135"></a>
-<span class="sourceLineNo">136</span>                this.cacheAssembler = ca;<a name="line.136"></a>
-<span class="sourceLineNo">137</span>                return this;<a name="line.137"></a>
-<span class="sourceLineNo">138</span>        }<a name="line.138"></a>
-<span class="sourceLineNo">139</span><a name="line.139"></a>
-<span class="sourceLineNo">140</span>        /**<a name="line.140"></a>
-<span class="sourceLineNo">141</span>         * @param rp<a name="line.141"></a>
-<span class="sourceLineNo">142</span>         *            the {@link RecordPersister} to use<a name="line.142"></a>
-<span class="sourceLineNo">143</span>         * @return this {@link Workflow} for continued operation<a name="line.143"></a>
-<span class="sourceLineNo">144</span>         */<a name="line.144"></a>
-<span class="sourceLineNo">145</span>        public Workflow persister(final RecordPersister rp) {<a name="line.145"></a>
-<span class="sourceLineNo">146</span>                this.persister = rp;<a name="line.146"></a>
-<span class="sourceLineNo">147</span>                return this;<a name="line.147"></a>
-<span class="sourceLineNo">148</span>        }<a name="line.148"></a>
-<span class="sourceLineNo">149</span><a name="line.149"></a>
-<span class="sourceLineNo">150</span>        /**<a name="line.150"></a>
-<span class="sourceLineNo">151</span>         * @param os<a name="line.151"></a>
-<span class="sourceLineNo">152</span>         *            the {@link OutputStage} to use<a name="line.152"></a>
-<span class="sourceLineNo">153</span>         * @return this {@link Workflow} for continued operation<a name="line.153"></a>
-<span class="sourceLineNo">154</span>         */<a name="line.154"></a>
-<span class="sourceLineNo">155</span>        public Workflow outputStage(final OutputStage os) {<a name="line.155"></a>
-<span class="sourceLineNo">156</span>                this.outputStage = os;<a name="line.156"></a>
-<span class="sourceLineNo">157</span>                return this;<a name="line.157"></a>
-<span class="sourceLineNo">158</span>        }<a name="line.158"></a>
-<span class="sourceLineNo">159</span><a name="line.159"></a>
-<span class="sourceLineNo">160</span>        /**<a name="line.160"></a>
-<span class="sourceLineNo">161</span>         * @param args<a name="line.161"></a>
-<span class="sourceLineNo">162</span>         * @throws ParseException<a name="line.162"></a>
-<span class="sourceLineNo">163</span>         * @throws IOException<a name="line.163"></a>
-<span class="sourceLineNo">164</span>         * @throws InterruptedException<a name="line.164"></a>
-<span class="sourceLineNo">165</span>         */<a name="line.165"></a>
-<span class="sourceLineNo">166</span>        public static void main(final String[] args) throws ParseException, IOException, InterruptedException {<a name="line.166"></a>
-<span class="sourceLineNo">167</span>                final Parser cliParser = new BasicParser();<a name="line.167"></a>
-<span class="sourceLineNo">168</span>                // first check to see if this is an invocation of help<a name="line.168"></a>
-<span class="sourceLineNo">169</span>                final CommandLine helpCmd = cliParser.parse(helpOptions, args, true);<a name="line.169"></a>
-<span class="sourceLineNo">170</span>                if (helpCmd.getOptions().length &gt; 0) {<a name="line.170"></a>
-<span class="sourceLineNo">171</span>                        new HelpFormatter().printHelp(helpLine, mainOptions);<a name="line.171"></a>
-<span class="sourceLineNo">172</span>                } else {<a name="line.172"></a>
-<span class="sourceLineNo">173</span>                        // it's not a help invocation, so actually parse the args<a name="line.173"></a>
-<span class="sourceLineNo">174</span>                        try {<a name="line.174"></a>
-<span class="sourceLineNo">175</span>                                final CommandLine cmd = cliParser.parse(mainOptions, args);<a name="line.175"></a>
-<span class="sourceLineNo">176</span><a name="line.176"></a>
-<span class="sourceLineNo">177</span>                                final File uriFile = new File(cmd.getOptionValue(URIS.opt()));<a name="line.177"></a>
-<span class="sourceLineNo">178</span>                                log.info("Using URI file: {}", uriFile.getAbsolutePath());<a name="line.178"></a>
-<span class="sourceLineNo">179</span>                                final Set&lt;Resource&gt; uris = retrieveUrisFromFile(uriFile);<a name="line.179"></a>
+<span class="sourceLineNo">106</span>                // workflow!<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                indexRun.andThen(outputStage);<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                outputStage.andThen(persister);<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                indexRun.run();<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                indexRun.shutdown();<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                outputStage.shutdown();<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                persister.shutdown();<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        }<a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span>        /**<a name="line.115"></a>
+<span class="sourceLineNo">116</span>         * @param d<a name="line.116"></a>
+<span class="sourceLineNo">117</span>         *            the {@link Dataset} to use underneath the RDF cache<a name="line.117"></a>
+<span class="sourceLineNo">118</span>         * @return this {@link Workflow} for continued operation<a name="line.118"></a>
+<span class="sourceLineNo">119</span>         */<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        public Workflow dataset(final Dataset d) {<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                this.dataset = d;<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                return this;<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        }<a name="line.123"></a>
+<span class="sourceLineNo">124</span><a name="line.124"></a>
+<span class="sourceLineNo">125</span>        /**<a name="line.125"></a>
+<span class="sourceLineNo">126</span>         * @param ca<a name="line.126"></a>
+<span class="sourceLineNo">127</span>         *            the {@link CacheAssembler} to use<a name="line.127"></a>
+<span class="sourceLineNo">128</span>         * @return this {@link Workflow} for continued operation<a name="line.128"></a>
+<span class="sourceLineNo">129</span>         */<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        public Workflow assembler(final CacheAssembler ca) {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                this.cacheAssembler = ca;<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                return this;<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        }<a name="line.133"></a>
+<span class="sourceLineNo">134</span><a name="line.134"></a>
+<span class="sourceLineNo">135</span>        /**<a name="line.135"></a>
+<span class="sourceLineNo">136</span>         * @param rp<a name="line.136"></a>
+<span class="sourceLineNo">137</span>         *            the {@link RecordPersister} to use<a name="line.137"></a>
+<span class="sourceLineNo">138</span>         * @return this {@link Workflow} for continued operation<a name="line.138"></a>
+<span class="sourceLineNo">139</span>         */<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        public Workflow persister(final RecordPersister rp) {<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                this.persister = rp;<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                return this;<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        }<a name="line.143"></a>
+<span class="sourceLineNo">144</span><a name="line.144"></a>
+<span class="sourceLineNo">145</span>        /**<a name="line.145"></a>
+<span class="sourceLineNo">146</span>         * @param os<a name="line.146"></a>
+<span class="sourceLineNo">147</span>         *            the {@link OutputStage} to use<a name="line.147"></a>
+<span class="sourceLineNo">148</span>         * @return this {@link Workflow} for continued operation<a name="line.148"></a>
+<span class="sourceLineNo">149</span>         */<a name="line.149"></a>
+<span class="sourceLineNo">150</span>        public Workflow outputStage(final OutputStage os) {<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                this.outputStage = os;<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                return this;<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        }<a name="line.153"></a>
+<span class="sourceLineNo">154</span><a name="line.154"></a>
+<span class="sourceLineNo">155</span>        /**<a name="line.155"></a>
+<span class="sourceLineNo">156</span>         * @param args<a name="line.156"></a>
+<span class="sourceLineNo">157</span>         * @throws ParseException<a name="line.157"></a>
+<span class="sourceLineNo">158</span>         * @throws IOException<a name="line.158"></a>
+<span class="sourceLineNo">159</span>         * @throws InterruptedException<a name="line.159"></a>
+<span class="sourceLineNo">160</span>         */<a name="line.160"></a>
+<span class="sourceLineNo">161</span>        public static void main(final String[] args) throws ParseException, IOException, InterruptedException {<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                final Parser cliParser = new BasicParser();<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                // first check to see if this is an invocation of help<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                final CommandLine helpCmd = cliParser.parse(helpOptions, args, true);<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                if (helpCmd.getOptions().length &gt; 0) {<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                        new HelpFormatter().printHelp(helpLine, mainOptions);<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                } else {<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                        // it's not a help invocation, so actually parse the args<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                        try {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                                final CommandLine cmd = cliParser.parse(mainOptions, args);<a name="line.170"></a>
+<span class="sourceLineNo">171</span><a name="line.171"></a>
+<span class="sourceLineNo">172</span>                                final File uriFile = new File(cmd.getOptionValue(URIS.opt()));<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                                log.info("Using URI file: {}", uriFile.getAbsolutePath());<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                                final Set&lt;Resource&gt; uris = retrieveUrisFromFile(uriFile);<a name="line.174"></a>
+<span class="sourceLineNo">175</span><a name="line.175"></a>
+<span class="sourceLineNo">176</span>                                final File transformFile = new File(cmd.getOptionValue(TRANSFORM.opt()));<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                                final String transform = Files.toString(transformFile, UTF_8);<a name="line.177"></a>
+<span class="sourceLineNo">178</span><a name="line.178"></a>
+<span class="sourceLineNo">179</span>                                final String outputDirectory = cmd.getOptionValue(OUTPUTDIR.opt());<a name="line.179"></a>
 <span class="sourceLineNo">180</span><a name="line.180"></a>
-<span class="sourceLineNo">181</span>                                final File transformFile = new File(cmd.getOptionValue(TRANSFORM.opt()));<a name="line.181"></a>
-<span class="sourceLineNo">182</span>                                final String transform = Files.toString(transformFile, UTF_8);<a name="line.182"></a>
-<span class="sourceLineNo">183</span><a name="line.183"></a>
-<span class="sourceLineNo">184</span>                                final String outputDirectory = cmd.getOptionValue(OUTPUTDIR.opt());<a name="line.184"></a>
-<span class="sourceLineNo">185</span><a name="line.185"></a>
-<span class="sourceLineNo">186</span>                                final Workflow main = new Workflow();<a name="line.186"></a>
-<span class="sourceLineNo">187</span>                                if (cmd.hasOption(CACHE.opt())) {<a name="line.187"></a>
-<span class="sourceLineNo">188</span>                                        final String cacheFile = cmd.getOptionValue(CACHE.opt());<a name="line.188"></a>
-<span class="sourceLineNo">189</span>                                        log.info("Using cache location: {}", cacheFile);<a name="line.189"></a>
-<span class="sourceLineNo">190</span>                                        final Dataset dataset = createDataset(cacheFile);<a name="line.190"></a>
-<span class="sourceLineNo">191</span>                                        dataset.begin(READ);<a name="line.191"></a>
-<span class="sourceLineNo">192</span>                                        main.dataset = dataset;<a name="line.192"></a>
-<span class="sourceLineNo">193</span>                                        dataset.end();<a name="line.193"></a>
-<span class="sourceLineNo">194</span>                                } else {<a name="line.194"></a>
-<span class="sourceLineNo">195</span>                                        main.dataset = createDataset();<a name="line.195"></a>
-<span class="sourceLineNo">196</span>                                }<a name="line.196"></a>
-<span class="sourceLineNo">197</span><a name="line.197"></a>
-<span class="sourceLineNo">198</span>                                if (!cmd.hasOption(SKIPRETRIEVAL.opt())) {<a name="line.198"></a>
-<span class="sourceLineNo">199</span>                                        Integer assemblerThreads = DEFAULT_NUM_THREADS;<a name="line.199"></a>
-<span class="sourceLineNo">200</span>                                        if (cmd.hasOption(ASSEMBLERTHREADS.opt())) {<a name="line.200"></a>
-<span class="sourceLineNo">201</span>                                                assemblerThreads = parseInt(cmd.getOptionValue(ASSEMBLERTHREADS.opt()));<a name="line.201"></a>
-<span class="sourceLineNo">202</span>                                        }<a name="line.202"></a>
-<span class="sourceLineNo">203</span>                                        final CacheAssembler assembler = new CacheAssembler(main.dataset).threads(assemblerThreads).uris(<a name="line.203"></a>
-<span class="sourceLineNo">204</span>                                                        uris);<a name="line.204"></a>
-<span class="sourceLineNo">205</span>                                        if (cmd.hasOption(ACCEPT.opt())) {<a name="line.205"></a>
-<span class="sourceLineNo">206</span>                                                final String accept = cmd.getOptionValue(ACCEPT.opt());<a name="line.206"></a>
-<span class="sourceLineNo">207</span>                                                log.info("Requesting HTTP Content-type: {} for resource retrieval.", accept);<a name="line.207"></a>
-<span class="sourceLineNo">208</span>                                                assembler.accepts(accept);<a name="line.208"></a>
-<span class="sourceLineNo">209</span>                                        }<a name="line.209"></a>
-<span class="sourceLineNo">210</span>                                        main.assembler(assembler);<a name="line.210"></a>
-<span class="sourceLineNo">211</span>                                } else if (!cmd.hasOption(CACHE.opt())) {<a name="line.211"></a>
-<span class="sourceLineNo">212</span>                                        final String bangLine = repeat("!", 80);<a name="line.212"></a>
-<span class="sourceLineNo">213</span>                                        log.warn(bangLine);<a name="line.213"></a>
-<span class="sourceLineNo">214</span>                                        log.warn("Operating over empty in-memory cache without retrieval step to fill it!");<a name="line.214"></a>
-<span class="sourceLineNo">215</span>                                        log.warn(bangLine);<a name="line.215"></a>
+<span class="sourceLineNo">181</span>                                final Workflow main = new Workflow();<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                                if (cmd.hasOption(CACHE.opt())) {<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                                        final String cacheFile = cmd.getOptionValue(CACHE.opt());<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                                        log.info("Using cache location: {}", cacheFile);<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                                        final Dataset dataset = createDataset(cacheFile);<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                                        dataset.begin(READ);<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                                        main.dataset = dataset;<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                                        dataset.end();<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                                } else {<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                                        main.dataset = createDataset();<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                                }<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                                Set&lt;Resource&gt; urisToIndex;<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                                if (!cmd.hasOption(SKIPRETRIEVAL.opt())) {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                                        Integer assemblerThreads = DEFAULT_NUM_THREADS;<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                                        if (cmd.hasOption(ASSEMBLERTHREADS.opt())) {<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                                                assemblerThreads = parseInt(cmd.getOptionValue(ASSEMBLERTHREADS.opt()));<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                                        }<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                                        final CacheAssembler assembler = new CacheAssembler(main.dataset).threads(assemblerThreads).uris(<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                                                        uris);<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                                        if (cmd.hasOption(ACCEPT.opt())) {<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                                                final String accept = cmd.getOptionValue(ACCEPT.opt());<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                                                log.info("Requesting HTTP Content-type: {} for resource retrieval.", accept);<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                                                assembler.accepts(accept);<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                                        }<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                                        main.assembler(assembler);<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                                        urisToIndex = main.cache(uris);<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                                        log.debug("Successfully retrieved URIs:\n{}", urisToIndex);<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                                } else {<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                                        urisToIndex = uris;<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                                        if (!cmd.hasOption(CACHE.opt())) {<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                                                final String bangLine = repeat("!", 80);<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                                                log.warn(bangLine);<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                                                log.warn("Operating over empty in-memory cache without retrieval step to fill it!");<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                                                log.warn(bangLine);<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                                        }<a name="line.215"></a>
 <span class="sourceLineNo">216</span>                                }<a name="line.216"></a>
 <span class="sourceLineNo">217</span>                                if (cmd.hasOption(INDEXINGTHREADS.opt())) {<a name="line.217"></a>
 <span class="sourceLineNo">218</span>                                        main.numIndexerThreads = parseInt(cmd.getOptionValue(INDEXINGTHREADS.opt()));<a name="line.218"></a>
 <span class="sourceLineNo">219</span>                                }<a name="line.219"></a>
 <span class="sourceLineNo">220</span>                                main.outputStage(new SolrXMLOutputStage());<a name="line.220"></a>
 <span class="sourceLineNo">221</span>                                main.persister(new FilesystemPersister().location(outputDirectory));<a name="line.221"></a>
-<span class="sourceLineNo">222</span>                                final Set&lt;Resource&gt; successfullyRetrieved = main.fullRun(transform, uris);<a name="line.222"></a>
-<span class="sourceLineNo">223</span>                                log.debug("Successfully retrieved URIs: {}", successfullyRetrieved);<a name="line.223"></a>
-<span class="sourceLineNo">224</span>                        } catch (final ParseException e) {<a name="line.224"></a>
-<span class="sourceLineNo">225</span>                                new HelpFormatter().printHelp(helpLine, mainOptions);<a name="line.225"></a>
-<span class="sourceLineNo">226</span>                                throw e;<a name="line.226"></a>
-<span class="sourceLineNo">227</span>                        }<a name="line.227"></a>
-<span class="sourceLineNo">228</span>                }<a name="line.228"></a>
-<span class="sourceLineNo">229</span>        }<a name="line.229"></a>
-<span class="sourceLineNo">230</span><a name="line.230"></a>
-<span class="sourceLineNo">231</span>        private static Set&lt;Resource&gt; retrieveUrisFromFile(final File f) throws IOException {<a name="line.231"></a>
-<span class="sourceLineNo">232</span>                return new HashSet&lt;&gt;(transform(Files.readLines(f, UTF_8), new Function&lt;String, Resource&gt;() {<a name="line.232"></a>
-<span class="sourceLineNo">233</span><a name="line.233"></a>
-<span class="sourceLineNo">234</span>                        @Override<a name="line.234"></a>
-<span class="sourceLineNo">235</span>                        public Resource apply(final String uri) {<a name="line.235"></a>
-<span class="sourceLineNo">236</span>                                return createResource(uri);<a name="line.236"></a>
-<span class="sourceLineNo">237</span>                        }<a name="line.237"></a>
-<span class="sourceLineNo">238</span>                }));<a name="line.238"></a>
-<span class="sourceLineNo">239</span>        }<a name="line.239"></a>
-<span class="sourceLineNo">240</span>}<a name="line.240"></a>
+<span class="sourceLineNo">222</span>                                main.index(transform, urisToIndex);<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                        } catch (final ParseException e) {<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                                new HelpFormatter().printHelp(helpLine, mainOptions);<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                                throw e;<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                        }<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                }<a name="line.227"></a>
+<span class="sourceLineNo">228</span>        }<a name="line.228"></a>
+<span class="sourceLineNo">229</span><a name="line.229"></a>
+<span class="sourceLineNo">230</span>        private static Set&lt;Resource&gt; retrieveUrisFromFile(final File f) throws IOException {<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                return new HashSet&lt;&gt;(transform(Files.readLines(f, UTF_8), new Function&lt;String, Resource&gt;() {<a name="line.231"></a>
+<span class="sourceLineNo">232</span><a name="line.232"></a>
+<span class="sourceLineNo">233</span>                        @Override<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                        public Resource apply(final String uri) {<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                                return createResource(uri);<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                        }<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                }));<a name="line.237"></a>
+<span class="sourceLineNo">238</span>        }<a name="line.238"></a>
+<span class="sourceLineNo">239</span>}<a name="line.239"></a>
 
 
 

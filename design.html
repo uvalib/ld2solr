@@ -119,7 +119,38 @@
         <div class="section">
 <h2>Stages<a name="Stages"></a></h2>
             
-<p>ld2solr divides its work into several stages. A stage is represented by the Java interface <tt>Stage</tt> and its subtypes.</p>
+<p>ld2solr divides its work into several stages, represented by the Java interface <tt>Stage</tt> and its subtypes. A convenient type <tt>ThreadedStage</tt> is provided for those stages of workflow which can usefully rely on a threadpool.</p>
+        </div>
+        
+<div class="section">
+<h2>Plan of Attack<a name="Plan_of_Attack"></a></h2>
+            
+<p>ld2solr performs its task in two larger pieces, each of which is subdivided.</p>
+            
+<ol style="list-style-type: decimal">
+                
+<li title="Caching">Caching, represented by the type <tt>CacheAssembler</tt>:
+                    
+<ol style="list-style-type: decimal">
+                        
+<li>Retrieval</li>
+                        
+<li>Cache loading</li>
+                    </ol>
+                </li>
+                
+<li title="Indexing">Indexing:
+                    
+<ol style="list-style-type: decimal">
+                        
+<li>Index transformation, represented by the type <tt>IndexRun</tt>. In this stage the supplied <a class="externalLink" href="http://marmotta.apache.org/ldpath">LDPath</a> transformation is used to generate <tt>NamedFields</tt> instances.</li>
+                        
+<li>Output generation, represented by the type <tt>OutputStage</tt> and its subtypes. In this stage the <tt>NamedFields</tt> instances from the last stage are translated into <tt>OutputRecord</tt>s which contain <tt>byte[]</tt> index records.</li>
+                        
+<li>Persistence, represented by the type <tt>RecordPersister</tt> and its subtypes. In this stage the <tt>OutputRecord</tt> instances from the last stage are persisted into a form recoverable from outside the indexing process. For example, the <tt>FilePersister</tt> stores them in a specified filesystem directory.</li>
+                    </ol>
+                </li>
+            </ol>
         </div>
     
 

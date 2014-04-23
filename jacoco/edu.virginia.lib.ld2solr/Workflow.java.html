@@ -77,45 +77,40 @@ import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 
 <span class="fc" id="L78">	private static final Logger log = getLogger(Workflow.class);</span>
 
-	public Set&lt;Resource&gt; fullRun(final String transformation, final Set&lt;Resource&gt; uris) throws InterruptedException {
-
-<span class="fc" id="L82">		log.info(&quot;Using transformation:\n{}&quot;, transformation);</span>
-
-<span class="fc" id="L84">		Set&lt;Resource&gt; successfullyRetrieved = new HashSet&lt;&gt;(uris.size());</span>
-		// first, we may need to assemble the cache of RDF
-<span class="fc bfc" id="L86" title="All 2 branches covered.">		if (cacheAssembler != null) {</span>
-<span class="fc" id="L87">			successfullyRetrieved.addAll(cacheAssembler.call());</span>
-<span class="fc" id="L88">			final Set&lt;Resource&gt; failures = difference(uris, successfullyRetrieved);</span>
-<span class="fc bfc" id="L89" title="All 2 branches covered.">			if (failures.size() &gt; 0) {</span>
-<span class="fc" id="L90">				log.error(&quot;Failed to retrieve some resources!&quot;);</span>
-<span class="fc bfc" id="L91" title="All 2 branches covered.">				for (final Resource failure : failures) {</span>
-<span class="fc" id="L92">					log.warn(&quot;Resource: {} could not be retrieved!&quot;, failure);</span>
-<span class="fc" id="L93">				}</span>
-			}
-<span class="fc" id="L95">			cacheAssembler.shutdown();</span>
-<span class="fc" id="L96">		} else {</span>
-			// assume fully cached data
-<span class="fc" id="L98">			successfullyRetrieved = uris;</span>
+	public Set&lt;Resource&gt; cache(final Set&lt;Resource&gt; uris) throws InterruptedException {
+<span class="fc" id="L81">		final Set&lt;Resource&gt; successfullyRetrieved = cacheAssembler.call();</span>
+<span class="fc" id="L82">		final Set&lt;Resource&gt; failures = difference(uris, successfullyRetrieved);</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">		if (failures.size() &gt; 0) {</span>
+<span class="fc" id="L84">			log.error(&quot;Failed to retrieve some resources!&quot;);</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">			for (final Resource failure : failures) {</span>
+<span class="fc" id="L86">				log.warn(&quot;Resource: {} could not be retrieved!&quot;, failure);</span>
+<span class="fc" id="L87">			}</span>
 		}
-<span class="fc" id="L100">		dataset.begin(READ);</span>
-<span class="fc" id="L101">		log.trace(&quot;Operating with triples:\n{}&quot;, dataset.getDefaultModel());</span>
-<span class="fc" id="L102">		dataset.end();</span>
+<span class="fc" id="L89">		cacheAssembler.shutdown();</span>
+<span class="fc" id="L90">		return successfullyRetrieved;</span>
+	}
 
-<span class="fc" id="L104">		log.info(&quot;Writing to output location: {}&quot;, persister.location());</span>
+	public void index(final String transformation, final Set&lt;Resource&gt; uris) throws InterruptedException {
 
-<span class="fc" id="L106">		final IndexRun indexRun = new IndexRun(transformation, successfullyRetrieved, JenaBackend.with(dataset))</span>
-<span class="fc" id="L107">				.threads(numIndexerThreads);</span>
+<span class="fc" id="L95">		log.info(&quot;Using transformation:\n{}&quot;, transformation);</span>
+
+<span class="fc" id="L97">		dataset.begin(READ);</span>
+<span class="fc" id="L98">		log.trace(&quot;Operating with triples:\n{}&quot;, dataset.getDefaultModel());</span>
+<span class="fc" id="L99">		dataset.end();</span>
+
+<span class="fc" id="L101">		log.info(&quot;Writing to output location: {}&quot;, persister.location());</span>
+
+<span class="fc" id="L103">		final IndexRun indexRun = new IndexRun(transformation, uris, JenaBackend.with(dataset))</span>
+<span class="fc" id="L104">				.threads(numIndexerThreads);</span>
 
 		// workflow!
-<span class="fc" id="L110">		indexRun.andThen(outputStage);</span>
-<span class="fc" id="L111">		outputStage.andThen(persister);</span>
-<span class="fc" id="L112">		indexRun.run();</span>
-<span class="fc" id="L113">		indexRun.shutdown();</span>
-<span class="fc" id="L114">		outputStage.shutdown();</span>
-<span class="fc" id="L115">		persister.shutdown();</span>
-
-<span class="fc" id="L117">		return successfullyRetrieved;</span>
-	}
+<span class="fc" id="L107">		indexRun.andThen(outputStage);</span>
+<span class="fc" id="L108">		outputStage.andThen(persister);</span>
+<span class="fc" id="L109">		indexRun.run();</span>
+<span class="fc" id="L110">		indexRun.shutdown();</span>
+<span class="fc" id="L111">		outputStage.shutdown();</span>
+<span class="fc" id="L112">		persister.shutdown();</span>
+<span class="fc" id="L113">	}</span>
 
 	/**
 	 * @param d
@@ -123,8 +118,8 @@ import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 	 * @return this {@link Workflow} for continued operation
 	 */
 	public Workflow dataset(final Dataset d) {
-<span class="fc" id="L126">		this.dataset = d;</span>
-<span class="fc" id="L127">		return this;</span>
+<span class="fc" id="L121">		this.dataset = d;</span>
+<span class="fc" id="L122">		return this;</span>
 	}
 
 	/**
@@ -133,8 +128,8 @@ import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 	 * @return this {@link Workflow} for continued operation
 	 */
 	public Workflow assembler(final CacheAssembler ca) {
-<span class="fc" id="L136">		this.cacheAssembler = ca;</span>
-<span class="fc" id="L137">		return this;</span>
+<span class="fc" id="L131">		this.cacheAssembler = ca;</span>
+<span class="fc" id="L132">		return this;</span>
 	}
 
 	/**
@@ -143,8 +138,8 @@ import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 	 * @return this {@link Workflow} for continued operation
 	 */
 	public Workflow persister(final RecordPersister rp) {
-<span class="fc" id="L146">		this.persister = rp;</span>
-<span class="fc" id="L147">		return this;</span>
+<span class="fc" id="L141">		this.persister = rp;</span>
+<span class="fc" id="L142">		return this;</span>
 	}
 
 	/**
@@ -153,8 +148,8 @@ import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 	 * @return this {@link Workflow} for continued operation
 	 */
 	public Workflow outputStage(final OutputStage os) {
-<span class="fc" id="L156">		this.outputStage = os;</span>
-<span class="fc" id="L157">		return this;</span>
+<span class="fc" id="L151">		this.outputStage = os;</span>
+<span class="fc" id="L152">		return this;</span>
 	}
 
 	/**
@@ -164,76 +159,80 @@ import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 	 * @throws InterruptedException
 	 */
 	public static void main(final String[] args) throws ParseException, IOException, InterruptedException {
-<span class="fc" id="L167">		final Parser cliParser = new BasicParser();</span>
+<span class="fc" id="L162">		final Parser cliParser = new BasicParser();</span>
 		// first check to see if this is an invocation of help
-<span class="fc" id="L169">		final CommandLine helpCmd = cliParser.parse(helpOptions, args, true);</span>
-<span class="fc bfc" id="L170" title="All 2 branches covered.">		if (helpCmd.getOptions().length &gt; 0) {</span>
-<span class="fc" id="L171">			new HelpFormatter().printHelp(helpLine, mainOptions);</span>
+<span class="fc" id="L164">		final CommandLine helpCmd = cliParser.parse(helpOptions, args, true);</span>
+<span class="fc bfc" id="L165" title="All 2 branches covered.">		if (helpCmd.getOptions().length &gt; 0) {</span>
+<span class="fc" id="L166">			new HelpFormatter().printHelp(helpLine, mainOptions);</span>
 		} else {
 			// it's not a help invocation, so actually parse the args
 			try {
-<span class="fc" id="L175">				final CommandLine cmd = cliParser.parse(mainOptions, args);</span>
+<span class="fc" id="L170">				final CommandLine cmd = cliParser.parse(mainOptions, args);</span>
 
-<span class="fc" id="L177">				final File uriFile = new File(cmd.getOptionValue(URIS.opt()));</span>
-<span class="fc" id="L178">				log.info(&quot;Using URI file: {}&quot;, uriFile.getAbsolutePath());</span>
-<span class="fc" id="L179">				final Set&lt;Resource&gt; uris = retrieveUrisFromFile(uriFile);</span>
+<span class="fc" id="L172">				final File uriFile = new File(cmd.getOptionValue(URIS.opt()));</span>
+<span class="fc" id="L173">				log.info(&quot;Using URI file: {}&quot;, uriFile.getAbsolutePath());</span>
+<span class="fc" id="L174">				final Set&lt;Resource&gt; uris = retrieveUrisFromFile(uriFile);</span>
 
-<span class="fc" id="L181">				final File transformFile = new File(cmd.getOptionValue(TRANSFORM.opt()));</span>
-<span class="fc" id="L182">				final String transform = Files.toString(transformFile, UTF_8);</span>
+<span class="fc" id="L176">				final File transformFile = new File(cmd.getOptionValue(TRANSFORM.opt()));</span>
+<span class="fc" id="L177">				final String transform = Files.toString(transformFile, UTF_8);</span>
 
-<span class="fc" id="L184">				final String outputDirectory = cmd.getOptionValue(OUTPUTDIR.opt());</span>
+<span class="fc" id="L179">				final String outputDirectory = cmd.getOptionValue(OUTPUTDIR.opt());</span>
 
-<span class="fc" id="L186">				final Workflow main = new Workflow();</span>
-<span class="fc bfc" id="L187" title="All 2 branches covered.">				if (cmd.hasOption(CACHE.opt())) {</span>
-<span class="fc" id="L188">					final String cacheFile = cmd.getOptionValue(CACHE.opt());</span>
-<span class="fc" id="L189">					log.info(&quot;Using cache location: {}&quot;, cacheFile);</span>
-<span class="fc" id="L190">					final Dataset dataset = createDataset(cacheFile);</span>
-<span class="fc" id="L191">					dataset.begin(READ);</span>
-<span class="fc" id="L192">					main.dataset = dataset;</span>
-<span class="fc" id="L193">					dataset.end();</span>
-<span class="fc" id="L194">				} else {</span>
-<span class="fc" id="L195">					main.dataset = createDataset();</span>
+<span class="fc" id="L181">				final Workflow main = new Workflow();</span>
+<span class="fc bfc" id="L182" title="All 2 branches covered.">				if (cmd.hasOption(CACHE.opt())) {</span>
+<span class="fc" id="L183">					final String cacheFile = cmd.getOptionValue(CACHE.opt());</span>
+<span class="fc" id="L184">					log.info(&quot;Using cache location: {}&quot;, cacheFile);</span>
+<span class="fc" id="L185">					final Dataset dataset = createDataset(cacheFile);</span>
+<span class="fc" id="L186">					dataset.begin(READ);</span>
+<span class="fc" id="L187">					main.dataset = dataset;</span>
+<span class="fc" id="L188">					dataset.end();</span>
+<span class="fc" id="L189">				} else {</span>
+<span class="fc" id="L190">					main.dataset = createDataset();</span>
 				}
-
-<span class="fc bfc" id="L198" title="All 2 branches covered.">				if (!cmd.hasOption(SKIPRETRIEVAL.opt())) {</span>
-<span class="fc" id="L199">					Integer assemblerThreads = DEFAULT_NUM_THREADS;</span>
-<span class="fc bfc" id="L200" title="All 2 branches covered.">					if (cmd.hasOption(ASSEMBLERTHREADS.opt())) {</span>
-<span class="fc" id="L201">						assemblerThreads = parseInt(cmd.getOptionValue(ASSEMBLERTHREADS.opt()));</span>
+				Set&lt;Resource&gt; urisToIndex;
+<span class="fc bfc" id="L193" title="All 2 branches covered.">				if (!cmd.hasOption(SKIPRETRIEVAL.opt())) {</span>
+<span class="fc" id="L194">					Integer assemblerThreads = DEFAULT_NUM_THREADS;</span>
+<span class="fc bfc" id="L195" title="All 2 branches covered.">					if (cmd.hasOption(ASSEMBLERTHREADS.opt())) {</span>
+<span class="fc" id="L196">						assemblerThreads = parseInt(cmd.getOptionValue(ASSEMBLERTHREADS.opt()));</span>
 					}
-<span class="fc" id="L203">					final CacheAssembler assembler = new CacheAssembler(main.dataset).threads(assemblerThreads).uris(</span>
+<span class="fc" id="L198">					final CacheAssembler assembler = new CacheAssembler(main.dataset).threads(assemblerThreads).uris(</span>
 							uris);
-<span class="fc bfc" id="L205" title="All 2 branches covered.">					if (cmd.hasOption(ACCEPT.opt())) {</span>
-<span class="fc" id="L206">						final String accept = cmd.getOptionValue(ACCEPT.opt());</span>
-<span class="fc" id="L207">						log.info(&quot;Requesting HTTP Content-type: {} for resource retrieval.&quot;, accept);</span>
-<span class="fc" id="L208">						assembler.accepts(accept);</span>
+<span class="fc bfc" id="L200" title="All 2 branches covered.">					if (cmd.hasOption(ACCEPT.opt())) {</span>
+<span class="fc" id="L201">						final String accept = cmd.getOptionValue(ACCEPT.opt());</span>
+<span class="fc" id="L202">						log.info(&quot;Requesting HTTP Content-type: {} for resource retrieval.&quot;, accept);</span>
+<span class="fc" id="L203">						assembler.accepts(accept);</span>
 					}
-<span class="fc" id="L210">					main.assembler(assembler);</span>
-<span class="fc bfc" id="L211" title="All 2 branches covered.">				} else if (!cmd.hasOption(CACHE.opt())) {</span>
-<span class="fc" id="L212">					final String bangLine = repeat(&quot;!&quot;, 80);</span>
-<span class="fc" id="L213">					log.warn(bangLine);</span>
-<span class="fc" id="L214">					log.warn(&quot;Operating over empty in-memory cache without retrieval step to fill it!&quot;);</span>
-<span class="fc" id="L215">					log.warn(bangLine);</span>
+<span class="fc" id="L205">					main.assembler(assembler);</span>
+<span class="fc" id="L206">					urisToIndex = main.cache(uris);</span>
+<span class="fc" id="L207">					log.debug(&quot;Successfully retrieved URIs:\n{}&quot;, urisToIndex);</span>
+<span class="fc" id="L208">				} else {</span>
+<span class="fc" id="L209">					urisToIndex = uris;</span>
+<span class="fc bfc" id="L210" title="All 2 branches covered.">					if (!cmd.hasOption(CACHE.opt())) {</span>
+<span class="fc" id="L211">						final String bangLine = repeat(&quot;!&quot;, 80);</span>
+<span class="fc" id="L212">						log.warn(bangLine);</span>
+<span class="fc" id="L213">						log.warn(&quot;Operating over empty in-memory cache without retrieval step to fill it!&quot;);</span>
+<span class="fc" id="L214">						log.warn(bangLine);</span>
+					}
 				}
 <span class="fc bfc" id="L217" title="All 2 branches covered.">				if (cmd.hasOption(INDEXINGTHREADS.opt())) {</span>
 <span class="fc" id="L218">					main.numIndexerThreads = parseInt(cmd.getOptionValue(INDEXINGTHREADS.opt()));</span>
 				}
 <span class="fc" id="L220">				main.outputStage(new SolrXMLOutputStage());</span>
 <span class="fc" id="L221">				main.persister(new FilesystemPersister().location(outputDirectory));</span>
-<span class="fc" id="L222">				final Set&lt;Resource&gt; successfullyRetrieved = main.fullRun(transform, uris);</span>
-<span class="fc" id="L223">				log.debug(&quot;Successfully retrieved URIs: {}&quot;, successfullyRetrieved);</span>
-<span class="fc" id="L224">			} catch (final ParseException e) {</span>
-<span class="fc" id="L225">				new HelpFormatter().printHelp(helpLine, mainOptions);</span>
-<span class="fc" id="L226">				throw e;</span>
-<span class="fc" id="L227">			}</span>
+<span class="fc" id="L222">				main.index(transform, urisToIndex);</span>
+<span class="fc" id="L223">			} catch (final ParseException e) {</span>
+<span class="fc" id="L224">				new HelpFormatter().printHelp(helpLine, mainOptions);</span>
+<span class="fc" id="L225">				throw e;</span>
+<span class="fc" id="L226">			}</span>
 		}
-<span class="fc" id="L229">	}</span>
+<span class="fc" id="L228">	}</span>
 
 	private static Set&lt;Resource&gt; retrieveUrisFromFile(final File f) throws IOException {
-<span class="fc" id="L232">		return new HashSet&lt;&gt;(transform(Files.readLines(f, UTF_8), new Function&lt;String, Resource&gt;() {</span>
+<span class="fc" id="L231">		return new HashSet&lt;&gt;(transform(Files.readLines(f, UTF_8), new Function&lt;String, Resource&gt;() {</span>
 
 			@Override
 			public Resource apply(final String uri) {
-<span class="fc" id="L236">				return createResource(uri);</span>
+<span class="fc" id="L235">				return createResource(uri);</span>
 			}
 		}));
 	}
