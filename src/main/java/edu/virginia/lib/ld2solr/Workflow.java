@@ -7,10 +7,19 @@ import static com.google.common.collect.Sets.difference;
 import static com.hp.hpl.jena.query.ReadWrite.READ;
 import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
 import static com.hp.hpl.jena.tdb.TDBFactory.createDataset;
-import static edu.virginia.lib.ld2solr.CLIOptions.getOptions;
-import static edu.virginia.lib.ld2solr.CLIOptions.helpLine;
+import static edu.virginia.lib.ld2solr.CLIOption.ACCEPT;
+import static edu.virginia.lib.ld2solr.CLIOption.ASSEMBLERTHREADS;
+import static edu.virginia.lib.ld2solr.CLIOption.CACHE;
+import static edu.virginia.lib.ld2solr.CLIOption.INDEXINGTHREADS;
+import static edu.virginia.lib.ld2solr.CLIOption.OUTPUTDIR;
+import static edu.virginia.lib.ld2solr.CLIOption.SKIPRETRIEVAL;
+import static edu.virginia.lib.ld2solr.CLIOption.TRANSFORM;
+import static edu.virginia.lib.ld2solr.CLIOption.URIS;
+import static edu.virginia.lib.ld2solr.CLIOption.helpLine;
+import static edu.virginia.lib.ld2solr.CLIOption.helpOptions;
+import static edu.virginia.lib.ld2solr.CLIOption.mainOptions;
+import static edu.virginia.lib.ld2solr.spi.ThreadedStage.DEFAULT_NUM_THREADS;
 import static java.lang.Integer.parseInt;
-import static java.util.Arrays.asList;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
@@ -22,6 +31,7 @@ import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.Parser;
 import org.apache.marmotta.ldpath.LDPath;
 import org.slf4j.Logger;
 
@@ -69,6 +79,8 @@ public class Workflow {
 
 	public Set<Resource> fullRun(final String transformation, final Set<Resource> uris) throws InterruptedException {
 
+		log.info("Using transformation:\n{}", transformation);
+
 		Set<Resource> successfullyRetrieved = new HashSet<>(uris.size());
 		// first, we may need to assemble the cache of RDF
 		if (cacheAssembler != null) {
@@ -86,7 +98,7 @@ public class Workflow {
 			successfullyRetrieved = uris;
 		}
 		dataset.begin(READ);
-		// log.trace("Operating with triples:\n{}", dataset.getDefaultModel());
+		log.trace("Operating with triples:\n{}", dataset.getDefaultModel());
 		dataset.end();
 
 		log.info("Writing to output location: {}", persister.location());
@@ -152,69 +164,77 @@ public class Workflow {
 	 * @throws InterruptedException
 	 */
 	public static void main(final String[] args) throws ParseException, IOException, InterruptedException {
-		final CommandLine cmd = new BasicParser().parse(getOptions(), args);
-		if (cmd.hasOption('h')) {
-			new HelpFormatter().printHelp(helpLine, getOptions());
+		final Parser cliParser = new BasicParser();
+		// first check to see if this is an invocation of help
+		final CommandLine helpCmd = cliParser.parse(helpOptions, args, true);
+		if (helpCmd.getOptions().length > 0) {
+			new HelpFormatter().printHelp(helpLine, mainOptions);
 		} else {
-			if (!cmd.hasOption('u') || !cmd.hasOption('t') || !cmd.hasOption('o')) {
-				new HelpFormatter().printHelp(helpLine, getOptions());
-				throw new IllegalArgumentException(
-						"This utility requires a list of URIs to index, a transform to use for indexing and a place to put the index records!\n");
-			}
-			final String separator = cmd.hasOption('s') ? cmd.getOptionValue('s') : "\n";
-			final File uriFile = new File(cmd.getOptionValue('u'));
-			log.info("Using URI file: {}", uriFile.getAbsolutePath());
-			final Set<Resource> uris = new HashSet<>(transform(asList(Files.toString(uriFile, UTF_8).split(separator)),
-					string2uri));
-			final File transformFile = new File(cmd.getOptionValue("transform"));
-			log.info("Using transform file: {}", transformFile.getAbsolutePath());
-			final String transform = Files.toString(transformFile, UTF_8);
-			final String outputDirectory = cmd.getOptionValue('o');
-			log.info("Using output directory: {}", outputDirectory);
-			final Workflow main = new Workflow();
-			if (cmd.hasOption('c')) {
-				final String cacheFile = cmd.getOptionValue('c');
-				log.info("Using cache location: {}", cacheFile);
-				final Dataset dataset = createDataset(cacheFile);
-				dataset.begin(READ);
-				main.dataset = dataset;
-				dataset.end();
-			} else {
-				main.dataset = createDataset();
-			}
-			if (!cmd.hasOption("skip-retrieval")) {
-				Integer assemblerThreads = ThreadedStage.DEFAULT_NUM_THREADS;
-				if (cmd.hasOption("assembler-threads")) {
-					assemblerThreads = parseInt(cmd.getOptionValue("assembler-threads"));
+			// it's not a help invocation, so actually parse the args
+			try {
+				final CommandLine cmd = cliParser.parse(mainOptions, args);
+
+				final File uriFile = new File(cmd.getOptionValue(URIS.opt()));
+				log.info("Using URI file: {}", uriFile.getAbsolutePath());
+				final Set<Resource> uris = retrieveUrisFromFile(uriFile);
+
+				final File transformFile = new File(cmd.getOptionValue(TRANSFORM.opt()));
+				final String transform = Files.toString(transformFile, UTF_8);
+
+				final String outputDirectory = cmd.getOptionValue(OUTPUTDIR.opt());
+
+				final Workflow main = new Workflow();
+				if (cmd.hasOption(CACHE.opt())) {
+					final String cacheFile = cmd.getOptionValue(CACHE.opt());
+					log.info("Using cache location: {}", cacheFile);
+					final Dataset dataset = createDataset(cacheFile);
+					dataset.begin(READ);
+					main.dataset = dataset;
+					dataset.end();
+				} else {
+					main.dataset = createDataset();
 				}
-				final CacheAssembler assembler = new CacheAssembler(main.dataset).threads(assemblerThreads).uris(uris);
-				if (cmd.hasOption('a')) {
-					final String accept = cmd.getOptionValue('a');
-					log.info("Requesting content-type: {} for resource retrieval.", accept);
-					assembler.accepts(accept);
+
+				if (!cmd.hasOption(SKIPRETRIEVAL.opt())) {
+					Integer assemblerThreads = DEFAULT_NUM_THREADS;
+					if (cmd.hasOption(ASSEMBLERTHREADS.opt())) {
+						assemblerThreads = parseInt(cmd.getOptionValue(ASSEMBLERTHREADS.opt()));
+					}
+					final CacheAssembler assembler = new CacheAssembler(main.dataset).threads(assemblerThreads).uris(
+							uris);
+					if (cmd.hasOption(ACCEPT.opt())) {
+						final String accept = cmd.getOptionValue(ACCEPT.opt());
+						log.info("Requesting HTTP Content-type: {} for resource retrieval.", accept);
+						assembler.accepts(accept);
+					}
+					main.assembler(assembler);
+				} else if (!cmd.hasOption(CACHE.opt())) {
+					final String bangLine = repeat("!", 80);
+					log.warn(bangLine);
+					log.warn("Operating over empty in-memory cache without retrieval step to fill it!");
+					log.warn(bangLine);
 				}
-				main.assembler(assembler);
-			} else if (!cmd.hasOption('c')) {
-				final String bangLine = repeat("!", 80);
-				log.warn(bangLine);
-				log.warn("Operating over empty in-memory cache without retrieval step to fill it!");
-				log.warn(bangLine);
+				if (cmd.hasOption(INDEXINGTHREADS.opt())) {
+					main.numIndexerThreads = parseInt(cmd.getOptionValue(INDEXINGTHREADS.opt()));
+				}
+				main.outputStage(new SolrXMLOutputStage());
+				main.persister(new FilesystemPersister().location(outputDirectory));
+				final Set<Resource> successfullyRetrieved = main.fullRun(transform, uris);
+				log.debug("Successfully retrieved URIs: {}", successfullyRetrieved);
+			} catch (final ParseException e) {
+				new HelpFormatter().printHelp(helpLine, mainOptions);
+				throw e;
 			}
-			if (cmd.hasOption("indexing-threads")) {
-				main.numIndexerThreads = parseInt(cmd.getOptionValue("indexing-threads"));
-			}
-			main.outputStage(new SolrXMLOutputStage());
-			main.persister(new FilesystemPersister().location(outputDirectory));
-			final Set<Resource> successfullyRetrieved = main.fullRun(transform, uris);
-			log.debug("Successfully retrieved URIs: {}", successfullyRetrieved);
 		}
 	}
 
-	private static Function<String, Resource> string2uri = new Function<String, Resource>() {
+	private static Set<Resource> retrieveUrisFromFile(final File f) throws IOException {
+		return new HashSet<>(transform(Files.readLines(f, UTF_8), new Function<String, Resource>() {
 
-		@Override
-		public Resource apply(final String uri) {
-			return createResource(uri);
-		}
-	};
+			@Override
+			public Resource apply(final String uri) {
+				return createResource(uri);
+			}
+		}));
+	}
 }

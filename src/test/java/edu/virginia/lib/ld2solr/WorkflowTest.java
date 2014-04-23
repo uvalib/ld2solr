@@ -2,6 +2,7 @@ package edu.virginia.lib.ld2solr;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.base.Joiner.on;
+import static com.google.common.base.Throwables.getStackTraceAsString;
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.collect.ObjectArrays.concat;
 import static com.google.common.collect.Sets.difference;
@@ -15,8 +16,9 @@ import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.singleton;
 import static java.util.UUID.randomUUID;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
@@ -129,12 +131,8 @@ public class WorkflowTest extends TestHelper {
 	@Test
 	public void testMainMethodExecutes() throws IOException {
 		log.trace("Entering testMainMethodExecutes()...");
-		final String[] argsWithSeparator = concat(createBasicArgsForMainMethodTest(), new String[] { "-s", "\n" },
-				String.class);
-		final Exception e = testMainMethod(argsWithSeparator);
-		if (e != null) {
-			fail("Failed to execute Workflow.main with exception: " + e);
-		}
+		final Exception e = testMainMethod(createBasicArgsForMainMethodTest());
+		assertNull("Failed to execute Workflow.main with exception: " + e, e);
 		log.trace("Leaving testMainMethodExecutes().");
 	}
 
@@ -144,9 +142,7 @@ public class WorkflowTest extends TestHelper {
 		final String[] argsWithThreadingParams = concat(createBasicArgsForMainMethodTest(), new String[] {
 				"--indexing-threads", "7", "--assembler-threads", "7" }, String.class);
 		final Exception e = testMainMethod(argsWithThreadingParams);
-		if (e != null) {
-			fail("Failed to execute Workflow.main with threading parameters with exception: " + e);
-		}
+		assertNull("Failed to execute Workflow.main with threading parameters with exception: " + e, e);
 		log.trace("Leaving testMainMethodExecutesWithCustomThreading().");
 	}
 
@@ -157,18 +153,16 @@ public class WorkflowTest extends TestHelper {
 		final String[] argsWithPersistence = concat(createBasicArgsForMainMethodTest(), new String[] { "-c",
 				cacheDirectory, "-a", "application/rdf+xml" }, String.class);
 		final Exception e = testMainMethod(argsWithPersistence);
-		if (e != null) {
-			fail("Failed to execute Workflow.main with persisted RDF cache with exception: " + e);
-		}
+		assertNull("Failed to execute Workflow.main with persisted RDF cache with exception: " + e, e);
 		log.trace("Leaving testMainMethodExecutesWithPersistedCache().");
 	}
 
 	@Test
 	public void testHelp() {
+		log.trace("Entering testHelp()...");
 		final Exception e = testMainMethod(new String[] { "-h" });
-		if (e != null) {
-			fail("Failed to execute Workflow.main for help message with exception: " + e);
-		}
+		assertNull("Failed to execute Workflow.main for help message with exception: " + e, e);
+		log.trace("Leaving testHelp().");
 	}
 
 	@Test
@@ -180,9 +174,7 @@ public class WorkflowTest extends TestHelper {
 		final String[] args = concat(createBasicArgsForMainMethodTest(), new String[] { "-c", cacheDirectory,
 				"--skip-retrieval" }, String.class);
 		final Exception e = testMainMethod(args);
-		if (e != null) {
-			fail("Failed to execute Workflow.main with preassembled cache with exception: " + e);
-		}
+		assertNull("Failed to execute Workflow.main with preassembled cache with exception: " + e, e);
 	}
 
 	@Test
@@ -190,41 +182,34 @@ public class WorkflowTest extends TestHelper {
 		final String[] args = concat(createBasicArgsForMainMethodTest(), new String[] { "--skip-retrieval" },
 				String.class);
 		final Exception e = testMainMethod(args);
-		if (e != null) {
-			fail("Failed to execute Workflow.main with no cache and no retrieval step with exception: " + e);
-		}
+		assertNull("Failed to execute Workflow.main with no cache and no retrieval step with exception: " + e, e);
 	}
 
 	@Test
 	public void testMissingRequiredCLIArgs() {
 		Exception e = testMainMethod(new String[] { "-t", "fakeTransform", "-u", "fakeUris" });
-		if (e == null) {
-			fail("Should have failed to execute Workflow.main without required parameter for output directory!");
-		}
+		assertNotNull("Should have failed to execute Workflow.main without required parameter for output directory!", e);
 		e = testMainMethod(new String[] { "-t", "fakeTransform", "-o", "fakeOutputDirectory" });
-		if (e == null) {
-			fail("Should have failed to execute Workflow.main without required parameter for input URIs!");
-		}
+		assertNotNull("Should have failed to execute Workflow.main without required parameter for input URIs!", e);
 		e = testMainMethod(new String[] { "-u", "fakeUris", "-o", "fakeOutputDirectory" });
-		if (e == null) {
-			fail("Should have failed to execute Workflow.main without required parameter for indexing transform!");
-		}
+		assertNotNull("Should have failed to execute Workflow.main without required parameter for indexing transform!",
+				e);
 		e = testMainMethod(new String[] { "-o", "fakeOutputDirectory" });
-		if (e == null) {
-			fail("Should have failed to execute Workflow.main without required parameters for indexing transform and input URIs!");
-		}
+		assertNotNull(
+				"Should have failed to execute Workflow.main without required parameters for indexing transform and input URIs!",
+				e);
 		e = testMainMethod(new String[] { "-u", "fakeUris" });
-		if (e == null) {
-			fail("Should have failed to execute Workflow.main without required parameters for indexing transform and output directory!");
-		}
+		assertNotNull(
+				"Should have failed to execute Workflow.main without required parameters for indexing transform and output directory!",
+				e);
 		e = testMainMethod(new String[] { "-t", "fakeTransform" });
-		if (e == null) {
-			fail("Should have failed to execute Workflow.main without required parameters for input URIs and output directory!");
-		}
+		assertNotNull(
+				"Should have failed to execute Workflow.main without required parameters for input URIs and output directory!",
+				e);
 		e = testMainMethod(new String[] {});
-		if (e == null) {
-			fail("Should have failed to execute Workflow.main without required parameters for input URIs, indexing transform, and output directory!");
-		}
+		assertNotNull(
+				"Should have failed to execute Workflow.main without required parameters for input URIs, indexing transform, and output directory!",
+				e);
 	}
 
 	private String[] createBasicArgsForMainMethodTest() throws IOException {
@@ -247,10 +232,10 @@ public class WorkflowTest extends TestHelper {
 					} catch (final Exception e) {
 						propagate(e);
 					}
-
 				}
 			}).run();
 		} catch (final Exception e) {
+			log.error("Error in execution of main() method!\n{}", getStackTraceAsString(e));
 			return e;
 		}
 		return null;
