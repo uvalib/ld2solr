@@ -19,7 +19,6 @@ import java.util.Set;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.marmotta.ldpath.LDPath;
@@ -30,14 +29,13 @@ import com.google.common.io.Files;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import edu.virginia.lib.ld2solr.impl.CacheAssembler;
 import edu.virginia.lib.ld2solr.impl.FilesystemPersister;
 import edu.virginia.lib.ld2solr.impl.IndexRun;
 import edu.virginia.lib.ld2solr.impl.JenaBackend;
 import edu.virginia.lib.ld2solr.impl.SolrXMLOutputStage;
-import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 import edu.virginia.lib.ld2solr.spi.OutputStage;
 import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
+import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 
 /**
  * Assembles and operates an indexing workflow from SPI implementations, as well
@@ -212,31 +210,11 @@ public class Workflow {
 	}
 
 	private static Options getOptions() {
-		return new Options()
-				.addOption("u", "uris", true, "(Required) A file or pipe with a list of URIs to index.")
-				.addOption("o", "output-dir", true, "(Required) Location into which to place output files.")
-				.addOption("t", "transform", true,
-						"(Required) Location of LDPath transform with which to create index records. ")
-				.addOption("c", "cache", true,
-						"Location of persistent triple cache. (Defaults to in-memory only operation.)")
-				.addOption("a", "accept", true, "HTTP 'Accept:' header to use. (Defaults to none.)")
-				.addOption(
-						"sr",
-						"skip-retrieval",
-						false,
-						"Should retrieval and caching of Linked Data resources before indexing stages be skipped?"
-								+ "If set, option for persistent triple cache must be supplied or "
-								+ "indexing stages will operate over an empty cache.")
-				.addOption("s", "separator", true, "Separator between input URIs. (Defaults to \\n.)")
-				.addOption(
-						new Option(null, "assembler-threads", true,
-								"The number of threads to use for RDF cache accumulation. (Defaults to "
-										+ ThreadedStage.DEFAULT_NUM_THREADS + ".)"))
-				.addOption(
-						new Option(null, "indexing-threads", true,
-								"The number of threads to use for indexing operation. (Defaults to "
-										+ ThreadedStage.DEFAULT_NUM_THREADS + ".)"))
-				.addOption("h", "help", false, "Print this help message.");
+		final Options options = new Options();
+		for (final CLIOptions option : CLIOptions.values()) {
+			options.addOption(option.getOption());
+		}
+		return options;
 	}
 
 	private static Function<String, Resource> string2uri = new Function<String, Resource>() {

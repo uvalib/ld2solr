@@ -1,4 +1,4 @@
-package edu.virginia.lib.ld2solr.impl;
+package edu.virginia.lib.ld2solr;
 
 import static com.google.common.collect.Sets.difference;
 import static com.hp.hpl.jena.query.ReadWrite.READ;
@@ -18,6 +18,9 @@ import org.slf4j.Logger;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Resource;
+
+import edu.virginia.lib.ld2solr.CacheAssembler;
+import edu.virginia.lib.ld2solr.impl.TestHelper;
 
 public class CacheAssemblerTest extends TestHelper {
 

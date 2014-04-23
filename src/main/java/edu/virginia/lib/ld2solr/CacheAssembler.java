@@ -1,4 +1,4 @@
-package edu.virginia.lib.ld2solr.impl;
+package edu.virginia.lib.ld2solr;
 
 import static com.google.common.util.concurrent.Futures.addCallback;
 import static com.google.common.util.concurrent.JdkFutureAdapters.listenInPoolThread;
@@ -22,6 +22,7 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+import edu.virginia.lib.ld2solr.impl.JenaModelTriplesRetriever;
 import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 
 /**
