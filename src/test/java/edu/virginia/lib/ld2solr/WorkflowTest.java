@@ -89,7 +89,8 @@ public class WorkflowTest extends TestHelper {
 	@Test
 	public void testFullRun() throws InterruptedException {
 		log.trace("Entering testFullRun()...");
-		final Set<Resource> successfulUris = testMain.fullRun(transformation, uris);
+		final Set<Resource> successfulUris = testMain.cache(uris);
+		testMain.index(transformation, successfulUris);
 		final long startTime = currentTimeMillis();
 		synchronized (testSink) {
 			while (testSink.accepted().size() < successfulUris.size() && currentTimeMillis() < (startTime + TIMEOUT)) {
@@ -116,7 +117,8 @@ public class WorkflowTest extends TestHelper {
 		final Set<Resource> urisWithExtra = new HashSet<>(uris);
 		final Set<Resource> badUris = singleton(createResource());
 		urisWithExtra.addAll(badUris);
-		final Set<Resource> successfulUris = testMain.fullRun(transformation, urisWithExtra);
+		final Set<Resource> successfulUris = testMain.cache(urisWithExtra);
+		testMain.index(transformation, successfulUris);
 		final long startTime = currentTimeMillis();
 		synchronized (testSink) {
 			while ((testSink.accepted().size() < successfulUris.size()) && currentTimeMillis() < (startTime + TIMEOUT)) {

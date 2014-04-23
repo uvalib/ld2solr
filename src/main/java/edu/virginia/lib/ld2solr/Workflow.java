@@ -77,33 +77,30 @@ public class Workflow {
 
 	private static final Logger log = getLogger(Workflow.class);
 
-	public Set<Resource> fullRun(final String transformation, final Set<Resource> uris) throws InterruptedException {
+	public Set<Resource> cache(final Set<Resource> uris) throws InterruptedException {
+		final Set<Resource> successfullyRetrieved = cacheAssembler.call();
+		final Set<Resource> failures = difference(uris, successfullyRetrieved);
+		if (failures.size() > 0) {
+			log.error("Failed to retrieve some resources!");
+			for (final Resource failure : failures) {
+				log.warn("Resource: {} could not be retrieved!", failure);
+			}
+		}
+		cacheAssembler.shutdown();
+		return successfullyRetrieved;
+	}
+
+	public void index(final String transformation, final Set<Resource> uris) throws InterruptedException {
 
 		log.info("Using transformation:\n{}", transformation);
 
-		Set<Resource> successfullyRetrieved = new HashSet<>(uris.size());
-		// first, we may need to assemble the cache of RDF
-		if (cacheAssembler != null) {
-			successfullyRetrieved.addAll(cacheAssembler.call());
-			final Set<Resource> failures = difference(uris, successfullyRetrieved);
-			if (failures.size() > 0) {
-				log.error("Failed to retrieve some resources!");
-				for (final Resource failure : failures) {
-					log.warn("Resource: {} could not be retrieved!", failure);
-				}
-			}
-			cacheAssembler.shutdown();
-		} else {
-			// assume fully cached data
-			successfullyRetrieved = uris;
-		}
 		dataset.begin(READ);
 		log.trace("Operating with triples:\n{}", dataset.getDefaultModel());
 		dataset.end();
 
 		log.info("Writing to output location: {}", persister.location());
 
-		final IndexRun indexRun = new IndexRun(transformation, successfullyRetrieved, JenaBackend.with(dataset))
+		final IndexRun indexRun = new IndexRun(transformation, uris, JenaBackend.with(dataset))
 				.threads(numIndexerThreads);
 
 		// workflow!
@@ -113,8 +110,6 @@ public class Workflow {
 		indexRun.shutdown();
 		outputStage.shutdown();
 		persister.shutdown();
-
-		return successfullyRetrieved;
 	}
 
 	/**
@@ -194,7 +189,7 @@ public class Workflow {
 				} else {
 					main.dataset = createDataset();
 				}
-
+				Set<Resource> urisToIndex;
 				if (!cmd.hasOption(SKIPRETRIEVAL.opt())) {
 					Integer assemblerThreads = DEFAULT_NUM_THREADS;
 					if (cmd.hasOption(ASSEMBLERTHREADS.opt())) {
@@ -208,19 +203,23 @@ public class Workflow {
 						assembler.accepts(accept);
 					}
 					main.assembler(assembler);
-				} else if (!cmd.hasOption(CACHE.opt())) {
-					final String bangLine = repeat("!", 80);
-					log.warn(bangLine);
-					log.warn("Operating over empty in-memory cache without retrieval step to fill it!");
-					log.warn(bangLine);
+					urisToIndex = main.cache(uris);
+					log.debug("Successfully retrieved URIs:\n{}", urisToIndex);
+				} else {
+					urisToIndex = uris;
+					if (!cmd.hasOption(CACHE.opt())) {
+						final String bangLine = repeat("!", 80);
+						log.warn(bangLine);
+						log.warn("Operating over empty in-memory cache without retrieval step to fill it!");
+						log.warn(bangLine);
+					}
 				}
 				if (cmd.hasOption(INDEXINGTHREADS.opt())) {
 					main.numIndexerThreads = parseInt(cmd.getOptionValue(INDEXINGTHREADS.opt()));
 				}
 				main.outputStage(new SolrXMLOutputStage());
 				main.persister(new FilesystemPersister().location(outputDirectory));
-				final Set<Resource> successfullyRetrieved = main.fullRun(transform, uris);
-				log.debug("Successfully retrieved URIs: {}", successfullyRetrieved);
+				main.index(transform, urisToIndex);
 			} catch (final ParseException e) {
 				new HelpFormatter().printHelp(helpLine, mainOptions);
 				throw e;
