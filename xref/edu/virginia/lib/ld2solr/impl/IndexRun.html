@@ -21,7 +21,7 @@
 <a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> com.hp.hpl.jena.rdf.model.Resource;
 <a class="jxr_linenumber" name="L14" href="#L14">14</a>  
 <a class="jxr_linenumber" name="L15" href="#L15">15</a>  <strong class="jxr_keyword">import</strong> edu.virginia.lib.ld2solr.api.NamedFields;
-<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">import</strong> edu.virginia.lib.ld2solr.spi.AbstractStage;
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">import</strong> edu.virginia.lib.ld2solr.spi.ThreadedStage;
 <a class="jxr_linenumber" name="L17" href="#L17">17</a>  <strong class="jxr_keyword">import</strong> edu.virginia.lib.ld2solr.spi.Stage;
 <a class="jxr_linenumber" name="L18" href="#L18">18</a>  
 <a class="jxr_linenumber" name="L19" href="#L19">19</a>  <em class="jxr_javadoccomment">/**</em>
@@ -34,7 +34,7 @@
 <a class="jxr_linenumber" name="L26" href="#L26">26</a>  <em class="jxr_javadoccomment"> * @author ajs6f</em>
 <a class="jxr_linenumber" name="L27" href="#L27">27</a>  <em class="jxr_javadoccomment"> * </em>
 <a class="jxr_linenumber" name="L28" href="#L28">28</a>  <em class="jxr_javadoccomment"> */</em>
-<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../edu/virginia/lib/ld2solr/impl/IndexRun.html">IndexRun</a> <strong class="jxr_keyword">extends</strong> AbstractStage&lt;IndexRun, NamedFields&gt; <strong class="jxr_keyword">implements</strong> Runnable {
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../edu/virginia/lib/ld2solr/impl/IndexRun.html">IndexRun</a> <strong class="jxr_keyword">extends</strong> ThreadedStage&lt;IndexRun, NamedFields&gt; <strong class="jxr_keyword">implements</strong> Runnable {
 <a class="jxr_linenumber" name="L30" href="#L30">30</a>  
 <a class="jxr_linenumber" name="L31" href="#L31">31</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <a href="../../../../../edu/virginia/lib/ld2solr/impl/JenaBackend.html">JenaBackend</a> cache;
 <a class="jxr_linenumber" name="L32" href="#L32">32</a>  

@@ -13,7 +13,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
-import edu.virginia.lib.ld2solr.spi.AbstractStage;
+import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 import edu.virginia.lib.ld2solr.spi.Stage;
 
 /**
@@ -26,7 +26,7 @@ import edu.virginia.lib.ld2solr.spi.Stage;
  * @author ajs6f
  * 
  */
-public class IndexRun extends AbstractStage&lt;IndexRun, NamedFields&gt; implements Runnable {
+public class IndexRun extends ThreadedStage&lt;IndexRun, NamedFields&gt; implements Runnable {
 
 	private final JenaBackend cache;
 

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>CLIOption.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Linked Data to Solr</a> &gt; <a href="index.source.html" class="el_package">edu.virginia.lib.ld2solr</a> &gt; <span class="el_source">CLIOption.java</span></div><h1>CLIOption.java</h1><pre class="source lang-java linenums">package edu.virginia.lib.ld2solr;
+
+import static edu.virginia.lib.ld2solr.spi.ThreadedStage.DEFAULT_NUM_THREADS;
+
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+
+/**
+ * Options for use with ld2solr CLI.
+ * 
+ * @author ajs6f
+ * 
+ */
+<span class="fc" id="L14">public enum CLIOption {</span>
+<span class="fc" id="L15">	URIS(new Option(&quot;u&quot;, &quot;uris&quot;, true, &quot;(Required) A file or pipe with a list of URIs to index.&quot;), true),</span>
+<span class="fc" id="L16">	OUTPUTDIR(new Option(&quot;o&quot;, &quot;output-dir&quot;, true, &quot;(Required) Location into which to place output files.&quot;), true),</span>
+<span class="fc" id="L17">	TRANSFORM(new Option(&quot;t&quot;, &quot;transform&quot;, true,</span>
+<span class="fc" id="L18">			&quot;(Required) Location of LDPath transform with which to create index records. &quot;), true),</span>
+<span class="fc" id="L19">	CACHE(</span>
+			new Option(&quot;c&quot;, &quot;cache&quot;, true,
+					&quot;Location of persistent triple cache. (Defaults to in-memory only operation.)&quot;)),
+<span class="fc" id="L22">	ACCEPT(new Option(&quot;a&quot;, &quot;accept-header-value&quot;, true, &quot;HTTP 'Accept:' header to use. (Defaults to none.)&quot;)),</span>
+<span class="fc" id="L23">	SKIPRETRIEVAL(new Option(&quot;sr&quot;, &quot;skip-retrieval&quot;, false,</span>
+			&quot;Should retrieval and caching of Linked Data resources before indexing stages be skipped?&quot;
+					+ &quot;If set, option for persistent triple cache must be supplied or &quot;
+					+ &quot;indexing stages will operate over an empty cache.&quot;)),
+<span class="fc" id="L27">	ASSEMBLERTHREADS(new Option(&quot;at&quot;, &quot;assembler-threads&quot;, true,</span>
+			&quot;The number of threads to use for RDF cache accumulation. (Defaults to &quot; + DEFAULT_NUM_THREADS + &quot;.)&quot;)),
+<span class="fc" id="L29">	INDEXINGTHREADS(new Option(&quot;it&quot;, &quot;indexing-threads&quot;, true,</span>
+			&quot;The number of threads to use for indexing operation. (Defaults to &quot; + DEFAULT_NUM_THREADS + &quot;.)&quot;));
+
+	public Option option;
+
+<span class="fc" id="L34">	private CLIOption(final Option o, final Boolean... required) {</span>
+<span class="fc" id="L35">		this.option = o;</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">		if (required.length &gt; 0) {</span>
+<span class="fc" id="L37">			this.option.setRequired(required[0]);</span>
+		} else {
+<span class="fc" id="L39">			this.option.setRequired(false);</span>
+		}
+<span class="fc" id="L41">	}</span>
+
+	public String opt() {
+<span class="fc" id="L44">		return this.option.getOpt();</span>
+	}
+
+<span class="fc" id="L47">	public static String helpLine = &quot;ld2solr -t transform-file -o output-dir -u input-uris&quot;;</span>
+
+<span class="fc" id="L49">	public static Options helpOptions = new Options().addOption(&quot;h&quot;, &quot;help&quot;, false, &quot;Print this help message.&quot;);</span>
+
+	public static Options mainOptions;
+
+	static {
+<span class="fc" id="L54">		mainOptions = new Options();</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">		for (final CLIOption option : values()) {</span>
+<span class="fc" id="L56">			mainOptions.addOption(option.option);</span>
+		}
+<span class="fc" id="L58">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.0.201403182114</span></div></body></html>

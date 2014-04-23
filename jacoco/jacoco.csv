@@ -1,28 +1,26 @@
 GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+Linked Data to Solr,edu.virginia.lib.ld2solr,CacheAssembler.new FutureCallback() {...},0,32,0,0,0,7,0,3,0,3
 Linked Data to Solr,edu.virginia.lib.ld2solr,Workflow.new Function() {...},0,6,0,0,0,2,0,2,0,2
-Linked Data to Solr,edu.virginia.lib.ld2solr,Workflow,0,446,0,28,0,86,0,23,0,9
-Linked Data to Solr,edu.virginia.lib.ld2solr.impl,IndexRun,0,56,0,2,0,13,0,4,0,3
-Linked Data to Solr,edu.virginia.lib.ld2solr.impl,JenaModelTriplesRetriever.new Callable() {...},30,119,6,10,0,19,4,6,0,2
-Linked Data to Solr,edu.virginia.lib.ld2solr.impl,IndexRun.new Callable() {...},0,20,0,0,0,2,0,2,0,2
-Linked Data to Solr,edu.virginia.lib.ld2solr.impl,IndexRun.new FutureCallback() {...},0,33,0,0,0,8,0,3,0,3
-Linked Data to Solr,edu.virginia.lib.ld2solr.impl,FilesystemPersister,5,67,0,0,2,17,0,6,0,6
-Linked Data to Solr,edu.virginia.lib.ld2solr.impl,JenaBackend,0,23,0,0,0,8,0,3,0,3
-Linked Data to Solr,edu.virginia.lib.ld2solr.impl,DatasetCacheLoader,28,0,0,0,8,0,4,0,4,0
-Linked Data to Solr,edu.virginia.lib.ld2solr.impl,SolrXMLOutputStage.new Maps.EntryTransformer() {...},0,32,0,2,0,7,0,3,0,2
-Linked Data to Solr,edu.virginia.lib.ld2solr.impl,CacheAssembler,29,159,0,6,4,41,0,9,0,6
-Linked Data to Solr,edu.virginia.lib.ld2solr.impl,JenaIndexingTransducer,19,81,4,4,1,14,4,3,0,3
+Linked Data to Solr,edu.virginia.lib.ld2solr,CacheAssembler,29,159,0,6,4,41,0,9,0,6
+Linked Data to Solr,edu.virginia.lib.ld2solr,CLIOption,0,261,0,4,0,23,0,7,0,5
+Linked Data to Solr,edu.virginia.lib.ld2solr,Workflow,0,365,0,20,0,88,0,19,0,9
+Linked Data to Solr,edu.virginia.lib.ld2solr.spi,ThreadedStage,0,47,0,0,0,15,0,7,0,7
 Linked Data to Solr,edu.virginia.lib.ld2solr.impl,LDPathIndexer,0,13,0,0,0,4,0,2,0,2
-Linked Data to Solr,edu.virginia.lib.ld2solr.impl,SolrXMLOutputStage.new OutputRecord() {...},4,25,0,0,2,3,0,3,0,3
-Linked Data to Solr,edu.virginia.lib.ld2solr.impl,SolrXMLOutputStage.new Function() {...},0,10,0,0,0,2,0,2,0,2
-Linked Data to Solr,edu.virginia.lib.ld2solr.impl,DatasetCacheLoader.new Runnable() {...},39,0,0,0,7,0,2,0,2,0
-Linked Data to Solr,edu.virginia.lib.ld2solr.impl,CacheAssembler.new FutureCallback() {...},0,32,0,0,0,7,0,3,0,3
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,JenaBackend,0,23,0,0,0,8,0,3,0,3
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,IndexRun.new FutureCallback() {...},0,33,0,0,0,8,0,3,0,3
 Linked Data to Solr,edu.virginia.lib.ld2solr.impl,JenaModelTriplesRetriever.TriplesIntoModel,1,78,0,4,1,23,1,10,1,8
-Linked Data to Solr,edu.virginia.lib.ld2solr.impl,SolrXMLOutputStage,0,32,0,0,0,8,0,3,0,3
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,JenaIndexingTransducer,19,81,4,4,1,15,4,3,0,3
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,IndexRun.new Callable() {...},0,20,0,0,0,2,0,2,0,2
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,JenaModelTriplesRetriever.new Callable() {...},30,119,6,10,0,21,4,6,0,2
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,SolrXMLOutputStage.new OutputRecord() {...},4,25,0,0,2,3,0,3,0,3
 Linked Data to Solr,edu.virginia.lib.ld2solr.impl,JenaModelTriplesRetriever,0,32,0,0,0,8,0,3,0,3
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,SolrXMLOutputStage.new Function() {...},0,10,0,0,0,2,0,2,0,2
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,SolrXMLOutputStage,0,32,0,0,0,8,0,3,0,3
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,IndexRun,0,56,0,2,0,13,0,4,0,3
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,SolrXMLOutputStage.new Maps.EntryTransformer() {...},0,32,0,2,0,7,0,3,0,2
+Linked Data to Solr,edu.virginia.lib.ld2solr.impl,FilesystemPersister,5,67,0,0,2,17,0,6,0,6
 Linked Data to Solr,edu.virginia.lib.ld2solr.impl,JenaIndexingTransducer.new DefaultConfiguration() {...},0,21,0,0,0,4,0,2,0,2
-Linked Data to Solr,edu.virginia.lib.ld2solr.impl,DatasetCacheLoader.ReportCallback,27,0,0,0,9,0,3,0,3,0
 Linked Data to Solr,edu.virginia.lib.ld2solr.api,NamedFields.new Function() {...},0,7,0,0,0,2,0,2,0,2
 Linked Data to Solr,edu.virginia.lib.ld2solr.api,NamedFields.new Maps.EntryTransformer() {...},0,8,0,0,0,2,0,2,0,2
 Linked Data to Solr,edu.virginia.lib.ld2solr.api,NamedFields.new Function() {...},0,6,0,0,0,2,0,2,0,2
 Linked Data to Solr,edu.virginia.lib.ld2solr.api,NamedFields,0,40,0,2,0,9,0,5,0,4
-Linked Data to Solr,edu.virginia.lib.ld2solr.spi,AbstractStage,0,47,0,0,0,15,0,7,0,7

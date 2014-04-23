@@ -82,7 +82,7 @@
 <span class="sourceLineNo">074</span>                                        get.setHeader("Accept", accept);<a name="line.74"></a>
 <span class="sourceLineNo">075</span>                                }<a name="line.75"></a>
 <span class="sourceLineNo">076</span>                                final String rdf = EntityUtils.toString(client.execute(get).getEntity());<a name="line.76"></a>
-<span class="sourceLineNo">077</span>                                log.trace("Retrieved from URI: {} RDF:\n{}", resource, rdf);<a name="line.77"></a>
+<span class="sourceLineNo">077</span>                                log.debug("Retrieved from URI: {} RDF:\n{}", resource, rdf);<a name="line.77"></a>
 <span class="sourceLineNo">078</span>                                final Model model = createDefaultModel();<a name="line.78"></a>
 <span class="sourceLineNo">079</span>                                try (final TriplesIntoModel tripleRecorder = new TriplesIntoModel(model);) {<a name="line.79"></a>
 <span class="sourceLineNo">080</span>                                        final ExtractionReport report = extractor.extract(rdf, resource, tripleRecorder);<a name="line.80"></a>

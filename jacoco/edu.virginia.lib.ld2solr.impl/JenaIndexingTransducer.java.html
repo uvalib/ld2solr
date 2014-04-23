@@ -61,7 +61,7 @@ public class JenaIndexingTransducer implements IndexingTransducer {
 <span class="fc" id="L61">					namespaces.putAll(cache.model().getNsPrefixMap());</span>
 <span class="fc" id="L62">					return namespaces;</span>
 				}
-			}).programQuery(uri, transformationReader);
+<span class="fc" id="L64">			}).programQuery(uri, transformationReader);</span>
 <span class="fc" id="L65">			log.trace(&quot;LDPath transform returned: {}&quot;, result);</span>
 <span class="fc" id="L66">			final NamedFields fields = new NamedFields(result);</span>
 			// the identifier of the record is the URI of the resource indexed

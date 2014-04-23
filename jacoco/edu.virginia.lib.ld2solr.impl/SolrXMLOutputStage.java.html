@@ -17,7 +17,7 @@ import com.google.common.collect.Maps.EntryTransformer;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
 import edu.virginia.lib.ld2solr.api.OutputRecord;
-import edu.virginia.lib.ld2solr.spi.AbstractStage;
+import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 import edu.virginia.lib.ld2solr.spi.OutputStage;
 
 /**
@@ -26,7 +26,7 @@ import edu.virginia.lib.ld2solr.spi.OutputStage;
  * @author ajs6f
  * 
  */
-<span class="fc" id="L29">public class SolrXMLOutputStage extends AbstractStage&lt;SolrXMLOutputStage, OutputRecord&gt; implements OutputStage {</span>
+<span class="fc" id="L29">public class SolrXMLOutputStage extends ThreadedStage&lt;SolrXMLOutputStage, OutputRecord&gt; implements OutputStage {</span>
 
 	// TODO make index-time boost somehow adjustable, or something
 <span class="fc" id="L32">	public static final Long INDEX_TIME_BOOST = 1L;</span>
