@@ -14,5 +14,9 @@
             <p>If you would like to have a local copy of this site, including JavaDocs, coverage reports, and other development paraphernalia, perform a Maven site build: <code>mvn -o site</code></p>
             <p>You will find the generated documentation in <code>target/site/</code>.</p>
         </section>
+        <section name="Deploying the site">
+            <p>If you would like to have to publish the site to Github, perform a Maven post-site build: <code>mvn -o post-site</code></p>
+            <p>You will have to have supplied appropriate credentials for UVaLib's Github account. See <a href="https://github.com/github/maven-plugins">here</a> for details.</p>
+        </section>
     </body>
 </document>
