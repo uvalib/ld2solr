@@ -3,6 +3,7 @@ package edu.virginia.lib.ld2solr;
 import static edu.virginia.lib.ld2solr.spi.ThreadedStage.DEFAULT_NUM_THREADS;
 
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 
 /**
  * Options for use with ld2solr CLI.
@@ -82,4 +83,13 @@ public enum CLIOptions {
 
 	public abstract Option getOption();
 
+	public static String helpLine = "ld2solr -t transform-file -o output-dir -u input-uris";
+
+	public static Options getOptions() {
+		final Options options = new Options();
+		for (final CLIOptions option : CLIOptions.values()) {
+			options.addOption(option.getOption());
+		}
+		return options;
+	}
 }

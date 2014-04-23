@@ -7,6 +7,8 @@ import static com.google.common.collect.Sets.difference;
 import static com.hp.hpl.jena.query.ReadWrite.READ;
 import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
 import static com.hp.hpl.jena.tdb.TDBFactory.createDataset;
+import static edu.virginia.lib.ld2solr.CLIOptions.getOptions;
+import static edu.virginia.lib.ld2solr.CLIOptions.helpLine;
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -19,7 +21,6 @@ import java.util.Set;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.marmotta.ldpath.LDPath;
 import org.slf4j.Logger;
@@ -153,10 +154,10 @@ public class Workflow {
 	public static void main(final String[] args) throws ParseException, IOException, InterruptedException {
 		final CommandLine cmd = new BasicParser().parse(getOptions(), args);
 		if (cmd.hasOption('h')) {
-			new HelpFormatter().printHelp("ld2solr -t transform-file -o output-dir -u input-uris", getOptions());
+			new HelpFormatter().printHelp(helpLine, getOptions());
 		} else {
 			if (!cmd.hasOption('u') || !cmd.hasOption('t') || !cmd.hasOption('o')) {
-				new HelpFormatter().printHelp("ld2solr -t transform-file -o output-dir -u input-uris", getOptions());
+				new HelpFormatter().printHelp(helpLine, getOptions());
 				throw new IllegalArgumentException(
 						"This utility requires a list of URIs to index, a transform to use for indexing and a place to put the index records!\n");
 			}
@@ -207,14 +208,6 @@ public class Workflow {
 			final Set<Resource> successfullyRetrieved = main.fullRun(transform, uris);
 			log.debug("Successfully retrieved URIs: {}", successfullyRetrieved);
 		}
-	}
-
-	private static Options getOptions() {
-		final Options options = new Options();
-		for (final CLIOptions option : CLIOptions.values()) {
-			options.addOption(option.getOption());
-		}
-		return options;
 	}
 
 	private static Function<String, Resource> string2uri = new Function<String, Resource>() {
