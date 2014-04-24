@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="Date-Revision-yyyymmdd" content="20140424" />
     <meta http-equiv="Content-Language" content="en" />
-    <title>Linked Data to Solr - Project Distribution Management</title>
+    <title>Linked Data to Solr - </title>
     <link rel="stylesheet" href="./css/apache-maven-fluido-1.3.1.min.css" />
     <link rel="stylesheet" href="./css/site.css" />
     <link rel="stylesheet" href="./css/print.css" media="print" />
@@ -81,111 +81,18 @@
         Design</a>
             </li>
                 
-      <li>
+      <li class="active">
   
-                          <a href="ldpath.html" title="Transformations">
-          <i class="none"></i>
-        Transformations</a>
-            </li>
+            <a href="#"><i class="none"></i>Transformations</a>
+          </li>
                               <li class="nav-header">Project Documentation</li>
-                                                                                                                                                                                                                                                                                                                  
+                                                                                                                                                                                                                                                                                                        
       <li>
   
                           <a href="project-info.html" title="Project Information">
-          <i class="icon-chevron-down"></i>
+          <i class="icon-chevron-right"></i>
         Project Information</a>
-                    <ul class="nav nav-list">
-                    
-      <li>
-  
-                          <a href="index.html" title="About">
-          <i class="none"></i>
-        About</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="plugin-management.html" title="Plugin Management">
-          <i class="none"></i>
-        Plugin Management</a>
-            </li>
-                    
-      <li class="active">
-  
-            <a href="#"><i class="none"></i>Distribution Management</a>
-          </li>
-                    
-      <li>
-  
-                          <a href="dependency-info.html" title="Dependency Information">
-          <i class="none"></i>
-        Dependency Information</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="source-repository.html" title="Source Repository">
-          <i class="none"></i>
-        Source Repository</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="mail-lists.html" title="Mailing Lists">
-          <i class="none"></i>
-        Mailing Lists</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="issue-tracking.html" title="Issue Tracking">
-          <i class="none"></i>
-        Issue Tracking</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="integration.html" title="Continuous Integration">
-          <i class="none"></i>
-        Continuous Integration</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="plugins.html" title="Project Plugins">
-          <i class="none"></i>
-        Project Plugins</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="license.html" title="Project License">
-          <i class="none"></i>
-        Project License</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="team-list.html" title="Project Team">
-          <i class="none"></i>
-        Project Team</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="project-summary.html" title="Project Summary">
-          <i class="none"></i>
-        Project Summary</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="dependencies.html" title="Dependencies">
-          <i class="none"></i>
-        Dependencies</a>
-            </li>
-              </ul>
-        </li>
+                  </li>
                                                                                                                                                                               
       <li>
   
@@ -214,11 +121,34 @@
                 
         <div id="bodyColumn"  class="span9" >
                                   
-            <div class="section">
-<h2>Overview<a name="Overview"></a></h2><a name="Overview"></a>
-<p>The following is the distribution management information used by this project.</p>
+            
+    
+        <div class="section">
+<h2>LDPath<a name="LDPath"></a></h2>
+            
+<p>ld2solr uses <a class="externalLink" href="http://wiki.apache.org/marmotta/LDPath">LDPath</a> to define the transformation between RDF and records of named fields that is at the heart of the indexing workflow. LDPath is a language for describing paths through a graph of Linked Data. It is similar, in some ways, to XPath, but unlike XPath, which is concerned with paths through hierarchical XML grapsh, LDPath concerns itself with paths through arbitrary graphs.</p>
+            
+<p>You may find a complete reference to syntax and semantics at the link above. This page provides only an example of a simple useful LDPath &quot;program&quot; or transform for indexing.</p>
+        </div> 
+        
 <div class="section">
-<h3>Download URL<a name="Download_URL"></a></h3><a name="Download_URL"></a><a class="externalLink" href="http://hudson01.lib.virginia.edu:8080/archiva/repository">http://hudson01.lib.virginia.edu:8080/archiva/repository</a></div></div>
+<h2>Simple Dublin Core Example<a name="Simple_Dublin_Core_Example"></a></h2>
+            
+<p>LDPath programs can define namespaces for use in path expressions, but several are <a class="externalLink" href="http://wiki.apache.org/marmotta/LDPath#Namespace_Definitions">pre-defined</a> for convenience. These include that of the Dublin Core elements. That is why the following transform is legitimate, although it does not explicitly define the Dublin Core namespace.</p>
+            
+<div>
+<pre>
+                  title_text = dc:title :: xsd:string;
+                  title_display = dc:title :: xsd:string;
+                  author = dc:creator/skos:label :: xsd:string;
+                  text = dc:description :: xsd:string;
+                  description_display = dc:description :: xsd:string;
+            </pre></div>
+            
+<p>Here we extract Dublic Core properties beginning from our context node and assign their <tt>xsd:string</tt> values to various appropriate index fields. Notice that for the &quot;author&quot; field, we traverse the <tt>dc:creator</tt> property to another graph node and use the <tt>skos:label</tt> thereon. SKOS is also featured as a pre-defined namespace for LDPath.</p>
+        </div>
+    
+
                   </div>
             </div>
           </div>
