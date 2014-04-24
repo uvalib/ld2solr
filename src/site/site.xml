@@ -26,7 +26,13 @@
             </item>
             <item name="Design" href="design.html">
                 <description>Theory of operation</description>
+            </item>
+            <item name="Transformations" href="ldpath.html">
+                <description>Using LDPath</description>
             </item> 
+            <item name="CLI Usage" href="usage.html">
+                <description>Using the CLI</description>
+            </item>
         </menu>
         <menu ref="reports"/>
     </body>

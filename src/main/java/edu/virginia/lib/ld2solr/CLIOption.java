@@ -19,7 +19,8 @@ public enum CLIOption {
 	CACHE(
 			new Option("c", "cache", true,
 					"Location of persistent triple cache. (Defaults to in-memory only operation.)")),
-	ACCEPT(new Option("a", "accept-header-value", true, "HTTP 'Accept:' header to use. (Defaults to none.)")),
+	ACCEPT(new Option("a", "accept-header-value", true,
+			"HTTP 'Accept:' header to use for HTTP-based Linked Data retrieval. (Defaults to none.)")),
 	SKIPRETRIEVAL(new Option("sr", "skip-retrieval", false,
 			"Should retrieval and caching of Linked Data resources before indexing stages be skipped?"
 					+ "If set, option for persistent triple cache must be supplied or "

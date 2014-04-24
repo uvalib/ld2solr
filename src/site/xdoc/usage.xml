@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns="http://maven.apache.org/XDOC/2.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/XDOC/2.0 http://maven.apache.org/xsd/xdoc-2.0.xsd">
+    <body>
+        <section name="CLI Usage">
+            <p>CLI usage is fairly self-documented. The built artifact is supplied as an executable JAR, so it should be executed with <code>java -jar [ld2solr-jar-name]</code>. Here are the available options:</p>
+            <pre>
+usage: ld2solr -t transform-file -o output-dir -u input-uris
+ -a,--accept-header-value arg   HTTP 'Accept:' header to use. (Defaults
+                                  to none.)
+ -at,--assembler-threads arg    The number of threads to use for RDF
+                                  cache accumulation. (Defaults to 10.)
+ -c,--cache arg                 Location of persistent triple cache.
+                                  (Defaults to in-memory only operation.)
+ -it,--indexing-threads arg     The number of threads to use for
+                                  indexing operation. (Defaults to 10.)
+ -o,--output-dir arg            (Required) Location into which to place
+                                  output files.
+ -sr,--skip-retrieval             Should retrieval and caching of Linked
+                                  Data resources before indexing stages be
+                                  skipped?If set, option for persistent
+                                  triple cache must be supplied or
+                                  indexing stages will operate over an
+                                  empty cache.
+ -t,--transform arg             (Required) Location of LDPath transform
+                                  with which to create index records.
+ -u,--uris arg                  (Required) A file or pipe with a list of
+                                  URIs to index.                
+            </pre>
+        </section> 
+    </body>
+</document>

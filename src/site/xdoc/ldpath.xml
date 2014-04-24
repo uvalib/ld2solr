@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns="http://maven.apache.org/XDOC/2.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/XDOC/2.0 http://maven.apache.org/xsd/xdoc-2.0.xsd">
+    <body>
+        <section name="LDPath">
+            <p>ld2solr uses <a href="http://wiki.apache.org/marmotta/LDPath">LDPath</a> to define the transformation between RDF and records of named fields that is at the heart of the indexing workflow. LDPath is a language for describing paths through a graph of Linked Data. It is similar, in some ways, to XPath, but unlike XPath, which is concerned with paths through hierarchical XML grapsh, LDPath concerns itself with paths through arbitrary graphs.</p>
+            <p>You may find a complete reference to syntax and semantics at the link above. This page provides only an example of a simple useful LDPath "program" or transform for indexing.</p>
+        </section> 
+        <section name="Simple Dublin Core Example">
+            <p>LDPath programs can define namespaces for use in path expressions, but several are <a href="http://wiki.apache.org/marmotta/LDPath#Namespace_Definitions">pre-defined</a> for convenience. These include that of the Dublin Core elements. That is why the following transform is legitimate, although it does not explicitly define the Dublin Core namespace.</p>
+            <pre>
+                  title_text = dc:title :: xsd:string;
+                  title_display = dc:title :: xsd:string;
+                  author = dc:creator/skos:label :: xsd:string;
+                  text = dc:description :: xsd:string;
+                  description_display = dc:description :: xsd:string;
+            </pre>
+            <p>Here we extract Dublic Core properties beginning from our context node and assign their <code>xsd:string</code> values to various appropriate index fields. Notice that for the "author" field, we traverse the <code>dc:creator</code> property to another graph node and use the <code>skos:label</code> thereon. SKOS is also featured as a pre-defined namespace for LDPath.</p>
+        </section>
+    </body>
+</document>
