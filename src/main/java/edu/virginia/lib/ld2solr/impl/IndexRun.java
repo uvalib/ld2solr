@@ -13,8 +13,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
-import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 import edu.virginia.lib.ld2solr.spi.Stage;
+import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 
 /**
  * A {@link Stage} of workflow that creates index records as {@link NamedFields}
@@ -42,7 +42,7 @@ public class IndexRun extends ThreadedStage<IndexRun, NamedFields> implements Ru
 	 * @param transformationSource
 	 *            LDPath transformation or program to use for indexing
 	 * @param uris
-	 *            Resources to index
+	 *            {@link Resource}s to index
 	 * @param c
 	 *            Linked Data cache over which to operate
 	 */
@@ -53,6 +53,11 @@ public class IndexRun extends ThreadedStage<IndexRun, NamedFields> implements Ru
 		this.indexer = new LDPathIndexer(cache);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Runnable#run()
+	 */
 	@Override
 	public void run() {
 		for (final Resource uri : uris) {

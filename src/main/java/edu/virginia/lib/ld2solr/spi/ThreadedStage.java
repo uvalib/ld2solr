@@ -8,6 +8,8 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import com.google.common.util.concurrent.ListeningExecutorService;
 
 /**
+ * A {@link Stage} that provides facilities for threaded operation.
+ * 
  * @author ajs6f
  * 
  */
@@ -19,15 +21,21 @@ public abstract class ThreadedStage<T extends ThreadedStage<T, Produces>, Produc
 
 	protected Acceptor<Produces, ?> nextStage;
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see Stage#andThen(Acceptor)
+	 */
 	@Override
-	public void andThen(final Acceptor<Produces, ?> a) {
+	public <A extends Acceptor<Produces, ?>> A andThen(final A a) {
 		this.nextStage = a;
+		return a;
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see edu.virginia.lib.ld2solr.spi.Stage#next(java.lang.Object)
+	 * @see Stage#next(java.lang.Object)
 	 */
 	@Override
 	public void next(final Produces task) {
@@ -42,6 +50,11 @@ public abstract class ThreadedStage<T extends ThreadedStage<T, Produces>, Produc
 		return threadpool;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see Stage#shutdown()
+	 */
 	@Override
 	public void shutdown() throws InterruptedException {
 		this.threadpool.shutdown();
@@ -53,13 +66,14 @@ public abstract class ThreadedStage<T extends ThreadedStage<T, Produces>, Produc
 	 * 
 	 * @param numThreads
 	 *            the number of threads to use
+	 * @return this {@link ThreadedStage} for continued operation
 	 * @throws InterruptedException
 	 */
+
 	public T threads(final Integer numThreads) throws InterruptedException {
 		shutdown();
 		threadpool = listeningDecorator(newFixedThreadPool(numThreads));
-		@SuppressWarnings("unchecked")
-		final T t = (T) this;
+		@SuppressWarnings("unchecked") final T t = (T) this;
 		return t;
 	}
 }

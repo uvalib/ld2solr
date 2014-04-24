@@ -19,12 +19,11 @@ import org.slf4j.Logger;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import edu.virginia.lib.ld2solr.CacheAssembler;
 import edu.virginia.lib.ld2solr.impl.TestHelper;
 
 public class CacheAssemblerTest extends TestHelper {
 
-	private CacheAssembler testAssembler;
+	private DatasetCacheAssembler testAssembler;
 
 	private Dataset dataset;
 
@@ -33,13 +32,12 @@ public class CacheAssemblerTest extends TestHelper {
 	@Before
 	public void setUp() throws InterruptedException {
 		dataset = createDataset();
-		testAssembler = new CacheAssembler(dataset).threads(3);
-		testAssembler.uris(uris);
+		testAssembler = new DatasetCacheAssembler().cache(dataset).threads(3);
 	}
 
 	@Test
 	public void testAccumulation() {
-		final Set<Resource> successfullyRetrievedUris = testAssembler.call();
+		final Set<Resource> successfullyRetrievedUris = testAssembler.load(uris);
 		assertEquals("Did not retrieve all resources successfully!", uris, successfullyRetrievedUris);
 		dataset.begin(READ);
 		log.debug("Retrieved triples: {}", dataset.getDefaultModel());
@@ -53,8 +51,7 @@ public class CacheAssemblerTest extends TestHelper {
 	public void testAccumulationWithEmptyResource() {
 		final Set<Resource> urisWithEmpty = new HashSet<>(uris);
 		urisWithEmpty.add(createResource(uriBase + "empty"));
-		testAssembler.uris(urisWithEmpty);
-		final Set<Resource> successfullyRetrievedUris = testAssembler.call();
+		final Set<Resource> successfullyRetrievedUris = testAssembler.load(urisWithEmpty);
 		assertTrue("Did not retrieve all resources successfully!", successfullyRetrievedUris.containsAll(uris));
 		dataset.begin(READ);
 		log.debug("Retrieved triples: {}", dataset.getDefaultModel());
@@ -69,8 +66,8 @@ public class CacheAssemblerTest extends TestHelper {
 		final Set<Resource> urisWithExtra = new HashSet<>(uris);
 		final Set<Resource> badUris = singleton(createResource());
 		urisWithExtra.addAll(badUris);
-		testAssembler = new CacheAssembler(dataset).uris(urisWithExtra);
-		final Set<Resource> successfulUris = testAssembler.call();
+		testAssembler = new DatasetCacheAssembler().cache(dataset);
+		final Set<Resource> successfulUris = testAssembler.load(urisWithExtra);
 		assertEquals("Didn't find the appropriate resource failing to be retrieved!", badUris,
 				difference(urisWithExtra, successfulUris));
 	}

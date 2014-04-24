@@ -44,13 +44,13 @@ import edu.virginia.lib.ld2solr.impl.FilesystemPersister;
 import edu.virginia.lib.ld2solr.impl.IndexRun;
 import edu.virginia.lib.ld2solr.impl.JenaBackend;
 import edu.virginia.lib.ld2solr.impl.SolrXMLOutputStage;
+import edu.virginia.lib.ld2solr.spi.CacheLoader;
 import edu.virginia.lib.ld2solr.spi.OutputStage;
 import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
-import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 
 /**
  * Assembles and operates an indexing workflow from SPI implementations, as well
- * as CLI support therefor.
+ * as supplying CLI support therefor.
  * 
  * @author ajs6f
  * 
@@ -67,18 +67,26 @@ public class Workflow {
 
 	private Dataset dataset;
 
-	private CacheAssembler cacheAssembler = null;
+	private CacheLoader<?, Dataset> cacheAssembler = null;
 
 	private RecordPersister persister;
 
 	private OutputStage outputStage = null;
 
-	private Integer numIndexerThreads = ThreadedStage.DEFAULT_NUM_THREADS;
+	private Integer numIndexerThreads = DEFAULT_NUM_THREADS;
 
 	private static final Logger log = getLogger(Workflow.class);
 
+	/**
+	 * Loads the cache for indexing workflow.
+	 * 
+	 * @param uris
+	 *            URIs of resources to load into cache.
+	 * @return those URIs that were successfully loaded
+	 * @throws InterruptedException
+	 */
 	public Set<Resource> cache(final Set<Resource> uris) throws InterruptedException {
-		final Set<Resource> successfullyRetrieved = cacheAssembler.call();
+		final Set<Resource> successfullyRetrieved = cacheAssembler.load(uris);
 		final Set<Resource> failures = difference(uris, successfullyRetrieved);
 		if (failures.size() > 0) {
 			log.error("Failed to retrieve some resources!");
@@ -90,6 +98,16 @@ public class Workflow {
 		return successfullyRetrieved;
 	}
 
+	/**
+	 * Performs an index run over the cache.
+	 * 
+	 * @param transformation
+	 *            The LDPath transformation to use for indexing
+	 * @param uris
+	 *            URIs to index
+	 * @throws InterruptedException
+	 * @see <a href="http://marmotta.apache.org/ldpath/">LDPath</a>
+	 */
 	public void index(final String transformation, final Set<Resource> uris) throws InterruptedException {
 
 		log.info("Using transformation:\n{}", transformation);
@@ -104,8 +122,7 @@ public class Workflow {
 				.threads(numIndexerThreads);
 
 		// workflow!
-		indexRun.andThen(outputStage);
-		outputStage.andThen(persister);
+		indexRun.andThen(outputStage).andThen(persister);
 		indexRun.run();
 		indexRun.shutdown();
 		outputStage.shutdown();
@@ -113,6 +130,8 @@ public class Workflow {
 	}
 
 	/**
+	 * Assigns a {@link Dataset} to use as cache.
+	 * 
 	 * @param d
 	 *            the {@link Dataset} to use underneath the RDF cache
 	 * @return this {@link Workflow} for continued operation
@@ -123,16 +142,20 @@ public class Workflow {
 	}
 
 	/**
+	 * Assigns a {@link CacheLoader} to load the cache.
+	 * 
 	 * @param ca
-	 *            the {@link CacheAssembler} to use
+	 *            the {@link DatasetCacheAssembler} to use
 	 * @return this {@link Workflow} for continued operation
 	 */
-	public Workflow assembler(final CacheAssembler ca) {
+	public Workflow assembler(final CacheLoader<?, Dataset> ca) {
 		this.cacheAssembler = ca;
 		return this;
 	}
 
 	/**
+	 * Assigns a {@link RecordPersister} to use for the last stage of workflow.
+	 * 
 	 * @param rp
 	 *            the {@link RecordPersister} to use
 	 * @return this {@link Workflow} for continued operation
@@ -143,6 +166,8 @@ public class Workflow {
 	}
 
 	/**
+	 * Assigns an {@link OutputStage} with which to produce output records.
+	 * 
 	 * @param os
 	 *            the {@link OutputStage} to use
 	 * @return this {@link Workflow} for continued operation
@@ -153,7 +178,10 @@ public class Workflow {
 	}
 
 	/**
+	 * CLI entry method.
+	 * 
 	 * @param args
+	 *            command-line arguments
 	 * @throws ParseException
 	 * @throws IOException
 	 * @throws InterruptedException
@@ -195,8 +223,8 @@ public class Workflow {
 					if (cmd.hasOption(ASSEMBLERTHREADS.opt())) {
 						assemblerThreads = parseInt(cmd.getOptionValue(ASSEMBLERTHREADS.opt()));
 					}
-					final CacheAssembler assembler = new CacheAssembler(main.dataset).threads(assemblerThreads).uris(
-							uris);
+					final DatasetCacheAssembler assembler = new DatasetCacheAssembler().cache(main.dataset).threads(
+							assemblerThreads);
 					if (cmd.hasOption(ACCEPT.opt())) {
 						final String accept = cmd.getOptionValue(ACCEPT.opt());
 						log.info("Requesting HTTP Content-type: {} for resource retrieval.", accept);

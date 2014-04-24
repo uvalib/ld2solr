@@ -17,8 +17,8 @@ import com.google.common.collect.Maps.EntryTransformer;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
 import edu.virginia.lib.ld2solr.api.OutputRecord;
-import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 import edu.virginia.lib.ld2solr.spi.OutputStage;
+import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 
 /**
  * An {@link OutputStage} that produces records in Solr XML form.
@@ -33,6 +33,11 @@ public class SolrXMLOutputStage extends ThreadedStage<SolrXMLOutputStage, Output
 
 	private static final Logger log = getLogger(SolrXMLOutputStage.class);
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see Acceptor#accept(java.lang.Object)
+	 */
 	@Override
 	public void accept(final NamedFields fields) {
 		final SolrInputDocument record = wrap.apply(fields);

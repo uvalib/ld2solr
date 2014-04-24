@@ -4,6 +4,7 @@
 package edu.virginia.lib.ld2solr.impl;
 
 import static com.hp.hpl.jena.query.ReadWrite.READ;
+import static com.hp.hpl.jena.tdb.TDBFactory.createDataset;
 import static java.lang.System.currentTimeMillis;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -17,7 +18,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 
 import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.virginia.lib.ld2solr.api.NamedFields;
 
@@ -52,7 +52,7 @@ public class IndexRunTest extends TestHelper {
 		 * initialized properly
 		 */
 		new LDPath<String>(null);
-		final Dataset dataset = TDBFactory.createDataset();
+		final Dataset dataset = createDataset();
 		dataset.begin(READ);
 		cache = new JenaBackend(dataset.getDefaultModel());
 		dataset.end();

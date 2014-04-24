@@ -40,14 +40,27 @@ public enum CLIOption {
 		}
 	}
 
+	/**
+	 * @return the short name of this {@link Option} for use with Apace Commons
+	 *         CLI facilities.
+	 */
 	public String opt() {
 		return this.option.getOpt();
 	}
 
+	/**
+	 * Help line to use for CLI help invocation.
+	 */
 	public static String helpLine = "ld2solr -t transform-file -o output-dir -u input-uris";
 
+	/**
+	 * {@link Option}s to trigger CLI help invocation.
+	 */
 	public static Options helpOptions = new Options().addOption("h", "help", false, "Print this help message.");
 
+	/**
+	 * {@link Option}s to use for CLI configuration.
+	 */
 	public static Options mainOptions;
 
 	static {

@@ -49,6 +49,10 @@ public class JenaModelTriplesRetriever implements TriplesRetriever {
 
 	private static final Logger log = getLogger(JenaModelTriplesRetriever.class);
 
+	/**
+	 * @param a
+	 *            The HTTP Accept: header value to use in retrieval
+	 */
 	public JenaModelTriplesRetriever(final String a) {
 		this.accept = a;
 		this.extractor.setHTTPUserAgent(DEFAULT_USER_AGENT);
@@ -57,9 +61,7 @@ public class JenaModelTriplesRetriever implements TriplesRetriever {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * edu.virginia.lib.ld2solr.impl.TriplesRetriever#load(com.hp.hpl.jena.rdf
-	 * .model.Resource)
+	 * @see TriplesRetriever#load(com.hp.hpl.jena.rdf .model.Resource)
 	 */
 	@Override
 	public Callable<Model> apply(final Resource uri) {
@@ -103,6 +105,10 @@ public class JenaModelTriplesRetriever implements TriplesRetriever {
 
 		private final Model model;
 
+		/**
+		 * @param m
+		 *            The {@link Model} into which to write
+		 */
 		public TriplesIntoModel(final Model m) {
 			this.model = m;
 		}
@@ -115,6 +121,14 @@ public class JenaModelTriplesRetriever implements TriplesRetriever {
 		public void openContext(final ExtractionContext context) {
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * org.apache.any23.writer.TripleHandler#receiveTriple(org.openrdf.model
+		 * .Resource, org.openrdf.model.URI, org.openrdf.model.Value,
+		 * org.openrdf.model.URI, org.apache.any23.extractor.ExtractionContext)
+		 */
 		@Override
 		public void receiveTriple(final org.openrdf.model.Resource s, final URI p, final Value o, final URI g,
 				final ExtractionContext context) {
@@ -137,6 +151,14 @@ public class JenaModelTriplesRetriever implements TriplesRetriever {
 
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * org.apache.any23.writer.TripleHandler#receiveNamespace(java.lang.
+		 * String, java.lang.String,
+		 * org.apache.any23.extractor.ExtractionContext)
+		 */
 		@Override
 		public void receiveNamespace(final String prefix, final String uri, final ExtractionContext context) {
 			model.setNsPrefix(prefix, uri);

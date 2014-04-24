@@ -14,13 +14,15 @@ public interface Stage<Produces> {
 	 * 
 	 * @param a
 	 *            the next {@link Stage} of workflow
+	 * @return the assigned next stage of workflow for chaining
 	 */
-	public void andThen(Acceptor<Produces, ?> a);
+	public <T extends Acceptor<Produces, ?>> T andThen(T a);
 
 	/**
 	 * Hand a task over to the next stage of workflow.
 	 * 
 	 * @param task
+	 *            the task to be performed by the next {@link Stage}
 	 */
 	public void next(Produces task);
 

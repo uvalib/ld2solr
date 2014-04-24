@@ -12,8 +12,8 @@ import org.slf4j.Logger;
 import com.google.common.io.Files;
 
 import edu.virginia.lib.ld2solr.api.OutputRecord;
-import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
+import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 
 /**
  * A {@link RecordPersister} that writes {@link OutputRecord}s to a filesystem.
@@ -30,9 +30,7 @@ public class FilesystemPersister extends ThreadedStage<FilesystemPersister, Outp
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * edu.virginia.lib.ld2solr.spi.RecordSink#accept(edu.virginia.lib.ld2solr
-	 * .api.OutputRecord)
+	 * @see RecordSink#accept(OutputRecord)
 	 */
 	@Override
 	public void accept(final OutputRecord record) {
@@ -56,9 +54,7 @@ public class FilesystemPersister extends ThreadedStage<FilesystemPersister, Outp
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister#location(java
-	 * .lang.String)
+	 * @see RecordSink.RecordPersister#location(java.lang.String)
 	 */
 	@Override
 	public FilesystemPersister location(final String location) {
@@ -69,16 +65,21 @@ public class FilesystemPersister extends ThreadedStage<FilesystemPersister, Outp
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister#location()
+	 * @see RecordSink.RecordPersister#location()
 	 */
 	@Override
 	public String location() {
 		return directory.getAbsolutePath();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see ThreadedStage#andThen(edu.virginia.lib.ld2solr.spi.Stage.Acceptor)
+	 */
 	@Override
-	public void andThen(final Acceptor<OutputRecord, ?> a) {
-		throw new UnsupportedOperationException(
-				"It is currently not expected that indexing workflow will continue after persistence.");
+	public <A extends Acceptor<OutputRecord, ?>> A andThen(final A a) {
+		throw new UnsupportedOperationException();
 	}
+
 }

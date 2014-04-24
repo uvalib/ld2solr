@@ -22,7 +22,7 @@ public interface RecordSink extends Acceptor<OutputRecord, OutputRecord> {
 		/**
 		 * @param location
 		 *            the location of the persisted records
-		 * @return the {@link RecordPersister} for continued operation
+		 * @return this {@link RecordPersister} for continued operation
 		 */
 		public RecordPersister location(String location);
 

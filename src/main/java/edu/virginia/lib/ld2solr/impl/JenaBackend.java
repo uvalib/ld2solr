@@ -43,10 +43,9 @@ public class JenaBackend extends GenericJenaBackend {
 	}
 
 	/**
-	 * @return the model in use
+	 * @return the {@link Model} backing this {@link JenaBackend}
 	 */
 	public Model model() {
 		return model;
 	}
-
 }

@@ -4,7 +4,25 @@
     xsi:schemaLocation="http://maven.apache.org/XDOC/2.0 http://maven.apache.org/xsd/xdoc-2.0.xsd">
     <body>
         <section name="Stages">
-            <p>ld2solr divides its work into several stages. A stage is represented by the Java interface <code>Stage</code> and its subtypes.</p>
+            <p>ld2solr divides its work into several stages, represented by the Java interface <code>Stage</code> and its subtypes. A convenient type <code>ThreadedStage</code> is provided for those stages of workflow which can usefully rely on a threadpool.</p>
+        </section>
+        <section name="Plan of Attack">
+            <p>ld2solr performs its task in two larger pieces, each of which is subdivided.</p>
+            <ol>
+                <li title="Caching">Caching, represented by the type <code>CacheAssembler</code>:
+                    <ol>
+                        <li>Retrieval</li>
+                        <li>Cache loading</li>
+                    </ol>
+                </li>
+                <li title="Indexing">Indexing:
+                    <ol>
+                        <li>Index transformation, represented by the type <code>IndexRun</code>. In this stage the supplied <a href="http://marmotta.apache.org/ldpath">LDPath</a> transformation is used to generate <code>NamedFields</code> instances.</li>
+                        <li>Output generation, represented by the type <code>OutputStage</code> and its subtypes. In this stage the <code>NamedFields</code> instances from the last stage are translated into <code>OutputRecord</code>s which contain <code>byte[]</code> index records.</li>
+                        <li>Persistence, represented by the type <code>RecordPersister</code> and its subtypes. In this stage the <code>OutputRecord</code> instances from the last stage are persisted into a form recoverable from outside the indexing process. For example, the <code>FilePersister</code> stores them in a specified filesystem directory.</li>
+                    </ol>
+                </li>
+            </ol>
         </section>
     </body>
 </document>

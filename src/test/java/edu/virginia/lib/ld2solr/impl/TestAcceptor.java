@@ -18,11 +18,6 @@ public class TestAcceptor<Accepts, Produces> implements Acceptor<Accepts, Produc
 	private static final Logger log = getLogger(TestAcceptor.class);
 
 	@Override
-	public void andThen(final Acceptor<Produces, ?> a) {
-		// NOOP
-	}
-
-	@Override
 	public void next(final Produces task) {
 		// // NO-OP
 	}
@@ -38,6 +33,12 @@ public class TestAcceptor<Accepts, Produces> implements Acceptor<Accepts, Produc
 
 	public Set<Accepts> accepted() {
 		return accepted;
+	}
+
+	@Override
+	public <T extends Acceptor<Produces, ?>> T andThen(final T a) {
+		// NO-OP;
+		return null;
 	}
 
 	@Override
@@ -57,4 +58,5 @@ public class TestAcceptor<Accepts, Produces> implements Acceptor<Accepts, Produc
 			return "/dev/null";
 		}
 	}
+
 }

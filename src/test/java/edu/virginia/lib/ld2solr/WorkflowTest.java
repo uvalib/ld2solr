@@ -55,7 +55,7 @@ public class WorkflowTest extends TestHelper {
 
 	private OutputStage testOutputStage;
 
-	private CacheAssembler testAssembler;
+	private DatasetCacheAssembler testAssembler;
 
 	private static final String transformation = "title = dc:title :: xsd:string;\n"
 			+ "alt_id = dc:identifier :: xsd:string;";
@@ -73,7 +73,7 @@ public class WorkflowTest extends TestHelper {
 		testMain.dataset(dataset);
 		testSink = new TestSink();
 		testMain.persister(testSink);
-		testAssembler = new CacheAssembler(dataset).uris(uris);
+		testAssembler = new DatasetCacheAssembler().cache(dataset);
 		testMain.assembler(testAssembler);
 		testOutputStage = new TestOutputStage();
 		testMain.outputStage(testOutputStage);
@@ -171,7 +171,7 @@ public class WorkflowTest extends TestHelper {
 	public void testSkipRetrieval() throws IOException {
 		final String cacheDirectory = createTempDir().getAbsolutePath();
 		final Dataset dataset = createDataset(cacheDirectory);
-		final Set<Resource> retrievedResources = new CacheAssembler(dataset).uris(uris).call();
+		final Set<Resource> retrievedResources = new DatasetCacheAssembler().cache(dataset).load(uris);
 		assertEquals("Failed to cache all resources!", uris, retrievedResources);
 		final String[] args = concat(createBasicArgsForMainMethodTest(), new String[] { "-c", cacheDirectory,
 				"--skip-retrieval" }, String.class);

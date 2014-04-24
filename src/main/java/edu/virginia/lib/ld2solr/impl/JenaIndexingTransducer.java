@@ -38,7 +38,9 @@ public class JenaIndexingTransducer implements IndexingTransducer {
 
 	/**
 	 * @param linkedDataCache
+	 *            the cache over which to operate
 	 * @param transformationSource
+	 *            a {@link String} containing the LDPath transform to apply
 	 */
 	public JenaIndexingTransducer(final JenaBackend linkedDataCache, final String transformationSource) {
 		this.transformation = transformationSource;

@@ -8,7 +8,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
@@ -23,36 +22,40 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.impl.JenaModelTriplesRetriever;
+import edu.virginia.lib.ld2solr.spi.CacheLoader;
 import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 
 /**
+ * A {@link DatasetCacheAssembler} loads Linked Data into a Jena {@link Dataset}
+ * .
+ * 
  * @author ajs6f
  * 
  */
-public class CacheAssembler extends ThreadedStage<CacheAssembler, Void> implements Callable<Set<Resource>> {
+public class DatasetCacheAssembler extends ThreadedStage<DatasetCacheAssembler, Void> implements
+		CacheLoader<DatasetCacheAssembler, Dataset> {
 
 	private CompletionService<Model> internalQueue;
 
-	private final Dataset dataset;
+	private Dataset dataset;
 
 	private Set<Resource> successfullyLoadedResources;
 
-	private Set<Resource> uris;
-
 	private String accepts = null;
 
-	private static final Logger log = getLogger(CacheAssembler.class);
+	private static final Logger log = getLogger(DatasetCacheAssembler.class);
 
-	public CacheAssembler(final Dataset d) {
-		this.dataset = d;
+	public DatasetCacheAssembler() {
 		this.internalQueue = new ExecutorCompletionService<Model>(this.threadpool);
 	}
 
-	/**
-	 * @return a set of URIs of successfully loaded resources
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see CacheLoader#load(java.util.Set)
 	 */
 	@Override
-	public Set<Resource> call() {
+	public Set<Resource> load(final Set<Resource> uris) {
 		successfullyLoadedResources = new HashSet<>(uris.size());
 		for (final Resource uri : uris) {
 			log.info("Queueing retrieval task for URI: {}...", uri);
@@ -109,24 +112,13 @@ public class CacheAssembler extends ThreadedStage<CacheAssembler, Void> implemen
 		return successfullyLoadedResources;
 	}
 
-	/**
-	 * @param u
-	 *            the URIs to retrieve
-	 * @return this {@link CacheAssembler} for further operation
-	 */
-	public CacheAssembler uris(final Set<Resource> u) {
-		this.uris = u;
-		return this;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * edu.virginia.lib.ld2solr.spi.ThreadedStage#threads(java.lang.Integer)
+	 * @see ThreadedStage#threads(java.lang.Integer)
 	 */
 	@Override
-	public CacheAssembler threads(final Integer numThreads) throws InterruptedException {
+	public DatasetCacheAssembler threads(final Integer numThreads) throws InterruptedException {
 		super.threads(numThreads);
 		this.internalQueue = new ExecutorCompletionService<Model>(this.threadpool);
 		return this;
@@ -136,10 +128,21 @@ public class CacheAssembler extends ThreadedStage<CacheAssembler, Void> implemen
 	 * @param accepts
 	 *            the HTTP Accepts header to use in retrieving Linked Data
 	 *            resources
-	 * @return this {@link CacheAssembler} for further operation
+	 * @return this {@link DatasetCacheAssembler} for further operation
 	 */
-	public CacheAssembler accepts(final String accepts) {
+	public DatasetCacheAssembler accepts(final String accepts) {
 		this.accepts = accepts;
+		return this;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see CacheLoader#cache(java.lang.Object)
+	 */
+	@Override
+	public DatasetCacheAssembler cache(final Dataset d) {
+		this.dataset = d;
 		return this;
 	}
 }

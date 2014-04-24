@@ -37,6 +37,7 @@ public class NamedFields extends HashMap<String, Collection<String>> {
 
 	/**
 	 * @param id
+	 *            identifier to associate with this record of fields
 	 * @return this {@link NamedFields} for continued operation
 	 */
 	public NamedFields id(final String id) {
