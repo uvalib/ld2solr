@@ -24,15 +24,15 @@ public class NamedFields extends HashMap&lt;String, Collection&lt;String&gt;&gt;
 
 	private String id;
 
-<span class="nc" id="L27">	public NamedFields(final Map&lt;String, Collection&lt;?&gt;&gt; wrappedFields) {</span>
-<span class="nc" id="L28">		this.putAll(Maps.transformEntries(wrappedFields, asEntryOfStringToCollectionOfStrings));</span>
-<span class="nc" id="L29">	}</span>
+<span class="fc" id="L27">	public NamedFields(final Map&lt;String, Collection&lt;?&gt;&gt; wrappedFields) {</span>
+<span class="fc" id="L28">		this.putAll(Maps.transformEntries(wrappedFields, asEntryOfStringToCollectionOfStrings));</span>
+<span class="fc" id="L29">	}</span>
 
 	/**
 	 * @return a identifer for this record
 	 */
 	public String id() {
-<span class="nc bnc" id="L35" title="All 2 branches missed.">		return id != null ? id : get(ID_FIELD).iterator().next();</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">		return id != null ? id : get(ID_FIELD).iterator().next();</span>
 	}
 
 	/**
@@ -41,31 +41,31 @@ public class NamedFields extends HashMap&lt;String, Collection&lt;String&gt;&gt;
 	 * @return this {@link NamedFields} for continued operation
 	 */
 	public NamedFields id(final String id) {
-<span class="nc" id="L44">		this.id = id;</span>
-<span class="nc" id="L45">		return this;</span>
+<span class="fc" id="L44">		this.id = id;</span>
+<span class="fc" id="L45">		return this;</span>
 	}
 
-<span class="nc" id="L48">	private static final Function&lt;Collection&lt;?&gt;, Collection&lt;String&gt;&gt; asCollectionOfStrings = new Function&lt;Collection&lt;?&gt;, Collection&lt;String&gt;&gt;() {</span>
+<span class="fc" id="L48">	private static final Function&lt;Collection&lt;?&gt;, Collection&lt;String&gt;&gt; asCollectionOfStrings = new Function&lt;Collection&lt;?&gt;, Collection&lt;String&gt;&gt;() {</span>
 
 		@Override
 		public Collection&lt;String&gt; apply(final Collection&lt;?&gt; input) {
-<span class="nc" id="L52">			return transform(input, asString);</span>
+<span class="fc" id="L52">			return transform(input, asString);</span>
 		}
 	};
 
-<span class="nc" id="L56">	private static final EntryTransformer&lt;String, Collection&lt;?&gt;, Collection&lt;String&gt;&gt; asEntryOfStringToCollectionOfStrings = new EntryTransformer&lt;String, Collection&lt;?&gt;, Collection&lt;String&gt;&gt;() {</span>
+<span class="fc" id="L56">	private static final EntryTransformer&lt;String, Collection&lt;?&gt;, Collection&lt;String&gt;&gt; asEntryOfStringToCollectionOfStrings = new EntryTransformer&lt;String, Collection&lt;?&gt;, Collection&lt;String&gt;&gt;() {</span>
 
 		@Override
 		public Collection&lt;String&gt; transformEntry(final String key, final Collection&lt;?&gt; value) {
 
-<span class="nc" id="L61">			return asCollectionOfStrings.apply(value);</span>
+<span class="fc" id="L61">			return asCollectionOfStrings.apply(value);</span>
 		}
 	};
-<span class="nc" id="L64">	private static final Function&lt;Object, String&gt; asString = new Function&lt;Object, String&gt;() {</span>
+<span class="fc" id="L64">	private static final Function&lt;Object, String&gt; asString = new Function&lt;Object, String&gt;() {</span>
 
 		@Override
 		public String apply(final Object input) {
-<span class="nc" id="L68">			return input.toString();</span>
+<span class="fc" id="L68">			return input.toString();</span>
 		}
 	};
 

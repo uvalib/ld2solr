@@ -34,7 +34,7 @@ public class JenaIndexingTransducer implements IndexingTransducer {
 
 	private final JenaBackend cache;
 
-<span class="nc" id="L37">	private static final Logger log = getLogger(JenaIndexingTransducer.class);</span>
+<span class="fc" id="L37">	private static final Logger log = getLogger(JenaIndexingTransducer.class);</span>
 
 	/**
 	 * @param linkedDataCache
@@ -42,10 +42,10 @@ public class JenaIndexingTransducer implements IndexingTransducer {
 	 * @param transformationSource
 	 *            a {@link String} containing the LDPath transform to apply
 	 */
-<span class="nc" id="L45">	public JenaIndexingTransducer(final JenaBackend linkedDataCache, final String transformationSource) {</span>
-<span class="nc" id="L46">		this.transformation = transformationSource;</span>
-<span class="nc" id="L47">		this.cache = linkedDataCache;</span>
-<span class="nc" id="L48">	}</span>
+<span class="fc" id="L45">	public JenaIndexingTransducer(final JenaBackend linkedDataCache, final String transformationSource) {</span>
+<span class="fc" id="L46">		this.transformation = transformationSource;</span>
+<span class="fc" id="L47">		this.cache = linkedDataCache;</span>
+<span class="fc" id="L48">	}</span>
 
 	/*
 	 * (non-Javadoc)
@@ -54,23 +54,23 @@ public class JenaIndexingTransducer implements IndexingTransducer {
 	 */
 	@Override
 	public NamedFields apply(final Resource uri) {
-<span class="nc" id="L57">		log.debug(&quot;Indexing resource: {}&quot;, uri);</span>
-<span class="nc" id="L58">		try (Reader transformationReader = new StringReader(transformation);) {</span>
-<span class="nc" id="L59">			final Map&lt;String, Collection&lt;?&gt;&gt; result = new LDPath&lt;&gt;(cache, new DefaultConfiguration&lt;RDFNode&gt;() {</span>
+<span class="fc" id="L57">		log.debug(&quot;Indexing resource: {}&quot;, uri);</span>
+<span class="fc" id="L58">		try (Reader transformationReader = new StringReader(transformation);) {</span>
+<span class="fc" id="L59">			final Map&lt;String, Collection&lt;?&gt;&gt; result = new LDPath&lt;&gt;(cache, new DefaultConfiguration&lt;RDFNode&gt;() {</span>
 				@Override
 				public Map&lt;String, String&gt; getNamespaces() {
-<span class="nc" id="L62">					final Map&lt;String, String&gt; namespaces = new HashMap&lt;&gt;(super.getNamespaces());</span>
-<span class="nc" id="L63">					namespaces.putAll(cache.model().getNsPrefixMap());</span>
-<span class="nc" id="L64">					return namespaces;</span>
+<span class="fc" id="L62">					final Map&lt;String, String&gt; namespaces = new HashMap&lt;&gt;(super.getNamespaces());</span>
+<span class="fc" id="L63">					namespaces.putAll(cache.model().getNsPrefixMap());</span>
+<span class="fc" id="L64">					return namespaces;</span>
 				}
-<span class="nc" id="L66">			}).programQuery(uri, transformationReader);</span>
-<span class="nc" id="L67">			log.trace(&quot;LDPath transform returned: {}&quot;, result);</span>
-<span class="nc" id="L68">			final NamedFields fields = new NamedFields(result);</span>
+<span class="fc" id="L66">			}).programQuery(uri, transformationReader);</span>
+<span class="fc" id="L67">			log.trace(&quot;LDPath transform returned: {}&quot;, result);</span>
+<span class="fc" id="L68">			final NamedFields fields = new NamedFields(result);</span>
 			// the identifier of the record is the URI of the resource indexed
-<span class="nc" id="L70">			fields.id(uri.getURI());</span>
-<span class="nc" id="L71">			log.trace(&quot;Created index fields: {}&quot;, fields);</span>
-<span class="nc" id="L72">			return fields;</span>
-<span class="nc bnc" id="L73" title="All 8 branches missed.">		} catch (final LDPathParseException | IOException e) {</span>
+<span class="fc" id="L70">			fields.id(uri.getURI());</span>
+<span class="fc" id="L71">			log.trace(&quot;Created index fields: {}&quot;, fields);</span>
+<span class="fc" id="L72">			return fields;</span>
+<span class="pc bpc" id="L73" title="4 of 8 branches missed.">		} catch (final LDPathParseException | IOException e) {</span>
 <span class="nc" id="L74">			throw propagate(e);</span>
 		}
 	}

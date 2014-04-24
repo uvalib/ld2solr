@@ -11,20 +11,26 @@
 <span class="sourceLineNo">003</span>import java.io.OutputStream;<a name="line.3"></a>
 <span class="sourceLineNo">004</span><a name="line.4"></a>
 <span class="sourceLineNo">005</span>/**<a name="line.5"></a>
-<span class="sourceLineNo">006</span> * Represents the final output of an indexing operation, containing both an<a name="line.6"></a>
-<span class="sourceLineNo">007</span> * identifier for the record and an {@link OutputStream} that serializes the<a name="line.7"></a>
-<span class="sourceLineNo">008</span> * record.<a name="line.8"></a>
+<span class="sourceLineNo">006</span> * Represents the externally-meaningful output of an indexing operation,<a name="line.6"></a>
+<span class="sourceLineNo">007</span> * containing both an identifier for the record and an {@link OutputStream} that<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * serializes the record.<a name="line.8"></a>
 <span class="sourceLineNo">009</span> * <a name="line.9"></a>
 <span class="sourceLineNo">010</span> * @author ajs6f<a name="line.10"></a>
 <span class="sourceLineNo">011</span> * <a name="line.11"></a>
 <span class="sourceLineNo">012</span> */<a name="line.12"></a>
 <span class="sourceLineNo">013</span>public interface OutputRecord {<a name="line.13"></a>
 <span class="sourceLineNo">014</span><a name="line.14"></a>
-<span class="sourceLineNo">015</span>        public String id();<a name="line.15"></a>
-<span class="sourceLineNo">016</span><a name="line.16"></a>
-<span class="sourceLineNo">017</span>        public byte[] record();<a name="line.17"></a>
-<span class="sourceLineNo">018</span><a name="line.18"></a>
-<span class="sourceLineNo">019</span>}<a name="line.19"></a>
+<span class="sourceLineNo">015</span>        /**<a name="line.15"></a>
+<span class="sourceLineNo">016</span>         * @return the identifier of the resource indexed in this record<a name="line.16"></a>
+<span class="sourceLineNo">017</span>         */<a name="line.17"></a>
+<span class="sourceLineNo">018</span>        public String id();<a name="line.18"></a>
+<span class="sourceLineNo">019</span><a name="line.19"></a>
+<span class="sourceLineNo">020</span>        /**<a name="line.20"></a>
+<span class="sourceLineNo">021</span>         * @return the record itself<a name="line.21"></a>
+<span class="sourceLineNo">022</span>         */<a name="line.22"></a>
+<span class="sourceLineNo">023</span>        public byte[] record();<a name="line.23"></a>
+<span class="sourceLineNo">024</span><a name="line.24"></a>
+<span class="sourceLineNo">025</span>}<a name="line.25"></a>
 
 
 

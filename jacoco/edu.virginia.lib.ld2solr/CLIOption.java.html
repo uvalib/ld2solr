@@ -40,22 +40,35 @@ import org.apache.commons.cli.Options;
 		}
 <span class="fc" id="L41">	}</span>
 
+	/**
+	 * @return the short name of this {@link Option} for use with Apace Commons
+	 *         CLI facilities.
+	 */
 	public String opt() {
-<span class="fc" id="L44">		return this.option.getOpt();</span>
+<span class="fc" id="L48">		return this.option.getOpt();</span>
 	}
 
-<span class="fc" id="L47">	public static String helpLine = &quot;ld2solr -t transform-file -o output-dir -u input-uris&quot;;</span>
+	/**
+	 * Help line to use for CLI help invocation.
+	 */
+<span class="fc" id="L54">	public static String helpLine = &quot;ld2solr -t transform-file -o output-dir -u input-uris&quot;;</span>
 
-<span class="fc" id="L49">	public static Options helpOptions = new Options().addOption(&quot;h&quot;, &quot;help&quot;, false, &quot;Print this help message.&quot;);</span>
+	/**
+	 * {@link Option}s to trigger CLI help invocation.
+	 */
+<span class="fc" id="L59">	public static Options helpOptions = new Options().addOption(&quot;h&quot;, &quot;help&quot;, false, &quot;Print this help message.&quot;);</span>
 
+	/**
+	 * {@link Option}s to use for CLI configuration.
+	 */
 	public static Options mainOptions;
 
 	static {
-<span class="fc" id="L54">		mainOptions = new Options();</span>
-<span class="fc bfc" id="L55" title="All 2 branches covered.">		for (final CLIOption option : values()) {</span>
-<span class="fc" id="L56">			mainOptions.addOption(option.option);</span>
+<span class="fc" id="L67">		mainOptions = new Options();</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">		for (final CLIOption option : values()) {</span>
+<span class="fc" id="L69">			mainOptions.addOption(option.option);</span>
 		}
-<span class="fc" id="L58">	}</span>
+<span class="fc" id="L71">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.0.201403182114</span></div></body></html>

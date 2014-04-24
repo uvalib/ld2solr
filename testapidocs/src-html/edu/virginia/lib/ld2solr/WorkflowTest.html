@@ -63,7 +63,7 @@
 <span class="sourceLineNo">055</span><a name="line.55"></a>
 <span class="sourceLineNo">056</span>        private OutputStage testOutputStage;<a name="line.56"></a>
 <span class="sourceLineNo">057</span><a name="line.57"></a>
-<span class="sourceLineNo">058</span>        private CacheAssembler testAssembler;<a name="line.58"></a>
+<span class="sourceLineNo">058</span>        private DatasetCacheAssembler testAssembler;<a name="line.58"></a>
 <span class="sourceLineNo">059</span><a name="line.59"></a>
 <span class="sourceLineNo">060</span>        private static final String transformation = "title = dc:title :: xsd:string;\n"<a name="line.60"></a>
 <span class="sourceLineNo">061</span>                        + "alt_id = dc:identifier :: xsd:string;";<a name="line.61"></a>
@@ -81,7 +81,7 @@
 <span class="sourceLineNo">073</span>                testMain.dataset(dataset);<a name="line.73"></a>
 <span class="sourceLineNo">074</span>                testSink = new TestSink();<a name="line.74"></a>
 <span class="sourceLineNo">075</span>                testMain.persister(testSink);<a name="line.75"></a>
-<span class="sourceLineNo">076</span>                testAssembler = new CacheAssembler(dataset).uris(uris);<a name="line.76"></a>
+<span class="sourceLineNo">076</span>                testAssembler = new DatasetCacheAssembler().cache(dataset);<a name="line.76"></a>
 <span class="sourceLineNo">077</span>                testMain.assembler(testAssembler);<a name="line.77"></a>
 <span class="sourceLineNo">078</span>                testOutputStage = new TestOutputStage();<a name="line.78"></a>
 <span class="sourceLineNo">079</span>                testMain.outputStage(testOutputStage);<a name="line.79"></a>
@@ -179,7 +179,7 @@
 <span class="sourceLineNo">171</span>        public void testSkipRetrieval() throws IOException {<a name="line.171"></a>
 <span class="sourceLineNo">172</span>                final String cacheDirectory = createTempDir().getAbsolutePath();<a name="line.172"></a>
 <span class="sourceLineNo">173</span>                final Dataset dataset = createDataset(cacheDirectory);<a name="line.173"></a>
-<span class="sourceLineNo">174</span>                final Set&lt;Resource&gt; retrievedResources = new CacheAssembler(dataset).uris(uris).call();<a name="line.174"></a>
+<span class="sourceLineNo">174</span>                final Set&lt;Resource&gt; retrievedResources = new DatasetCacheAssembler().cache(dataset).load(uris);<a name="line.174"></a>
 <span class="sourceLineNo">175</span>                assertEquals("Failed to cache all resources!", uris, retrievedResources);<a name="line.175"></a>
 <span class="sourceLineNo">176</span>                final String[] args = concat(createBasicArgsForMainMethodTest(), new String[] { "-c", cacheDirectory,<a name="line.176"></a>
 <span class="sourceLineNo">177</span>                                "--skip-retrieval" }, String.class);<a name="line.177"></a>

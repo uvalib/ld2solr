@@ -21,8 +21,8 @@
 <span class="sourceLineNo">013</span>import com.hp.hpl.jena.rdf.model.Resource;<a name="line.13"></a>
 <span class="sourceLineNo">014</span><a name="line.14"></a>
 <span class="sourceLineNo">015</span>import edu.virginia.lib.ld2solr.api.NamedFields;<a name="line.15"></a>
-<span class="sourceLineNo">016</span>import edu.virginia.lib.ld2solr.spi.ThreadedStage;<a name="line.16"></a>
-<span class="sourceLineNo">017</span>import edu.virginia.lib.ld2solr.spi.Stage;<a name="line.17"></a>
+<span class="sourceLineNo">016</span>import edu.virginia.lib.ld2solr.spi.Stage;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import edu.virginia.lib.ld2solr.spi.ThreadedStage;<a name="line.17"></a>
 <span class="sourceLineNo">018</span><a name="line.18"></a>
 <span class="sourceLineNo">019</span>/**<a name="line.19"></a>
 <span class="sourceLineNo">020</span> * A {@link Stage} of workflow that creates index records as {@link NamedFields}<a name="line.20"></a>
@@ -50,7 +50,7 @@
 <span class="sourceLineNo">042</span>         * @param transformationSource<a name="line.42"></a>
 <span class="sourceLineNo">043</span>         *            LDPath transformation or program to use for indexing<a name="line.43"></a>
 <span class="sourceLineNo">044</span>         * @param uris<a name="line.44"></a>
-<span class="sourceLineNo">045</span>         *            Resources to index<a name="line.45"></a>
+<span class="sourceLineNo">045</span>         *            {@link Resource}s to index<a name="line.45"></a>
 <span class="sourceLineNo">046</span>         * @param c<a name="line.46"></a>
 <span class="sourceLineNo">047</span>         *            Linked Data cache over which to operate<a name="line.47"></a>
 <span class="sourceLineNo">048</span>         */<a name="line.48"></a>
@@ -61,35 +61,40 @@
 <span class="sourceLineNo">053</span>                this.indexer = new LDPathIndexer(cache);<a name="line.53"></a>
 <span class="sourceLineNo">054</span>        }<a name="line.54"></a>
 <span class="sourceLineNo">055</span><a name="line.55"></a>
-<span class="sourceLineNo">056</span>        @Override<a name="line.56"></a>
-<span class="sourceLineNo">057</span>        public void run() {<a name="line.57"></a>
-<span class="sourceLineNo">058</span>                for (final Resource uri : uris) {<a name="line.58"></a>
-<span class="sourceLineNo">059</span>                        log.info("Indexing {}...", uri);<a name="line.59"></a>
-<span class="sourceLineNo">060</span>                        final ListenableFuture&lt;NamedFields&gt; result = threadpool().submit(new Callable&lt;NamedFields&gt;() {<a name="line.60"></a>
-<span class="sourceLineNo">061</span><a name="line.61"></a>
-<span class="sourceLineNo">062</span>                                @Override<a name="line.62"></a>
-<span class="sourceLineNo">063</span>                                public NamedFields call() {<a name="line.63"></a>
-<span class="sourceLineNo">064</span>                                        return indexer.apply(transformation).apply(uri);<a name="line.64"></a>
-<span class="sourceLineNo">065</span>                                }<a name="line.65"></a>
-<span class="sourceLineNo">066</span>                        });<a name="line.66"></a>
-<span class="sourceLineNo">067</span>                        addCallback(result, new FutureCallback&lt;NamedFields&gt;() {<a name="line.67"></a>
-<span class="sourceLineNo">068</span><a name="line.68"></a>
-<span class="sourceLineNo">069</span>                                @Override<a name="line.69"></a>
-<span class="sourceLineNo">070</span>                                public void onSuccess(final NamedFields fields) {<a name="line.70"></a>
-<span class="sourceLineNo">071</span>                                        log.info("Finished indexing: {}", uri);<a name="line.71"></a>
-<span class="sourceLineNo">072</span>                                        log.debug("With result: {}", fields);<a name="line.72"></a>
-<span class="sourceLineNo">073</span>                                        next(fields);<a name="line.73"></a>
-<span class="sourceLineNo">074</span>                                }<a name="line.74"></a>
-<span class="sourceLineNo">075</span><a name="line.75"></a>
-<span class="sourceLineNo">076</span>                                @Override<a name="line.76"></a>
-<span class="sourceLineNo">077</span>                                public void onFailure(final Throwable t) {<a name="line.77"></a>
-<span class="sourceLineNo">078</span>                                        log.error("Failed to index: {}!", uri);<a name="line.78"></a>
-<span class="sourceLineNo">079</span>                                        log.error("With exception: ", t);<a name="line.79"></a>
-<span class="sourceLineNo">080</span>                                }<a name="line.80"></a>
-<span class="sourceLineNo">081</span>                        });<a name="line.81"></a>
-<span class="sourceLineNo">082</span>                }<a name="line.82"></a>
-<span class="sourceLineNo">083</span>        }<a name="line.83"></a>
-<span class="sourceLineNo">084</span>}<a name="line.84"></a>
+<span class="sourceLineNo">056</span>        /*<a name="line.56"></a>
+<span class="sourceLineNo">057</span>         * (non-Javadoc)<a name="line.57"></a>
+<span class="sourceLineNo">058</span>         * <a name="line.58"></a>
+<span class="sourceLineNo">059</span>         * @see java.lang.Runnable#run()<a name="line.59"></a>
+<span class="sourceLineNo">060</span>         */<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        @Override<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        public void run() {<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                for (final Resource uri : uris) {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                        log.info("Indexing {}...", uri);<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                        final ListenableFuture&lt;NamedFields&gt; result = threadpool().submit(new Callable&lt;NamedFields&gt;() {<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>                                @Override<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                                public NamedFields call() {<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                                        return indexer.apply(transformation).apply(uri);<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                                }<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                        });<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                        addCallback(result, new FutureCallback&lt;NamedFields&gt;() {<a name="line.72"></a>
+<span class="sourceLineNo">073</span><a name="line.73"></a>
+<span class="sourceLineNo">074</span>                                @Override<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                                public void onSuccess(final NamedFields fields) {<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                                        log.info("Finished indexing: {}", uri);<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                                        log.debug("With result: {}", fields);<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                                        next(fields);<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                                }<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>                                @Override<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                                public void onFailure(final Throwable t) {<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                                        log.error("Failed to index: {}!", uri);<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                                        log.error("With exception: ", t);<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                                }<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                        });<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                }<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        }<a name="line.88"></a>
+<span class="sourceLineNo">089</span>}<a name="line.89"></a>
 
 
 
