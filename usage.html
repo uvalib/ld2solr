@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="Date-Revision-yyyymmdd" content="20140424" />
     <meta http-equiv="Content-Language" content="en" />
-    <title>Linked Data to Solr - Project Mailing Lists</title>
+    <title>Linked Data to Solr - </title>
     <link rel="stylesheet" href="./css/apache-maven-fluido-1.3.1.min.css" />
     <link rel="stylesheet" href="./css/site.css" />
     <link rel="stylesheet" href="./css/print.css" media="print" />
@@ -88,111 +88,18 @@
         Transformations</a>
             </li>
                 
-      <li>
+      <li class="active">
   
-                          <a href="usage.html" title="CLI Usage">
-          <i class="none"></i>
-        CLI Usage</a>
-            </li>
+            <a href="#"><i class="none"></i>CLI Usage</a>
+          </li>
                               <li class="nav-header">Project Documentation</li>
-                                                                                                                                                                                                                                                                                                                  
+                                                                                                                                                                                                                                                                                                        
       <li>
   
                           <a href="project-info.html" title="Project Information">
-          <i class="icon-chevron-down"></i>
+          <i class="icon-chevron-right"></i>
         Project Information</a>
-                    <ul class="nav nav-list">
-                    
-      <li>
-  
-                          <a href="index.html" title="About">
-          <i class="none"></i>
-        About</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="plugin-management.html" title="Plugin Management">
-          <i class="none"></i>
-        Plugin Management</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="distribution-management.html" title="Distribution Management">
-          <i class="none"></i>
-        Distribution Management</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="dependency-info.html" title="Dependency Information">
-          <i class="none"></i>
-        Dependency Information</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="source-repository.html" title="Source Repository">
-          <i class="none"></i>
-        Source Repository</a>
-            </li>
-                    
-      <li class="active">
-  
-            <a href="#"><i class="none"></i>Mailing Lists</a>
-          </li>
-                    
-      <li>
-  
-                          <a href="issue-tracking.html" title="Issue Tracking">
-          <i class="none"></i>
-        Issue Tracking</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="integration.html" title="Continuous Integration">
-          <i class="none"></i>
-        Continuous Integration</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="plugins.html" title="Project Plugins">
-          <i class="none"></i>
-        Project Plugins</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="license.html" title="Project License">
-          <i class="none"></i>
-        Project License</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="team-list.html" title="Project Team">
-          <i class="none"></i>
-        Project Team</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="project-summary.html" title="Project Summary">
-          <i class="none"></i>
-        Project Summary</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="dependencies.html" title="Dependencies">
-          <i class="none"></i>
-        Dependencies</a>
-            </li>
-              </ul>
-        </li>
+                  </li>
                                                                                                                                                                               
       <li>
   
@@ -221,9 +128,40 @@
                 
         <div id="bodyColumn"  class="span9" >
                                   
-            <div class="section">
-<h2>Project Mailing Lists<a name="Project_Mailing_Lists"></a></h2><a name="Project_Mailing_Lists"></a>
-<p>There are no mailing lists currently associated with this project.</p></div>
+            
+    
+        <div class="section">
+<h2>CLI Usage<a name="CLI_Usage"></a></h2>
+            
+<p>CLI usage is fairly self-documented. The built artifact is supplied as an executable JAR, so it should be executed with <tt>java -jar [ldpath-jar-name]</tt>. Here are the available options:</p>
+            
+<div>
+<pre>
+usage: ld2solr -t transform-file -o output-dir -u input-uris
+ -a,--accept-header-value arg   HTTP 'Accept:' header to use. (Defaults
+                                  to none.)
+ -at,--assembler-threads arg    The number of threads to use for RDF
+                                  cache accumulation. (Defaults to 10.)
+ -c,--cache arg                 Location of persistent triple cache.
+                                  (Defaults to in-memory only operation.)
+ -it,--indexing-threads arg     The number of threads to use for
+                                  indexing operation. (Defaults to 10.)
+ -o,--output-dir arg            (Required) Location into which to place
+                                  output files.
+ -sr,--skip-retrieval             Should retrieval and caching of Linked
+                                  Data resources before indexing stages be
+                                  skipped?If set, option for persistent
+                                  triple cache must be supplied or
+                                  indexing stages will operate over an
+                                  empty cache.
+ -t,--transform arg             (Required) Location of LDPath transform
+                                  with which to create index records.
+ -u,--uris arg                  (Required) A file or pipe with a list of
+                                  URIs to index.                
+            </pre></div>
+        </div> 
+    
+
                   </div>
             </div>
           </div>

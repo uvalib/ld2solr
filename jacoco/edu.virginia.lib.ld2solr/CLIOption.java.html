@@ -19,44 +19,45 @@ import org.apache.commons.cli.Options;
 <span class="fc" id="L19">	CACHE(</span>
 			new Option(&quot;c&quot;, &quot;cache&quot;, true,
 					&quot;Location of persistent triple cache. (Defaults to in-memory only operation.)&quot;)),
-<span class="fc" id="L22">	ACCEPT(new Option(&quot;a&quot;, &quot;accept-header-value&quot;, true, &quot;HTTP 'Accept:' header to use. (Defaults to none.)&quot;)),</span>
-<span class="fc" id="L23">	SKIPRETRIEVAL(new Option(&quot;sr&quot;, &quot;skip-retrieval&quot;, false,</span>
+<span class="fc" id="L22">	ACCEPT(new Option(&quot;a&quot;, &quot;accept-header-value&quot;, true,</span>
+			&quot;HTTP 'Accept:' header to use for HTTP-based Linked Data retrieval. (Defaults to none.)&quot;)),
+<span class="fc" id="L24">	SKIPRETRIEVAL(new Option(&quot;sr&quot;, &quot;skip-retrieval&quot;, false,</span>
 			&quot;Should retrieval and caching of Linked Data resources before indexing stages be skipped?&quot;
 					+ &quot;If set, option for persistent triple cache must be supplied or &quot;
 					+ &quot;indexing stages will operate over an empty cache.&quot;)),
-<span class="fc" id="L27">	ASSEMBLERTHREADS(new Option(&quot;at&quot;, &quot;assembler-threads&quot;, true,</span>
+<span class="fc" id="L28">	ASSEMBLERTHREADS(new Option(&quot;at&quot;, &quot;assembler-threads&quot;, true,</span>
 			&quot;The number of threads to use for RDF cache accumulation. (Defaults to &quot; + DEFAULT_NUM_THREADS + &quot;.)&quot;)),
-<span class="fc" id="L29">	INDEXINGTHREADS(new Option(&quot;it&quot;, &quot;indexing-threads&quot;, true,</span>
+<span class="fc" id="L30">	INDEXINGTHREADS(new Option(&quot;it&quot;, &quot;indexing-threads&quot;, true,</span>
 			&quot;The number of threads to use for indexing operation. (Defaults to &quot; + DEFAULT_NUM_THREADS + &quot;.)&quot;));
 
 	public Option option;
 
-<span class="fc" id="L34">	private CLIOption(final Option o, final Boolean... required) {</span>
-<span class="fc" id="L35">		this.option = o;</span>
-<span class="fc bfc" id="L36" title="All 2 branches covered.">		if (required.length &gt; 0) {</span>
-<span class="fc" id="L37">			this.option.setRequired(required[0]);</span>
+<span class="fc" id="L35">	private CLIOption(final Option o, final Boolean... required) {</span>
+<span class="fc" id="L36">		this.option = o;</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">		if (required.length &gt; 0) {</span>
+<span class="fc" id="L38">			this.option.setRequired(required[0]);</span>
 		} else {
-<span class="fc" id="L39">			this.option.setRequired(false);</span>
+<span class="fc" id="L40">			this.option.setRequired(false);</span>
 		}
-<span class="fc" id="L41">	}</span>
+<span class="fc" id="L42">	}</span>
 
 	/**
 	 * @return the short name of this {@link Option} for use with Apace Commons
 	 *         CLI facilities.
 	 */
 	public String opt() {
-<span class="fc" id="L48">		return this.option.getOpt();</span>
+<span class="fc" id="L49">		return this.option.getOpt();</span>
 	}
 
 	/**
 	 * Help line to use for CLI help invocation.
 	 */
-<span class="fc" id="L54">	public static String helpLine = &quot;ld2solr -t transform-file -o output-dir -u input-uris&quot;;</span>
+<span class="fc" id="L55">	public static String helpLine = &quot;ld2solr -t transform-file -o output-dir -u input-uris&quot;;</span>
 
 	/**
 	 * {@link Option}s to trigger CLI help invocation.
 	 */
-<span class="fc" id="L59">	public static Options helpOptions = new Options().addOption(&quot;h&quot;, &quot;help&quot;, false, &quot;Print this help message.&quot;);</span>
+<span class="fc" id="L60">	public static Options helpOptions = new Options().addOption(&quot;h&quot;, &quot;help&quot;, false, &quot;Print this help message.&quot;);</span>
 
 	/**
 	 * {@link Option}s to use for CLI configuration.
@@ -64,11 +65,11 @@ import org.apache.commons.cli.Options;
 	public static Options mainOptions;
 
 	static {
-<span class="fc" id="L67">		mainOptions = new Options();</span>
-<span class="fc bfc" id="L68" title="All 2 branches covered.">		for (final CLIOption option : values()) {</span>
-<span class="fc" id="L69">			mainOptions.addOption(option.option);</span>
+<span class="fc" id="L68">		mainOptions = new Options();</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">		for (final CLIOption option : values()) {</span>
+<span class="fc" id="L70">			mainOptions.addOption(option.option);</span>
 		}
-<span class="fc" id="L71">	}</span>
+<span class="fc" id="L72">	}</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.0.201403182114</span></div></body></html>
