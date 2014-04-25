@@ -31,7 +31,7 @@ public class DatasetCacheLoaderTest extends TestHelper {
 	@Before
 	public void setUp() throws InterruptedException {
 		dataset = createDataset();
-		testLoader = new DatasetCacheLoader().cache(dataset).threads(3);
+		testLoader = new DatasetCacheLoader().cache(dataset).threads(10);
 	}
 	
 	@After

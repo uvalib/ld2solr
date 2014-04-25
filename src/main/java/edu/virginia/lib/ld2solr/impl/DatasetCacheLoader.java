@@ -23,6 +23,7 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.FutureCallback;
@@ -47,17 +48,17 @@ import edu.virginia.lib.ld2solr.spi.ThreadedStage;
  */
 @SuppressWarnings("unused")
 public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> implements
-		CacheLoader<DatasetCacheLoader, Dataset> {
-	
-	private static final long TIMEOUT = 100000;
+				CacheLoader<DatasetCacheLoader, Dataset> {
+
+	private static final long TIMEOUT = 10000;
 
 	private static final long TIMESTEP = 1000;
-	
+
 	/**
-	 * TODO develop a better algorithm to limit recursion
+	 * TODO develop a more elegant idea of recursion
 	 */
-	private static final int RECURSION_LIMIT = 3;
-	
+	private static final int RECURSION_LIMIT = 2;
+
 	private Integer recursionLevel = 1;
 
 	private CompletionService<Model> internalQueue;
@@ -65,8 +66,10 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> 
 	private Dataset dataset;
 
 	private Set<Resource> successfullyLoadedResources = new HashSet<>();
-	
+
 	private Set<Resource> unsuccessfullyLoadedResources = new HashSet<>();
+
+	private Set<Resource> attemptedResources = new HashSet<>();
 
 	private String accepts = null;
 
@@ -83,9 +86,16 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> 
 	 */
 	@Override
 	public Set<Resource> load(final Set<Resource> uris) {
-		recursionLevel++;
-		for (final Resource uri : uris) {
+		// we make a defensive copy of our resource checklist for thread-safety
+		final Set<Resource> resources = copyOf(uris);
+		log.debug("Attempting to load: {}", resources);
+		log.trace("Operating at recursion level: {}", ++recursionLevel);
+
+		for (final Resource uri : resources) {
+
 			log.info("Queueing retrieval task for URI: {}...", uri);
+			attemptedResources.add(uri);
+
 			final Future<Model> loadFuture = internalQueue.submit(new JenaModelTriplesRetriever(accepts).apply(uri));
 			final ListenableFuture<Model> loadTask = listenInPoolThread(loadFuture);
 			addCallback(loadTask, new FutureCallback<Model>() {
@@ -104,11 +114,15 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> 
 				}
 			});
 		}
-		log.info("Finished queuing retrieval tasks.");
-		// the only purpose of this loop is to ensure that we execute as many
+
+		log.debug("Finished queuing retrieval tasks for URIs:\n{}", resources);
+		log.trace("{} cache loading tasks left to perform.", resources.size());
+		// the only purpose of the following loop is to ensure that we execute
+		// as many
 		// tasks to add triples to the cache as we have executed tasks to
 		// retrieve triples
-		for (int i = 0 ; i < uris.size(); i++) {
+		for (int tasks = 1; tasks <= resources.size(); tasks++) {
+			log.trace("Loading resource {} of {}...", tasks, resources.size());
 			try {
 				final Model m = internalQueue.take().get();
 				if (!m.isEmpty()) {
@@ -137,35 +151,36 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> 
 				log.error("Exception: ", e);
 			}
 		}
+		log.info("Finished loading one span of resources into the cache with URIs:\n{}", resources);
+
 		dataset.begin(ReadWrite.READ);
 		final Model model = dataset.getDefaultModel();
 		dataset.end();
 		model.enterCriticalSection(READ);
-		final Set<Resource> resourcesNowToBeRetrieved = asYetUntriedOf(copyOf(transform(
-						model.query(statementsWithUriObjects).listObjects(), cast)));
+		final Set<Resource> objectsInDataset = copyOf(transform(model.query(statementsWithUriObjects).listObjects(),
+						cast));
+		final Set<Resource> resourcesNowToBeRetrieved = asYetUntriedOf(objectsInDataset);
 		model.leaveCriticalSection();
-		log.debug("Now attempting to recursively retrieve: {}", resourcesNowToBeRetrieved);
-		
-		
-		// recurse to next depth of Linked Data graph
-		if (resourcesNowToBeRetrieved.isEmpty()) {
-			wait(uris);
-			return successfullyLoadedResources;
-		} else if (recursionLevel <= RECURSION_LIMIT) {
+
+		// possibly recurse to next depth of Linked Data graph
+		if (!resourcesNowToBeRetrieved.isEmpty() && recursionLevel <= RECURSION_LIMIT) {
+			log.debug("Now attempting to recursively retrieve: {}", resourcesNowToBeRetrieved);
 			load(resourcesNowToBeRetrieved);
 		}
-		wait(uris);
+		wait(resources);
 		return successfullyLoadedResources;
 	}
-	
+
 	/**
 	 * wait for certain resources to be resolved
 	 * 
-	 * @param uris the {@link Resource}s on which to wait
+	 * @param uris
+	 *            the {@link Resource}s on which to wait
 	 */
 	private void wait(Set<Resource> uris) {
 		long startTime = currentTimeMillis();
-		while (!asYetUntriedOf(uris).isEmpty() && currentTimeMillis() < (startTime + TIMEOUT)) {
+		while (!union(unsuccessfullyLoadedResources, successfullyLoadedResources).contains(uris)
+						&& currentTimeMillis() < (startTime + TIMEOUT)) {
 			try {
 				sleep(TIMESTEP);
 			} catch (InterruptedException e) {
@@ -173,13 +188,13 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> 
 			}
 		}
 	}
-	
+
 	/**
 	 * @param uris
 	 * @return those {@link Resource}s we have not attempted to resolve
 	 */
 	private Set<Resource> asYetUntriedOf(Set<Resource> uris) {
-		return difference(uris, union(unsuccessfullyLoadedResources, successfullyLoadedResources));
+		return difference(uris, attemptedResources);
 	}
 
 	/*
@@ -215,7 +230,7 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> 
 		this.dataset = d;
 		return this;
 	}
-	
+
 	private static Selector statementsWithUriObjects = new Selector() {
 
 		@Override

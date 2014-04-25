@@ -84,7 +84,6 @@ public class JenaModelTriplesRetriever implements TriplesRetriever {
 				final int statusCode = response.getStatusLine().getStatusCode();
 				if (statusCode != SC_OK) {
 					log.error("Failed to retrieve: {}!", resource);
-					log.error("With: ", response.getStatusLine());
 					throw new RetrievalException("Failed to retrieve: " + resource + "! HTTP Status code: "
 									+ statusCode + ".");
 				}
