@@ -1,4 +1,4 @@
-package edu.virginia.lib.ld2solr;
+package edu.virginia.lib.ld2solr.impl;
 
 import static com.google.common.util.concurrent.Futures.addCallback;
 import static com.google.common.util.concurrent.JdkFutureAdapters.listenInPoolThread;
@@ -21,19 +21,18 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import edu.virginia.lib.ld2solr.impl.JenaModelTriplesRetriever;
 import edu.virginia.lib.ld2solr.spi.CacheLoader;
 import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 
 /**
- * A {@link DatasetCacheAssembler} loads Linked Data into a Jena {@link Dataset}
+ * A {@link DatasetCacheLoader} loads Linked Data into a Jena {@link Dataset}
  * .
  * 
  * @author ajs6f
  * 
  */
-public class DatasetCacheAssembler extends ThreadedStage<DatasetCacheAssembler, Void> implements
-		CacheLoader<DatasetCacheAssembler, Dataset> {
+public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> implements
+		CacheLoader<DatasetCacheLoader, Dataset> {
 
 	private CompletionService<Model> internalQueue;
 
@@ -43,9 +42,9 @@ public class DatasetCacheAssembler extends ThreadedStage<DatasetCacheAssembler, 
 
 	private String accepts = null;
 
-	private static final Logger log = getLogger(DatasetCacheAssembler.class);
+	private static final Logger log = getLogger(DatasetCacheLoader.class);
 
-	public DatasetCacheAssembler() {
+	public DatasetCacheLoader() {
 		this.internalQueue = new ExecutorCompletionService<Model>(this.threadpool);
 	}
 
@@ -118,7 +117,7 @@ public class DatasetCacheAssembler extends ThreadedStage<DatasetCacheAssembler, 
 	 * @see ThreadedStage#threads(java.lang.Integer)
 	 */
 	@Override
-	public DatasetCacheAssembler threads(final Integer numThreads) throws InterruptedException {
+	public DatasetCacheLoader threads(final Integer numThreads) throws InterruptedException {
 		super.threads(numThreads);
 		this.internalQueue = new ExecutorCompletionService<Model>(this.threadpool);
 		return this;
@@ -128,9 +127,9 @@ public class DatasetCacheAssembler extends ThreadedStage<DatasetCacheAssembler, 
 	 * @param accepts
 	 *            the HTTP Accepts header to use in retrieving Linked Data
 	 *            resources
-	 * @return this {@link DatasetCacheAssembler} for further operation
+	 * @return this {@link DatasetCacheLoader} for further operation
 	 */
-	public DatasetCacheAssembler accepts(final String accepts) {
+	public DatasetCacheLoader accepts(final String accepts) {
 		this.accepts = accepts;
 		return this;
 	}
@@ -141,7 +140,7 @@ public class DatasetCacheAssembler extends ThreadedStage<DatasetCacheAssembler, 
 	 * @see CacheLoader#cache(java.lang.Object)
 	 */
 	@Override
-	public DatasetCacheAssembler cache(final Dataset d) {
+	public DatasetCacheLoader cache(final Dataset d) {
 		this.dataset = d;
 		return this;
 	}

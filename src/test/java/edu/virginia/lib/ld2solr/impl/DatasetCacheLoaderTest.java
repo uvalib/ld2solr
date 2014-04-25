@@ -1,4 +1,4 @@
-package edu.virginia.lib.ld2solr;
+package edu.virginia.lib.ld2solr.impl;
 
 import static com.google.common.collect.Sets.difference;
 import static com.hp.hpl.jena.query.ReadWrite.READ;
@@ -19,20 +19,18 @@ import org.slf4j.Logger;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import edu.virginia.lib.ld2solr.impl.TestHelper;
+public class DatasetCacheLoaderTest extends TestHelper {
 
-public class CacheAssemblerTest extends TestHelper {
-
-	private DatasetCacheAssembler testAssembler;
+	private DatasetCacheLoader testAssembler;
 
 	private Dataset dataset;
 
-	private static final Logger log = getLogger(CacheAssemblerTest.class);
+	private static final Logger log = getLogger(DatasetCacheLoaderTest.class);
 
 	@Before
 	public void setUp() throws InterruptedException {
 		dataset = createDataset();
-		testAssembler = new DatasetCacheAssembler().cache(dataset).threads(3);
+		testAssembler = new DatasetCacheLoader().cache(dataset).threads(3);
 	}
 
 	@Test
@@ -66,7 +64,7 @@ public class CacheAssemblerTest extends TestHelper {
 		final Set<Resource> urisWithExtra = new HashSet<>(uris);
 		final Set<Resource> badUris = singleton(createResource());
 		urisWithExtra.addAll(badUris);
-		testAssembler = new DatasetCacheAssembler().cache(dataset);
+		testAssembler = new DatasetCacheLoader().cache(dataset);
 		final Set<Resource> successfulUris = testAssembler.load(urisWithExtra);
 		assertEquals("Didn't find the appropriate resource failing to be retrieved!", badUris,
 				difference(urisWithExtra, successfulUris));

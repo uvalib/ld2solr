@@ -38,6 +38,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.api.OutputRecord;
 import edu.virginia.lib.ld2solr.impl.TestAcceptor.TestSink;
+import edu.virginia.lib.ld2solr.impl.DatasetCacheLoader;
 import edu.virginia.lib.ld2solr.impl.TestHelper;
 import edu.virginia.lib.ld2solr.impl.TestOutputStage;
 import edu.virginia.lib.ld2solr.spi.OutputStage;
@@ -55,7 +56,7 @@ public class WorkflowTest extends TestHelper {
 
 	private OutputStage testOutputStage;
 
-	private DatasetCacheAssembler testAssembler;
+	private DatasetCacheLoader testAssembler;
 
 	private static final String transformation = "title = dc:title :: xsd:string;\n"
 			+ "alt_id = dc:identifier :: xsd:string;";
@@ -73,7 +74,7 @@ public class WorkflowTest extends TestHelper {
 		testMain.dataset(dataset);
 		testSink = new TestSink();
 		testMain.persister(testSink);
-		testAssembler = new DatasetCacheAssembler().cache(dataset);
+		testAssembler = new DatasetCacheLoader().cache(dataset);
 		testMain.assembler(testAssembler);
 		testOutputStage = new TestOutputStage();
 		testMain.outputStage(testOutputStage);
@@ -171,7 +172,7 @@ public class WorkflowTest extends TestHelper {
 	public void testSkipRetrieval() throws IOException {
 		final String cacheDirectory = createTempDir().getAbsolutePath();
 		final Dataset dataset = createDataset(cacheDirectory);
-		final Set<Resource> retrievedResources = new DatasetCacheAssembler().cache(dataset).load(uris);
+		final Set<Resource> retrievedResources = new DatasetCacheLoader().cache(dataset).load(uris);
 		assertEquals("Failed to cache all resources!", uris, retrievedResources);
 		final String[] args = concat(createBasicArgsForMainMethodTest(), new String[] { "-c", cacheDirectory,
 				"--skip-retrieval" }, String.class);
