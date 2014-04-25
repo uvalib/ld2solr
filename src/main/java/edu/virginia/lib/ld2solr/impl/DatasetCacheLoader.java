@@ -25,8 +25,7 @@ import edu.virginia.lib.ld2solr.spi.CacheLoader;
 import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 
 /**
- * A {@link DatasetCacheLoader} loads Linked Data into a Jena {@link Dataset}
- * .
+ * A {@link DatasetCacheLoader} loads Linked Data into a Jena {@link Dataset} .
  * 
  * @author ajs6f
  * 
@@ -54,8 +53,8 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> 
 	 * @see CacheLoader#load(java.util.Set)
 	 */
 	@Override
-	public Set<Resource> load(final Set<Resource> uris) {
-		successfullyLoadedResources = new HashSet<>(uris.size());
+	public Set<Resource> load(final Iterable<Resource> uris) {
+		successfullyLoadedResources = new HashSet<>();
 		for (final Resource uri : uris) {
 			log.info("Queueing retrieval task for URI: {}...", uri);
 			final Future<Model> loadFuture = internalQueue.submit(new JenaModelTriplesRetriever(accepts).apply(uri));

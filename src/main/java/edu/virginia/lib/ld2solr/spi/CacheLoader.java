@@ -30,7 +30,7 @@ public interface CacheLoader<T extends CacheLoader<T, Cache>, Cache> {
 	 *            {@link Resource}s to load.
 	 * @return those resources that were successfully loaded
 	 */
-	public Set<Resource> load(final Set<Resource> resources);
+	public Set<Resource> load(final Iterable<Resource> resources);
 
 	/**
 	 * Frees any resources associated with this {@link CacheLoader}.
