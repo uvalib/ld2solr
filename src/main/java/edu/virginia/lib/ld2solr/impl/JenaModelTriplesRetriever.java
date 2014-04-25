@@ -1,6 +1,7 @@
 package edu.virginia.lib.ld2solr.impl;
 
 import static com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.Closeable;
@@ -14,6 +15,7 @@ import org.apache.any23.extractor.ExtractionException;
 import org.apache.any23.extractor.Extractor;
 import org.apache.any23.extractor.IssueReport.Issue;
 import org.apache.any23.writer.TripleHandler;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -69,15 +71,27 @@ public class JenaModelTriplesRetriever implements TriplesRetriever {
 
 			@Override
 			public Model call() throws IOException, ExtractionException {
+				
 				final String resource = uri.getURI();
+				final Model model = createDefaultModel();
+				
 				log.debug("Retrieving from URI: {}", resource);
 				final HttpGet get = new HttpGet(resource);
 				if (accept != null) {
 					get.setHeader("Accept", accept);
 				}
-				final String rdf = EntityUtils.toString(client.execute(get).getEntity());
+				final HttpResponse response = client.execute(get);
+				final int statusCode = response.getStatusLine().getStatusCode();
+				if (statusCode != SC_OK) {
+					log.error("Failed to retrieve: {}!", resource);
+					log.error("With: ", response.getStatusLine());
+					throw new RetrievalException("Failed to retrieve: " + resource + "! HTTP Status code: "
+									+ statusCode + ".");
+				}
+				
+				final String rdf = EntityUtils.toString(response.getEntity());
 				log.debug("Retrieved from URI: {} RDF:\n{}", resource, rdf);
-				final Model model = createDefaultModel();
+				
 				try (final TriplesIntoModel tripleRecorder = new TriplesIntoModel(model);) {
 					final ExtractionReport report = extractor.extract(rdf, resource, tripleRecorder);
 					if (log.isDebugEnabled()) {

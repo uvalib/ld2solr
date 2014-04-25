@@ -13,4 +13,15 @@ import com.hp.hpl.jena.rdf.model.Resource;
  * 
  */
 public interface TriplesRetriever extends Function<Resource, Callable<Model>> {
+
+	public static class RetrievalException extends RuntimeException {
+
+		public RetrievalException(final String msg) {
+			super(msg);
+		}
+
+		private static final long serialVersionUID = 1L;
+		
+	}
+	
 }
