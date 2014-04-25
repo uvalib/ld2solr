@@ -1,6 +1,7 @@
 package edu.virginia.lib.ld2solr.impl;
 
 import static com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel;
+import static java.lang.Byte.MAX_VALUE;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -43,9 +44,16 @@ public class JenaModelTriplesRetriever implements TriplesRetriever {
 
 	private static final String DEFAULT_USER_AGENT = "UVa Library Linked Data indexing engine";
 
+	private static PoolingClientConnectionManager pool;
+
+	static {
+		pool.setMaxTotal(MAX_VALUE);
+		pool.setDefaultMaxPerRoute(MAX_VALUE);
+	}
+	
 	private final Any23 extractor = new Any23();
 
-	private static final HttpClient client = new DefaultHttpClient(new PoolingClientConnectionManager());
+	private static final HttpClient client = new DefaultHttpClient(pool);
 
 	private final String accept;
 
