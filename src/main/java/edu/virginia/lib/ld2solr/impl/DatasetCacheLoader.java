@@ -10,7 +10,6 @@ import static com.hp.hpl.jena.query.ReadWrite.WRITE;
 import static com.hp.hpl.jena.shared.Lock.READ;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.Thread.sleep;
-import static java.util.Collections.emptySet;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.HashSet;
@@ -23,9 +22,6 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.hp.hpl.jena.query.Dataset;
@@ -46,16 +42,15 @@ import edu.virginia.lib.ld2solr.spi.ThreadedStage;
  * @author ajs6f
  * 
  */
-@SuppressWarnings("unused")
 public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> implements
-				CacheLoader<DatasetCacheLoader, Dataset> {
+		CacheLoader<DatasetCacheLoader, Dataset> {
 
 	private static final long TIMEOUT = 10000;
 
 	private static final long TIMESTEP = 1000;
 
 	/**
-	 * TODO develop a more elegant idea of recursion
+	 * TODO develop a more elegant idea of limited recursion
 	 */
 	private static final int RECURSION_LIMIT = 2;
 
@@ -65,11 +60,11 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> 
 
 	private Dataset dataset;
 
-	private Set<Resource> successfullyLoadedResources = new HashSet<>();
+	private final Set<Resource> successfullyLoadedResources = new HashSet<>();
 
-	private Set<Resource> unsuccessfullyLoadedResources = new HashSet<>();
+	private final Set<Resource> unsuccessfullyLoadedResources = new HashSet<>();
 
-	private Set<Resource> attemptedResources = new HashSet<>();
+	private final Set<Resource> attemptedResources = new HashSet<>();
 
 	private String accepts = null;
 
@@ -158,7 +153,7 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> 
 		dataset.end();
 		model.enterCriticalSection(READ);
 		final Set<Resource> objectsInDataset = copyOf(transform(model.query(statementsWithUriObjects).listObjects(),
-						cast));
+				cast));
 		final Set<Resource> resourcesNowToBeRetrieved = asYetUntriedOf(objectsInDataset);
 		model.leaveCriticalSection();
 
@@ -177,13 +172,13 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> 
 	 * @param uris
 	 *            the {@link Resource}s on which to wait
 	 */
-	private void wait(Set<Resource> uris) {
-		long startTime = currentTimeMillis();
+	private void wait(final Set<Resource> uris) {
+		final long startTime = currentTimeMillis();
 		while (!union(unsuccessfullyLoadedResources, successfullyLoadedResources).contains(uris)
-						&& currentTimeMillis() < (startTime + TIMEOUT)) {
+				&& currentTimeMillis() < (startTime + TIMEOUT)) {
 			try {
 				sleep(TIMESTEP);
-			} catch (InterruptedException e) {
+			} catch (final InterruptedException e) {
 				break;
 			}
 		}
@@ -193,7 +188,7 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> 
 	 * @param uris
 	 * @return those {@link Resource}s we have not attempted to resolve
 	 */
-	private Set<Resource> asYetUntriedOf(Set<Resource> uris) {
+	private Set<Resource> asYetUntriedOf(final Set<Resource> uris) {
 		return difference(uris, attemptedResources);
 	}
 

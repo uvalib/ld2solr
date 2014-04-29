@@ -37,8 +37,8 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.api.OutputRecord;
-import edu.virginia.lib.ld2solr.impl.TestAcceptor.TestSink;
 import edu.virginia.lib.ld2solr.impl.DatasetCacheLoader;
+import edu.virginia.lib.ld2solr.impl.TestAcceptor.TestSink;
 import edu.virginia.lib.ld2solr.impl.TestHelper;
 import edu.virginia.lib.ld2solr.impl.TestOutputStage;
 import edu.virginia.lib.ld2solr.spi.OutputStage;
@@ -173,7 +173,7 @@ public class WorkflowTest extends TestHelper {
 		final String cacheDirectory = createTempDir().getAbsolutePath();
 		final Dataset dataset = createDataset(cacheDirectory);
 		final Set<Resource> retrievedResources = new DatasetCacheLoader().cache(dataset).load(uris);
-		assertEquals("Failed to cache all resources!", uris, retrievedResources);
+		assertTrue("Failed to cache all resources!", retrievedResources.containsAll(uris));
 		final String[] args = concat(createBasicArgsForMainMethodTest(), new String[] { "-c", cacheDirectory,
 				"--skip-retrieval" }, String.class);
 		final Exception e = testMainMethod(args);

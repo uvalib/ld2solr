@@ -31,9 +31,9 @@ public class DatasetCacheLoaderTest extends TestHelper {
 	@Before
 	public void setUp() throws InterruptedException {
 		dataset = createDataset();
-		testLoader = new DatasetCacheLoader().cache(dataset).threads(10);
+		testLoader = new DatasetCacheLoader().cache(dataset).threads(20);
 	}
-	
+
 	@After
 	public void tearDown() throws InterruptedException {
 		testLoader.shutdown();
@@ -74,9 +74,9 @@ public class DatasetCacheLoaderTest extends TestHelper {
 		testLoader = new DatasetCacheLoader().cache(dataset);
 		final Set<Resource> successfulUris = testLoader.load(urisWithExtra);
 		assertEquals("Didn't find the appropriate resource failing to be retrieved!", badUris,
-						difference(urisWithExtra, successfulUris));
+				difference(urisWithExtra, successfulUris));
 		assertTrue("Did not retrieve all resources successfully that should have been retrieved!",
-						successfulUris.containsAll(uris));
+				successfulUris.containsAll(uris));
 
 	}
 

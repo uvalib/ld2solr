@@ -44,13 +44,13 @@ public class JenaModelTriplesRetriever implements TriplesRetriever {
 
 	private static final String DEFAULT_USER_AGENT = "UVa Library Linked Data indexing engine";
 
-	private static PoolingClientConnectionManager pool;
+	private static PoolingClientConnectionManager pool = new PoolingClientConnectionManager();
 
 	static {
 		pool.setMaxTotal(MAX_VALUE);
 		pool.setDefaultMaxPerRoute(MAX_VALUE);
 	}
-	
+
 	private final Any23 extractor = new Any23();
 
 	private static final HttpClient client = new DefaultHttpClient(pool);
@@ -79,10 +79,10 @@ public class JenaModelTriplesRetriever implements TriplesRetriever {
 
 			@Override
 			public Model call() throws IOException, ExtractionException {
-				
+
 				final String resource = uri.getURI();
 				final Model model = createDefaultModel();
-				
+
 				log.debug("Retrieving from URI: {}", resource);
 				final HttpGet get = new HttpGet(resource);
 				if (accept != null) {
@@ -93,12 +93,12 @@ public class JenaModelTriplesRetriever implements TriplesRetriever {
 				if (statusCode != SC_OK) {
 					log.error("Failed to retrieve: {}!", resource);
 					throw new RetrievalException("Failed to retrieve: " + resource + "! HTTP Status code: "
-									+ statusCode + ".");
+							+ statusCode + ".");
 				}
-				
+
 				final String rdf = EntityUtils.toString(response.getEntity());
 				log.debug("Retrieved from URI: {} RDF:\n{}", resource, rdf);
-				
+
 				try (final TriplesIntoModel tripleRecorder = new TriplesIntoModel(model);) {
 					final ExtractionReport report = extractor.extract(rdf, resource, tripleRecorder);
 					if (log.isDebugEnabled()) {
