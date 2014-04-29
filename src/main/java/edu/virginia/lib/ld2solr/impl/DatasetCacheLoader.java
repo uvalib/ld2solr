@@ -64,7 +64,15 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> 
 
 	private final Set<Resource> unsuccessfullyLoadedResources = new HashSet<>();
 
+	/**
+	 * We use attemptedResources to determine whether or not to retrieve a
+	 * resource, specifically, to avoid retrieving resources more than once. We
+	 * use fullyAttemptedResources to determine when a cycle of recursive
+	 * retrieval is complete.
+	 */
 	private final Set<Resource> attemptedResources = new HashSet<>();
+	private final Set<Resource> fullyAttemptedResources = union(unsuccessfullyLoadedResources,
+			successfullyLoadedResources);
 
 	private String accepts = null;
 
@@ -154,7 +162,10 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> 
 		model.enterCriticalSection(READ);
 		final Set<Resource> objectsInDataset = copyOf(transform(model.query(statementsWithUriObjects).listObjects(),
 				cast));
-		final Set<Resource> resourcesNowToBeRetrieved = asYetUntriedOf(objectsInDataset);
+		// we check the resources we might potentially want to retrieve against
+		// those we have already tried to retrieve, to avoid re-retrieving
+		// resources
+		final Set<Resource> resourcesNowToBeRetrieved = difference(objectsInDataset, attemptedResources);
 		model.leaveCriticalSection();
 
 		// possibly recurse to next depth of Linked Data graph
@@ -174,22 +185,14 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> 
 	 */
 	private void wait(final Set<Resource> uris) {
 		final long startTime = currentTimeMillis();
-		while (!union(unsuccessfullyLoadedResources, successfullyLoadedResources).contains(uris)
-				&& currentTimeMillis() < (startTime + TIMEOUT)) {
+		while (!fullyAttemptedResources.containsAll(uris) && currentTimeMillis() < (startTime + TIMEOUT)) {
 			try {
+				log.trace("Waiting for {} to be fully loaded into {}...", uris, fullyAttemptedResources);
 				sleep(TIMESTEP);
 			} catch (final InterruptedException e) {
 				break;
 			}
 		}
-	}
-
-	/**
-	 * @param uris
-	 * @return those {@link Resource}s we have not attempted to resolve
-	 */
-	private Set<Resource> asYetUntriedOf(final Set<Resource> uris) {
-		return difference(uris, attemptedResources);
 	}
 
 	/*
