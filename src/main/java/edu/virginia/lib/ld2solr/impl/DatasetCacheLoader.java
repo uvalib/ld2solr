@@ -1,13 +1,19 @@
 package edu.virginia.lib.ld2solr.impl;
 
+import static com.google.common.base.Predicates.equalTo;
 import static com.google.common.collect.ImmutableSet.copyOf;
+import static com.google.common.collect.Iterators.any;
 import static com.google.common.collect.Iterators.transform;
 import static com.google.common.collect.Sets.difference;
 import static com.google.common.collect.Sets.union;
 import static com.google.common.util.concurrent.Futures.addCallback;
 import static com.google.common.util.concurrent.JdkFutureAdapters.listenInPoolThread;
+import static com.hp.hpl.jena.ontology.OntModelSpec.OWL_MEM_RDFS_INF;
 import static com.hp.hpl.jena.query.ReadWrite.WRITE;
+import static com.hp.hpl.jena.rdf.model.ModelFactory.createOntologyModel;
 import static com.hp.hpl.jena.shared.Lock.READ;
+import static com.hp.hpl.jena.vocabulary.OWL.ObjectProperty;
+import static com.hp.hpl.jena.vocabulary.RDF.type;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.Thread.sleep;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -22,8 +28,11 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.hp.hpl.jena.ontology.OntModel;
+import com.hp.hpl.jena.ontology.OntProperty;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.ReadWrite;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -39,6 +48,10 @@ import edu.virginia.lib.ld2solr.spi.ThreadedStage;
 /**
  * A {@link DatasetCacheLoader} loads Linked Data into a Jena {@link Dataset} .
  * 
+ * @author ajs6f
+ * 
+ */
+/**
  * @author ajs6f
  * 
  */
@@ -75,6 +88,13 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> 
 			successfullyLoadedResources);
 
 	private String accepts = null;
+
+	/**
+	 * In this {@link Model} we keep ontology used to determine which properties
+	 * to use for recursive retrieval. null here indicates that all URI-valued
+	 * properties should be used for retrieval.
+	 */
+	private Model schema = null;
 
 	private static final Logger log = getLogger(DatasetCacheLoader.class);
 
@@ -121,9 +141,8 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> 
 		log.debug("Finished queuing retrieval tasks for URIs:\n{}", resources);
 		log.trace("{} cache loading tasks left to perform.", resources.size());
 		// the only purpose of the following loop is to ensure that we execute
-		// as many
-		// tasks to add triples to the cache as we have executed tasks to
-		// retrieve triples
+		// as many tasks adding triples to the cache as we have executed tasks
+		// retrieving triples
 		for (int tasks = 1; tasks <= resources.size(); tasks++) {
 			log.trace("Loading resource {} of {}...", tasks, resources.size());
 			try {
@@ -156,17 +175,23 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> 
 		}
 		log.info("Finished loading one span of resources into the cache with URIs:\n{}", resources);
 
-		dataset.begin(ReadWrite.READ);
-		final Model model = dataset.getDefaultModel();
-		dataset.end();
+		dataset.begin(ReadWrite.WRITE);
+		final Model m = dataset.getDefaultModel();
+		/**
+		 * We create a model using OWL as language with RDFS inference (for
+		 * efficiency) for the calculation of retrieve-ability.
+		 */
+		final OntModel model = schema() != null ? createOntologyModel(OWL_MEM_RDFS_INF, m.union(schema()))
+				: createOntologyModel(OWL_MEM_RDFS_INF, m);
 		model.enterCriticalSection(READ);
-		final Set<Resource> objectsInDataset = copyOf(transform(model.query(statementsWithUriObjects).listObjects(),
-				cast));
+		final Set<Resource> retrievableRdfObjectsInDataset = copyOf(transform(model.query(relevantStatements(model))
+				.listObjects(), cast));
 		// we check the resources we might potentially want to retrieve against
 		// those we have already tried to retrieve, to avoid re-retrieving
 		// resources
-		final Set<Resource> resourcesNowToBeRetrieved = difference(objectsInDataset, attemptedResources);
+		final Set<Resource> resourcesNowToBeRetrieved = difference(retrievableRdfObjectsInDataset, attemptedResources);
 		model.leaveCriticalSection();
+		dataset.end();
 
 		// possibly recurse to next depth of Linked Data graph
 		if (!resourcesNowToBeRetrieved.isEmpty() && recursionLevel <= RECURSION_LIMIT) {
@@ -229,42 +254,84 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Void> 
 		return this;
 	}
 
-	private static Selector statementsWithUriObjects = new Selector() {
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see CacheLoader#schema()
+	 */
+	@Override
+	public Model schema() {
+		return schema;
+	}
 
-		@Override
-		public boolean test(final Statement s) {
-			if (s.getObject().isURIResource()) {
-				return true;
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see CacheLoader#schema(com.hp.hpl.jena.rdf.model.Model)
+	 */
+	@Override
+	public DatasetCacheLoader schema(final Model s) {
+		this.schema = s;
+		return this;
+	}
+
+	private Selector relevantStatements(final Model m) {
+		return new Selector() {
+
+			final Predicate<OntProperty> testForRetrievalQuality = equalTo(m
+					.createProperty(traversableForRecursiveRetrieval).addProperty(type, ObjectProperty)
+					.as(OntProperty.class));
+
+			@Override
+			public boolean test(final Statement s) {
+				// it possible for a property to be traversable iff we have a
+				// defined schema for recursive retrieval
+				if (schema() == null) {
+					return false;
+				}
+				// a property that is not URI-valued cannot be traversed
+				if (!s.getObject().isURIResource()) {
+					return false;
+				}
+				// we have a schema and an URI-valued property in hand. now we
+				// must test whether our property is a subproperty of
+				// "traversableForRecursiveRetrieval"
+				if (s.getPredicate().canAs(OntProperty.class)) {
+					final OntProperty predicate = s.getPredicate().as(OntProperty.class);
+					if (any(predicate.listSuperProperties(), testForRetrievalQuality)) {
+						return true;
+					}
+				}
+				return false;
 			}
-			return false;
-		}
 
-		@Override
-		public boolean isSimple() {
-			return false;
-		}
+			@Override
+			public boolean isSimple() {
+				return false;
+			}
 
-		@Override
-		public Resource getSubject() {
-			return null;
-		}
+			@Override
+			public Resource getSubject() {
+				return null;
+			}
 
-		@Override
-		public Property getPredicate() {
-			return null;
-		}
+			@Override
+			public Property getPredicate() {
+				return null;
+			}
 
-		@Override
-		public RDFNode getObject() {
-			return null;
-		}
-	};
+			@Override
+			public RDFNode getObject() {
+				return null;
+			}
+		};
+	}
 
 	private static Function<RDFNode, Resource> cast = new Function<RDFNode, Resource>() {
 
 		@Override
 		public Resource apply(final RDFNode n) {
-			return (Resource) n;
+			return n.asResource();
 		}
 	};
 }

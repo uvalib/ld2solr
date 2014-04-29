@@ -2,6 +2,7 @@ package edu.virginia.lib.ld2solr.spi;
 
 import java.util.Set;
 
+import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
@@ -12,6 +13,8 @@ import com.hp.hpl.jena.rdf.model.Resource;
  * 
  */
 public interface CacheLoader<T extends CacheLoader<T, Cache>, Cache> {
+
+	public static final String traversableForRecursiveRetrieval = "";
 
 	/**
 	 * Assign a cache that this {@link CacheLoader} will load.
@@ -38,5 +41,19 @@ public interface CacheLoader<T extends CacheLoader<T, Cache>, Cache> {
 	 * @throws InterruptedException
 	 */
 	public void shutdown() throws InterruptedException;
+
+	/**
+	 * @param s
+	 *            the schema to use for inference in support of recursive
+	 *            retrieval
+	 * @return this {@link CacheLoader} for further operation
+	 */
+	public T schema(final Model s);
+
+	/**
+	 * @return the schema in use for inference in support of recursive
+	 *         retrieval, or null for no recursive retrieval at all.
+	 */
+	public Model schema();
 
 }

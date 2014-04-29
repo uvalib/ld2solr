@@ -2,8 +2,13 @@ package edu.virginia.lib.ld2solr.impl;
 
 import static com.google.common.collect.Sets.difference;
 import static com.hp.hpl.jena.query.ReadWrite.READ;
+import static com.hp.hpl.jena.rdf.model.ModelFactory.createOntologyModel;
 import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
 import static com.hp.hpl.jena.tdb.TDBFactory.createDataset;
+import static com.hp.hpl.jena.vocabulary.OWL.ObjectProperty;
+import static com.hp.hpl.jena.vocabulary.RDF.type;
+import static com.hp.hpl.jena.vocabulary.RDFS.subPropertyOf;
+import static edu.virginia.lib.ld2solr.spi.CacheLoader.traversableForRecursiveRetrieval;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -17,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 
+import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Resource;
 
@@ -85,7 +91,14 @@ public class DatasetCacheLoaderTest extends TestHelper {
 		final Set<Resource> urisSansOne = new HashSet<>(uris);
 		final Resource toBeRecursivelyLoaded = createResource(uriBase + "recursive2");
 		urisSansOne.remove(toBeRecursivelyLoaded);
-		testLoader = new DatasetCacheLoader().cache(dataset);
+		final OntModel schemaForRecursiveRetrieval = createOntologyModel();
+		schemaForRecursiveRetrieval
+				.createProperty("http://purl.org/dc/elements/1.1/", "subject")
+				.addProperty(type, ObjectProperty)
+				.addProperty(subPropertyOf,
+						schemaForRecursiveRetrieval.createProperty(traversableForRecursiveRetrieval));
+
+		testLoader = new DatasetCacheLoader().cache(dataset).schema(schemaForRecursiveRetrieval);
 		final Set<Resource> successfulUris = testLoader.load(urisSansOne);
 		assertTrue("Did not retrieve all resources successfully that should have been retrieved!",
 				successfulUris.containsAll(uris));
