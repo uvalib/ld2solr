@@ -80,4 +80,15 @@ public class DatasetCacheLoaderTest extends TestHelper {
 
 	}
 
+	@Test
+	public void testAccumulationWithRecursion() {
+		final Set<Resource> urisSansOne = new HashSet<>(uris);
+		final Resource toBeRecursivelyLoaded = createResource(uriBase + "recursive2");
+		urisSansOne.remove(toBeRecursivelyLoaded);
+		testLoader = new DatasetCacheLoader().cache(dataset);
+		final Set<Resource> successfulUris = testLoader.load(urisSansOne);
+		assertTrue("Did not retrieve all resources successfully that should have been retrieved!",
+				successfulUris.containsAll(uris));
+	}
+
 }

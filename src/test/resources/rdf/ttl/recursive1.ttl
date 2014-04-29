@@ -1,0 +1,4 @@
+@prefix dc: <http://purl.org/dc/elements/1.1/>.
+<recursive1> dc:title "Resource for testing recursive retrieval" ;
+	        dc:subject <recursive2> ;
+	       dc:identifier "recursive1" .
