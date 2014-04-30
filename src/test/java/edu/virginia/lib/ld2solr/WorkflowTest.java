@@ -175,8 +175,10 @@ public class WorkflowTest extends TestHelper {
 	public void testSkipRetrieval() throws IOException {
 		final String cacheDirectory = createTempDir().getAbsolutePath();
 		final Dataset dataset = createDataset(cacheDirectory);
-		final Set<Resource> retrievedResources = new DatasetCacheAssembler().cache(dataset)
-				.cacheLoader(new DatasetCacheLoader()).cacheRetriever(new Any23CacheRetriever()).load(uris);
+		final DatasetCacheAssembler cacheAssembler = new DatasetCacheAssembler();
+		cacheAssembler.cache(dataset).cacheLoader(new DatasetCacheLoader()).cacheRetriever(new Any23CacheRetriever())
+				.assemble(uris);
+		final Set<Resource> retrievedResources = cacheAssembler.successfullyAssembled();
 		assertTrue("Failed to cache all resources!", retrievedResources.containsAll(uris));
 		final String[] args = concat(createBasicArgsForMainMethodTest(), new String[] { "-c", cacheDirectory,
 				"--skip-retrieval" }, String.class);

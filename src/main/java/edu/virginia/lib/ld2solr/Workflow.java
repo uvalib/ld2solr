@@ -70,7 +70,7 @@ public class Workflow {
 
 	private Dataset dataset;
 
-	private CacheAssembler<?, Dataset> cacheLoader = null;
+	private CacheAssembler<?, Dataset> cacheAssembler = null;
 
 	private RecordPersister persister = null;
 
@@ -89,7 +89,8 @@ public class Workflow {
 	 * @throws InterruptedException
 	 */
 	public Set<Resource> cache(final Set<Resource> uris) throws InterruptedException {
-		final Set<Resource> successfullyRetrieved = cacheLoader.load(uris);
+		cacheAssembler.assemble(uris);
+		final Set<Resource> successfullyRetrieved = cacheAssembler.successfullyAssembled();
 		final Set<Resource> failures = difference(uris, successfullyRetrieved);
 		if (failures.size() > 0) {
 			log.error("Failed to retrieve some resources!");
@@ -97,7 +98,7 @@ public class Workflow {
 				log.warn("Resource: {} could not be retrieved!", failure);
 			}
 		}
-		cacheLoader.shutdown();
+		cacheAssembler.shutdown();
 		return successfullyRetrieved;
 	}
 
@@ -152,7 +153,7 @@ public class Workflow {
 	 * @return this {@link Workflow} for continued operation
 	 */
 	public Workflow assembler(final CacheAssembler<?, Dataset> ca) {
-		this.cacheLoader = ca;
+		this.cacheAssembler = ca;
 		return this;
 	}
 
@@ -231,6 +232,7 @@ public class Workflow {
 						acceptHeaderValue = cmd.getOptionValue(ACCEPT.opt());
 						log.info("Requesting HTTP Content-type: {} for resource retrieval.", acceptHeaderValue);
 					}
+
 					final DatasetCacheAssembler assembler = new DatasetCacheAssembler()
 							.cache(main.dataset)
 							.cacheLoader(new DatasetCacheLoader().threads(assemblerThreads))

@@ -8,11 +8,10 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 
-import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+import edu.virginia.lib.ld2solr.api.IdentifiedModel;
 import edu.virginia.lib.ld2solr.spi.CacheAssembler;
 import edu.virginia.lib.ld2solr.spi.CacheLoader;
 import edu.virginia.lib.ld2solr.spi.CacheRetriever;
@@ -38,13 +37,6 @@ public class DatasetCacheAssembler implements CacheAssembler<DatasetCacheAssembl
 
 	private static final long TIMESTEP = 1000;
 
-	/**
-	 * In this {@link Model} we keep an ontology used to determine which
-	 * properties to use for recursive retrieval. null indicates no recursive
-	 * retrieval, which is the default assumption.
-	 */
-	private Model ontology = null;
-
 	private static final Logger log = getLogger(DatasetCacheAssembler.class);
 
 	/*
@@ -53,15 +45,15 @@ public class DatasetCacheAssembler implements CacheAssembler<DatasetCacheAssembl
 	 * @see CacheAssembler#load(java.util.Set)
 	 */
 	@Override
-	public Set<Resource> load(final Set<Resource> uris) {
+	public void assemble(final Set<Resource> uris) {
 		cacheRetriever.andThen(cacheLoader);
+		cacheLoader.andThen(new NoOp<IdentifiedModel, Void>());
 		cacheLoader.cache(dataset);
 		for (final Resource uri : uris) {
 			log.info("Attempting to load: {}", uri);
 			cacheRetriever.accept(uri);
 		}
 		wait(uris);
-		return cacheRetriever.successfullyRetrieved();
 	}
 
 	/**
@@ -93,27 +85,6 @@ public class DatasetCacheAssembler implements CacheAssembler<DatasetCacheAssembl
 		return this;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see CacheAssembler#ontology()
-	 */
-	@Override
-	public Model ontology() {
-		return ontology;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see CacheAssembler#ontology(com.hp.hpl.jena.ontology.OntModel)
-	 */
-	@Override
-	public DatasetCacheAssembler ontology(final OntModel s) {
-		this.ontology = s;
-		return this;
-	}
-
 	/**
 	 * @param cacheRetriever
 	 *            the cacheRetriever to set
@@ -138,5 +109,10 @@ public class DatasetCacheAssembler implements CacheAssembler<DatasetCacheAssembl
 	public void shutdown() throws InterruptedException {
 		cacheRetriever.shutdown();
 		cacheLoader.shutdown();
+	}
+
+	@Override
+	public Set<Resource> successfullyAssembled() {
+		return cacheLoader.successfullyLoaded();
 	}
 }

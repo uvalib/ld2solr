@@ -4,8 +4,6 @@ import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
 
 import java.util.Set;
 
-import com.hp.hpl.jena.ontology.OntModel;
-import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
@@ -15,7 +13,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
  * @author ajs6f
  * 
  */
-public interface CacheAssembler<T extends CacheAssembler<T, Cache>, Cache> {
+public interface CacheAssembler<T extends CacheAssembler<T, CacheType>, CacheType> {
 
 	public static final Resource traversableForRecursiveRetrieval = createResource("info:ld2solr/traversableForRecursiveRetrieval");
 
@@ -26,7 +24,7 @@ public interface CacheAssembler<T extends CacheAssembler<T, Cache>, Cache> {
 	 *            the cache to assign
 	 * @return this {@link CacheAssembler} for further operation.
 	 */
-	public T cache(Cache c);
+	public T cache(CacheType c);
 
 	/**
 	 * Accepts a {@link Set} of {@link Resource}s and loads them into the
@@ -36,7 +34,7 @@ public interface CacheAssembler<T extends CacheAssembler<T, Cache>, Cache> {
 	 *            {@link Resource}s to load.
 	 * @return those resources that were successfully loaded
 	 */
-	public Set<Resource> load(final Set<Resource> resources);
+	public void assemble(final Set<Resource> resources);
 
 	/**
 	 * Frees any resources associated with this {@link CacheAssembler}.
@@ -46,17 +44,9 @@ public interface CacheAssembler<T extends CacheAssembler<T, Cache>, Cache> {
 	public void shutdown() throws InterruptedException;
 
 	/**
-	 * @param o
-	 *            the ontology to use for inference in support of recursive
-	 *            retrieval
-	 * @return this {@link CacheAssembler} for further operation
+	 * @return URIs of those resources that have successfully been assembled
+	 *         into the cache
 	 */
-	public T ontology(final OntModel o);
-
-	/**
-	 * @return the ontology in use for inference in support of recursive
-	 *         retrieval, or null for no recursive retrieval at all.
-	 */
-	public Model ontology();
+	public Set<Resource> successfullyAssembled();
 
 }
