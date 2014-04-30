@@ -40,12 +40,14 @@ import com.google.common.io.Files;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+import edu.virginia.lib.ld2solr.impl.Any23CacheRetriever;
+import edu.virginia.lib.ld2solr.impl.DatasetCacheAssembler;
 import edu.virginia.lib.ld2solr.impl.DatasetCacheLoader;
 import edu.virginia.lib.ld2solr.impl.FilesystemPersister;
 import edu.virginia.lib.ld2solr.impl.IndexRun;
 import edu.virginia.lib.ld2solr.impl.JenaBackend;
 import edu.virginia.lib.ld2solr.impl.SolrXMLOutputStage;
-import edu.virginia.lib.ld2solr.spi.CacheLoader;
+import edu.virginia.lib.ld2solr.spi.CacheAssembler;
 import edu.virginia.lib.ld2solr.spi.OutputStage;
 import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
 
@@ -68,7 +70,7 @@ public class Workflow {
 
 	private Dataset dataset;
 
-	private CacheLoader<?, Dataset> cacheLoader = null;
+	private CacheAssembler<?, Dataset> cacheLoader = null;
 
 	private RecordPersister persister = null;
 
@@ -143,13 +145,13 @@ public class Workflow {
 	}
 
 	/**
-	 * Assigns a {@link CacheLoader} to load the cache.
+	 * Assigns a {@link CacheAssembler} to load the cache.
 	 * 
 	 * @param ca
-	 *            the {@link DatasetCacheLoader} to use
+	 *            the {@link DatasetCacheAssembler} to use
 	 * @return this {@link Workflow} for continued operation
 	 */
-	public Workflow assembler(final CacheLoader<?, Dataset> ca) {
+	public Workflow assembler(final CacheAssembler<?, Dataset> ca) {
 		this.cacheLoader = ca;
 		return this;
 	}
@@ -224,13 +226,17 @@ public class Workflow {
 					if (cmd.hasOption(ASSEMBLERTHREADS.opt())) {
 						assemblerThreads = parseInt(cmd.getOptionValue(ASSEMBLERTHREADS.opt()));
 					}
-					final DatasetCacheLoader assembler = new DatasetCacheLoader().cache(main.dataset).threads(
-							assemblerThreads);
+					String acceptHeaderValue = null;
 					if (cmd.hasOption(ACCEPT.opt())) {
-						final String accept = cmd.getOptionValue(ACCEPT.opt());
-						log.info("Requesting HTTP Content-type: {} for resource retrieval.", accept);
-						assembler.accepts(accept);
+						acceptHeaderValue = cmd.getOptionValue(ACCEPT.opt());
+						log.info("Requesting HTTP Content-type: {} for resource retrieval.", acceptHeaderValue);
 					}
+					final DatasetCacheAssembler assembler = new DatasetCacheAssembler()
+							.cache(main.dataset)
+							.cacheLoader(new DatasetCacheLoader().threads(assemblerThreads))
+							.cacheRetriever(
+									new Any23CacheRetriever().threads(assemblerThreads).accepts(acceptHeaderValue));
+
 					main.assembler(assembler);
 					urisToIndex = main.cache(uris);
 					log.debug("Successfully retrieved URIs:\n{}", urisToIndex);

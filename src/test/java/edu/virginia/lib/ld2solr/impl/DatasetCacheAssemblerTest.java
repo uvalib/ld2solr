@@ -8,7 +8,7 @@ import static com.hp.hpl.jena.tdb.TDBFactory.createDataset;
 import static com.hp.hpl.jena.vocabulary.OWL.ObjectProperty;
 import static com.hp.hpl.jena.vocabulary.RDF.type;
 import static com.hp.hpl.jena.vocabulary.RDFS.subPropertyOf;
-import static edu.virginia.lib.ld2solr.spi.CacheLoader.traversableForRecursiveRetrieval;
+import static edu.virginia.lib.ld2solr.spi.CacheAssembler.traversableForRecursiveRetrieval;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -19,6 +19,7 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 
@@ -26,18 +27,24 @@ import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-public class DatasetCacheLoaderTest extends TestHelper {
+import edu.virginia.lib.ld2solr.api.IdentifiedModel;
+import edu.virginia.lib.ld2solr.spi.CacheLoader;
 
-	private DatasetCacheLoader testLoader;
+public class DatasetCacheAssemblerTest extends TestHelper {
+
+	private DatasetCacheAssembler testLoader;
 
 	private Dataset dataset;
 
-	private static final Logger log = getLogger(DatasetCacheLoaderTest.class);
+	private static final Logger log = getLogger(DatasetCacheAssemblerTest.class);
 
 	@Before
-	public void setUp() throws InterruptedException {
+	public void setUp() {
 		dataset = createDataset();
-		testLoader = new DatasetCacheLoader().cache(dataset).threads(20);
+		testLoader = new DatasetCacheAssembler().cache(dataset);
+		final CacheLoader<?, Dataset> datasetCacheLoader = new DatasetCacheLoader();
+		datasetCacheLoader.andThen(new TestAcceptor<IdentifiedModel, Void>());
+		testLoader.cacheRetriever(new Any23CacheRetriever()).cacheLoader(datasetCacheLoader);
 	}
 
 	@After
@@ -77,7 +84,6 @@ public class DatasetCacheLoaderTest extends TestHelper {
 		final Set<Resource> urisWithExtra = new HashSet<>(uris);
 		final Set<Resource> badUris = singleton(createResource());
 		urisWithExtra.addAll(badUris);
-		testLoader = new DatasetCacheLoader().cache(dataset);
 		final Set<Resource> successfulUris = testLoader.load(urisWithExtra);
 		assertEquals("Didn't find the appropriate resource failing to be retrieved!", badUris,
 				difference(urisWithExtra, successfulUris));
@@ -87,18 +93,20 @@ public class DatasetCacheLoaderTest extends TestHelper {
 	}
 
 	@Test
+	@Ignore("Until ontological Feedforward stage ")
 	public void testAccumulationWithRecursion() {
 		final Set<Resource> urisSansOne = new HashSet<>(uris);
 		final Resource toBeRecursivelyLoaded = createResource(uriBase + "recursive2");
 		urisSansOne.remove(toBeRecursivelyLoaded);
 		final OntModel schemaForRecursiveRetrieval = createOntologyModel();
+		// we add dc:subject as a traversable property
 		schemaForRecursiveRetrieval
 				.createProperty("http://purl.org/dc/elements/1.1/", "subject")
 				.addProperty(type, ObjectProperty)
 				.addProperty(subPropertyOf,
-						schemaForRecursiveRetrieval.createProperty(traversableForRecursiveRetrieval));
+						schemaForRecursiveRetrieval.createProperty(traversableForRecursiveRetrieval.getURI()));
 
-		testLoader = new DatasetCacheLoader().cache(dataset).schema(schemaForRecursiveRetrieval);
+		testLoader = new DatasetCacheAssembler().cache(dataset).ontology(schemaForRecursiveRetrieval);
 		final Set<Resource> successfulUris = testLoader.load(urisSansOne);
 		assertTrue("Did not retrieve all resources successfully that should have been retrieved!",
 				successfulUris.containsAll(uris));
