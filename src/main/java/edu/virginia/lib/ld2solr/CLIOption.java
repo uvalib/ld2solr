@@ -1,5 +1,6 @@
 package edu.virginia.lib.ld2solr;
 
+import static edu.virginia.lib.ld2solr.spi.CacheAssembler.DEFAULT_TIMEOUT;
 import static edu.virginia.lib.ld2solr.spi.ThreadedStage.DEFAULT_NUM_THREADS;
 
 import org.apache.commons.cli.Option;
@@ -28,7 +29,14 @@ public enum CLIOption {
 	ASSEMBLERTHREADS(new Option("at", "assembler-threads", true,
 			"The number of threads to use for RDF cache accumulation. (Defaults to " + DEFAULT_NUM_THREADS + ".)")),
 	INDEXINGTHREADS(new Option("it", "indexing-threads", true,
-			"The number of threads to use for indexing operation. (Defaults to " + DEFAULT_NUM_THREADS + ".)"));
+			"The number of threads to use for indexing operation. (Defaults to " + DEFAULT_NUM_THREADS + ".)")),
+	RETRIEVALONTOLOGY(new Option("ont", "retrieval-ontology", true,
+			"A file with the OWL ontology to use to establish which predicates should be followed for recursive retrieval. "
+					+ "Currently must be in RDF/XML form. (Defaults to no recursive retrieval.")),
+	TIMEOUT(new Option("ti", "timeout", true,
+			"The length of time to wait for cache assembly to complete, in milliseconds. "
+					+ "(Timeout may occur because of unreachable networked resources.) " + "(Defaults to "
+					+ DEFAULT_TIMEOUT + " milliseconds.)"));
 
 	public Option option;
 

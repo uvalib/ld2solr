@@ -1,5 +1,6 @@
 package edu.virginia.lib.ld2solr.impl;
 
+import static com.google.common.util.concurrent.Futures.addCallback;
 import static com.hp.hpl.jena.query.ReadWrite.WRITE;
 import static com.hp.hpl.jena.shared.Lock.READ;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -9,6 +10,8 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -33,7 +36,7 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Identi
 	 */
 	@Override
 	public void accept(final IdentifiedModel m) {
-		threadpool().submit(new Runnable() {
+		final ListenableFuture<?> task = threadpool().submit(new Runnable() {
 
 			private final Model model = m.model;
 
@@ -44,10 +47,15 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Identi
 					log.debug("Adding {} triples to cache...", model.size());
 					log.trace("Adding triples: {}", model);
 					try {
-						dataset.begin(WRITE);
+						final Boolean wasInTransaction = dataset.isInTransaction();
+						if (!wasInTransaction) {
+							dataset.begin(WRITE);
+						}
 						try {
 							dataset.getDefaultModel().add(model);
-							dataset.commit();
+							if (!wasInTransaction) {
+								dataset.commit();
+							}
 							successfullyLoaded.add(m.uri);
 							next(m);
 						} catch (final Exception e) {
@@ -55,7 +63,9 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Identi
 							log.error("Triples: ", model);
 							log.error("Exception: ", e);
 						} finally {
-							dataset.end();
+							if (!wasInTransaction) {
+								dataset.end();
+							}
 						}
 					} finally {
 						model.leaveCriticalSection();
@@ -64,6 +74,27 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Identi
 				}
 			}
 		});
+		addCallback(task, new Callback(m));
+	}
+
+	private static class Callback implements FutureCallback<Object> {
+
+		private final IdentifiedModel model;
+
+		public Callback(final IdentifiedModel m) {
+			this.model = m;
+		}
+
+		@Override
+		public void onSuccess(final Object result) {
+			log.debug("Successfully loaded resource: {}", model.uri);
+		}
+
+		@Override
+		public void onFailure(final Throwable t) {
+			log.error("Failed to load resource {}!", model.uri);
+			log.error("With exception: ", t);
+		}
 	}
 
 	/*
@@ -86,5 +117,4 @@ public class DatasetCacheLoader extends ThreadedStage<DatasetCacheLoader, Identi
 	public Set<Resource> successfullyLoaded() {
 		return successfullyLoaded;
 	}
-
 }

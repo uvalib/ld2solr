@@ -27,6 +27,11 @@ public interface CacheAssembler<T extends CacheAssembler<T, CacheType>, CacheTyp
 	public T cache(CacheType c);
 
 	/**
+	 * @return the cache over which this {@link CacheAssembler} operates
+	 */
+	public CacheType cache();
+
+	/**
 	 * Accepts a {@link Set} of {@link Resource}s and loads them into the
 	 * assigned cache.
 	 * 
@@ -48,5 +53,21 @@ public interface CacheAssembler<T extends CacheAssembler<T, CacheType>, CacheTyp
 	 *         into the cache
 	 */
 	public Set<Resource> successfullyAssembled();
+
+	/**
+	 * @return URIs of those resources that this {@link CacheAssembler} has
+	 *         attempted to assemble into the cache
+	 */
+	public Set<Resource> attempted();
+
+	/**
+	 * @param t
+	 *            the timeout to use while waiting for a parcel of resources to
+	 *            fully load into cache, in milliseconds
+	 * @return this {@link CacheAssembler} for further operation
+	 */
+	public T timeout(final long t);
+
+	public static final long DEFAULT_TIMEOUT = 10000;
 
 }

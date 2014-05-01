@@ -43,6 +43,7 @@ import edu.virginia.lib.ld2solr.impl.DatasetCacheLoader;
 import edu.virginia.lib.ld2solr.impl.TestAcceptor.TestSink;
 import edu.virginia.lib.ld2solr.impl.TestHelper;
 import edu.virginia.lib.ld2solr.impl.TestOutputStage;
+import edu.virginia.lib.ld2solr.spi.CacheEnhancer;
 import edu.virginia.lib.ld2solr.spi.OutputStage;
 
 /**
@@ -77,7 +78,7 @@ public class WorkflowTest extends TestHelper {
 		testSink = new TestSink();
 		testMain.persister(testSink);
 		testAssembler = new DatasetCacheAssembler().cache(dataset).cacheLoader(new DatasetCacheLoader())
-				.cacheRetriever(new Any23CacheRetriever());
+				.cacheRetriever(new Any23CacheRetriever()).cacheEnhancer(new CacheEnhancer.NoOp<Dataset>());
 		testMain.assembler(testAssembler);
 		testOutputStage = new TestOutputStage();
 		testMain.outputStage(testOutputStage);
@@ -175,7 +176,8 @@ public class WorkflowTest extends TestHelper {
 	public void testSkipRetrieval() throws IOException {
 		final String cacheDirectory = createTempDir().getAbsolutePath();
 		final Dataset dataset = createDataset(cacheDirectory);
-		final DatasetCacheAssembler cacheAssembler = new DatasetCacheAssembler();
+		final DatasetCacheAssembler cacheAssembler = new DatasetCacheAssembler()
+				.cacheEnhancer(new CacheEnhancer.NoOp<Dataset>());
 		cacheAssembler.cache(dataset).cacheLoader(new DatasetCacheLoader()).cacheRetriever(new Any23CacheRetriever())
 				.assemble(uris);
 		final Set<Resource> retrievedResources = cacheAssembler.successfullyAssembled();

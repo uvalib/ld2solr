@@ -4,6 +4,7 @@ import static java.lang.System.currentTimeMillis;
 import static java.lang.Thread.sleep;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.virginia.lib.ld2solr.api.IdentifiedModel;
 import edu.virginia.lib.ld2solr.spi.CacheAssembler;
+import edu.virginia.lib.ld2solr.spi.CacheEnhancer;
 import edu.virginia.lib.ld2solr.spi.CacheLoader;
 import edu.virginia.lib.ld2solr.spi.CacheRetriever;
 
@@ -29,11 +31,25 @@ import edu.virginia.lib.ld2solr.spi.CacheRetriever;
 public class DatasetCacheAssembler implements CacheAssembler<DatasetCacheAssembler, Dataset> {
 
 	private CacheRetriever cacheRetriever;
+
 	private CacheLoader<?, Dataset> cacheLoader;
+
+	private CacheEnhancer<?, Dataset> cacheEnhancer;
 
 	private Dataset dataset;
 
-	private static final long TIMEOUT = 10000;
+	/**
+	 * These are the resources this {@link DatasetCacheAssembler} has attempted
+	 * to retrieve. We keep track of them to avoid trying to re-retrieve them.
+	 * 
+	 */
+	private final Set<Resource> resourcesAttempted = new HashSet<>();;
+
+	/**
+	 * The amount of time to wait for a parcel of resources to fully load into
+	 * cache.
+	 */
+	private long timeout = DEFAULT_TIMEOUT;
 
 	private static final long TIMESTEP = 1000;
 
@@ -49,11 +65,20 @@ public class DatasetCacheAssembler implements CacheAssembler<DatasetCacheAssembl
 		cacheRetriever.andThen(cacheLoader);
 		cacheLoader.andThen(new NoOp<IdentifiedModel, Void>());
 		cacheLoader.cache(dataset);
+
 		for (final Resource uri : uris) {
-			log.info("Attempting to load: {}", uri);
-			cacheRetriever.accept(uri);
+			if (!attempted().contains(uri)) {
+				log.info("Attempting to load: {}", uri);
+				resourcesAttempted.add(uri);
+				cacheRetriever.accept(uri);
+			} else {
+				log.debug("{} has already been asked for.", uri);
+			}
+
 		}
-		wait(uris);
+		// wait until the newly requested resources have in fact been retrieved
+		await(resourcesAttempted);
+		cacheEnhancer.enhance();
 	}
 
 	/**
@@ -62,9 +87,9 @@ public class DatasetCacheAssembler implements CacheAssembler<DatasetCacheAssembl
 	 * @param uris
 	 *            the {@link Resource}s on which to wait
 	 */
-	private void wait(final Set<Resource> uris) {
+	private void await(final Set<Resource> uris) {
 		final long startTime = currentTimeMillis();
-		while (!cacheLoader.successfullyLoaded().containsAll(uris) && currentTimeMillis() < (startTime + TIMEOUT)) {
+		while (!cacheLoader.successfullyLoaded().containsAll(uris) && currentTimeMillis() < (startTime + timeout)) {
 			try {
 				log.trace("Waiting for {} to be fully loaded into {}...", uris, cacheLoader.successfullyLoaded());
 				sleep(TIMESTEP);
@@ -86,33 +111,85 @@ public class DatasetCacheAssembler implements CacheAssembler<DatasetCacheAssembl
 	}
 
 	/**
-	 * @param cacheRetriever
-	 *            the cacheRetriever to set
+	 * @param cr
+	 *            the {@link CacheRetriever} to use
 	 * @return this {@link DatasetCacheAssembler} for further operation
 	 */
-	public DatasetCacheAssembler cacheRetriever(final CacheRetriever cacheRetriever) {
-		this.cacheRetriever = cacheRetriever;
+	public DatasetCacheAssembler cacheRetriever(final CacheRetriever cr) {
+		this.cacheRetriever = cr;
 		return this;
 	}
 
 	/**
-	 * @param cacheLoader
-	 *            the cacheLoader to set
+	 * @param cl
+	 *            the {@link CacheLoader} to use
 	 * @return this {@link DatasetCacheAssembler} for further operation
 	 */
-	public DatasetCacheAssembler cacheLoader(final CacheLoader<?, Dataset> cacheLoader) {
-		this.cacheLoader = cacheLoader;
+	public DatasetCacheAssembler cacheLoader(final CacheLoader<?, Dataset> cl) {
+		this.cacheLoader = cl;
 		return this;
 	}
 
+	/**
+	 * @param ce
+	 *            the {@link CacheEnhancer} to use
+	 * @return this {@link DatasetCacheAssembler} for further operation
+	 */
+	public DatasetCacheAssembler cacheEnhancer(final CacheEnhancer<?, Dataset> ce) {
+		this.cacheEnhancer = ce;
+		return this;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see CacheAssembler#shutdown()
+	 */
 	@Override
 	public void shutdown() throws InterruptedException {
 		cacheRetriever.shutdown();
 		cacheLoader.shutdown();
+		cacheEnhancer.shutdown();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see CacheAssembler#successfullyAssembled()
+	 */
 	@Override
 	public Set<Resource> successfullyAssembled() {
 		return cacheLoader.successfullyLoaded();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see CacheAssembler#cache()
+	 */
+	@Override
+	public Dataset cache() {
+		return dataset;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see CacheAssembler#attempted()
+	 */
+	@Override
+	public Set<Resource> attempted() {
+		return resourcesAttempted;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see CacheAssembler#timeout(long)
+	 */
+	@Override
+	public DatasetCacheAssembler timeout(final long t) {
+		timeout = t;
+		return this;
 	}
 }

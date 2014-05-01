@@ -56,7 +56,7 @@ public class StatementsForRecursiveRetrieval implements Selector {
 		if (!s.getObject().isURIResource()) {
 			return false;
 		}
-		// we have a ontology and an URI-valued property in hand. now we
+		// we have an URI-valued property in hand. now we
 		// must test whether our property is a subproperty of
 		// "traversableForRecursiveRetrieval"
 		if (s.getPredicate().canAs(OntProperty.class)) {

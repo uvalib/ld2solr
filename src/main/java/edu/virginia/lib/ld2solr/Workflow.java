@@ -5,6 +5,7 @@ import static com.google.common.base.Strings.repeat;
 import static com.google.common.collect.Collections2.transform;
 import static com.google.common.collect.Sets.difference;
 import static com.hp.hpl.jena.query.ReadWrite.READ;
+import static com.hp.hpl.jena.rdf.model.ModelFactory.createOntologyModel;
 import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
 import static com.hp.hpl.jena.tdb.TDBFactory.createDataset;
 import static edu.virginia.lib.ld2solr.CLIOption.ACCEPT;
@@ -12,7 +13,9 @@ import static edu.virginia.lib.ld2solr.CLIOption.ASSEMBLERTHREADS;
 import static edu.virginia.lib.ld2solr.CLIOption.CACHE;
 import static edu.virginia.lib.ld2solr.CLIOption.INDEXINGTHREADS;
 import static edu.virginia.lib.ld2solr.CLIOption.OUTPUTDIR;
+import static edu.virginia.lib.ld2solr.CLIOption.RETRIEVALONTOLOGY;
 import static edu.virginia.lib.ld2solr.CLIOption.SKIPRETRIEVAL;
+import static edu.virginia.lib.ld2solr.CLIOption.TIMEOUT;
 import static edu.virginia.lib.ld2solr.CLIOption.TRANSFORM;
 import static edu.virginia.lib.ld2solr.CLIOption.URIS;
 import static edu.virginia.lib.ld2solr.CLIOption.helpLine;
@@ -23,7 +26,9 @@ import static java.lang.Integer.parseInt;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,6 +42,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Function;
 import com.google.common.io.Files;
+import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Resource;
 
@@ -46,8 +52,10 @@ import edu.virginia.lib.ld2solr.impl.DatasetCacheLoader;
 import edu.virginia.lib.ld2solr.impl.FilesystemPersister;
 import edu.virginia.lib.ld2solr.impl.IndexRun;
 import edu.virginia.lib.ld2solr.impl.JenaBackend;
+import edu.virginia.lib.ld2solr.impl.RecursiveRetrievalEnhancer;
 import edu.virginia.lib.ld2solr.impl.SolrXMLOutputStage;
 import edu.virginia.lib.ld2solr.spi.CacheAssembler;
+import edu.virginia.lib.ld2solr.spi.CacheEnhancer;
 import edu.virginia.lib.ld2solr.spi.OutputStage;
 import edu.virginia.lib.ld2solr.spi.RecordSink.RecordPersister;
 
@@ -233,12 +241,24 @@ public class Workflow {
 						log.info("Requesting HTTP Content-type: {} for resource retrieval.", acceptHeaderValue);
 					}
 
+					CacheEnhancer<?, Dataset> cacheEnhancer = new CacheEnhancer.NoOp<>();
+					if (cmd.hasOption(RETRIEVALONTOLOGY.opt())) {
+						final OntModel ontology = createOntologyModel();
+						try (InputStream in = new FileInputStream(new File(cmd.getOptionValue(RETRIEVALONTOLOGY.opt())))) {
+							ontology.read(in, null);
+						}
+						cacheEnhancer = new RecursiveRetrievalEnhancer().ontology(ontology);
+					}
+
 					final DatasetCacheAssembler assembler = new DatasetCacheAssembler()
 							.cache(main.dataset)
+							.cacheEnhancer(cacheEnhancer)
 							.cacheLoader(new DatasetCacheLoader().threads(assemblerThreads))
 							.cacheRetriever(
 									new Any23CacheRetriever().threads(assemblerThreads).accepts(acceptHeaderValue));
-
+					if (cmd.hasOption(TIMEOUT.opt())) {
+						assembler.timeout(parseInt(cmd.getOptionValue(TIMEOUT.opt())));
+					}
 					main.assembler(assembler);
 					urisToIndex = main.cache(uris);
 					log.debug("Successfully retrieved URIs:\n{}", urisToIndex);
